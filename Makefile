@@ -86,7 +86,7 @@ all: $(B_DIR)/$(EXEC)
 	ln -fs $(B_DIR)/$(EXEC) .
 
 # update rule of executable depends on CPP files and existence of index files
-$(B_DIR)/$(EXEC): $(C_FILE) $(H_FILE) $(CJONG_CPP) | $(IND_DIR) $(IND_FILE)
+$(B_DIR)/$(EXEC): $(C_FILE) $(H_FILE) $(CJONG_CPP) | $(IND_DIR) $(IND_FILE) $(B_DIR)
 	$(CC) $(CFLAGS) $(IFLAGS) $(C_FILE) $(CJONG_CPP) -o $(B_DIR)/$(EXEC)
 
 # update rule that only runs when the targets are non-existent
@@ -96,22 +96,28 @@ $(IND_DIR) $(IND_FILE):
 	mv index_dw_h.txt index
 	mv index_dw_s.txt index
 
+$(B_DIR):
+	mkdir $(B_DIR)
+
 sim: $(S_DIR)/simulation.cpp
 	$(CC) $(CFLAGS) $(IFLAGS) $(C_FILE_SIM) -o $(B_DIR)/simulation
 
 dbg: $(D_DIR)/$(EXEC)
 
-$(D_DIR)/$(EXEC): $(C_FILE) $(H_FILE) $(CJONG_CPP) | $(IND_DIR) $(IND_FILE)
+$(D_DIR)/$(EXEC): $(C_FILE) $(H_FILE) $(CJONG_CPP) | $(IND_DIR) $(IND_FILE) $(D_DIR)
 	$(CC) $(DFLAGS) $(IFLAGS) $(C_FILE) $(CJONG_CPP) -o $(D_DIR)/$(EXEC)
+
+$(D_DIR):
+	mkdir $(D_DIR)
 
 test_game: $(D_DIR)/test_game
 
-$(D_DIR)/test_game: $(S_DIR)/test_game.cpp  $(H_FILE)
+$(D_DIR)/test_game: $(S_DIR)/test_game.cpp $(H_FILE) | $(D_DIR)
 	$(CC) $(DFLAGS) $(IFLAGS) $(C_FILE) $(S_DIR)/test_game.cpp -o $(D_DIR)/test_game
 
 test_json: $(D_DIR)/test_json
 
-$(D_DIR)/test_json: $(S_DIR)/test_json.cpp  $(H_FILE)
+$(D_DIR)/test_json: $(S_DIR)/test_json.cpp  $(H_FILE) | $(D_DIR)
 	$(CC) $(DFLAGS) $(IFLAGS) $(C_FILE) $(S_DIR)/test_json.cpp -o $(D_DIR)/test_json
 
 clean:
