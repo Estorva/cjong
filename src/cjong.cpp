@@ -88,7 +88,7 @@ int main(int argc, char** argv) {
     // the history of all the sessions, until the cli is shut down.
     cli::Cli cli( std::move(rootMenu), std::make_unique<cli::FileHistoryStorage>(".cli") );
     // global exit action
-    cli.ExitAction( [](auto& out){ out << "Goodbye and thanks for all the fish.\n"; } );
+    cli.ExitAction( [](std::ostream& out){ out << "Goodbye.\n"; } );
     // std exception custom handler
     cli.StdExceptionHandler(
         [](std::ostream& out, const std::string& cmd, const std::exception& e)
@@ -104,9 +104,10 @@ int main(int argc, char** argv) {
     cli::StandaloneAsioScheduler scheduler;
     cli::CliLocalTerminalSession localSession(cli, scheduler, std::cout, 200);
     localSession.ExitAction(
-        [&scheduler](auto& out) // session exit action
+        //[&scheduler](auto& out) // session exit action
+        [&scheduler](std::ostream& out) // session exit action
         {
-            out << "Closing App...\n";
+            //out << "Closing App...\n";
             scheduler.Stop();
         }
     );

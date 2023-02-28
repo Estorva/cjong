@@ -22,6 +22,15 @@
 //     [ 2, 2, 2, "30符2飜500-1000点", "All Simples(1飜)", "Dora(1飜)" ] ] ] <- who won, points from (self if tsumo), who won or if pao: who's responsible ,fu and han and point, list of yaku's
 //     ...]
 
+// Static objects
+
+Seat Seat::EAST(0);
+Seat Seat::SOUTH(1);
+Seat Seat::WEST(2);
+Seat Seat::NORTH(3);
+
+// Functions
+
 void Kyoku::analyze(Seat seat) {
     std::cout << "========== " << getTitle() << " ==========\n";
     // reverse order of sa
@@ -46,6 +55,7 @@ void Kyoku::analyze(Seat seat) {
     while (!sb.empty()) {
         Action a = sb.top();
         sb.pop();
+        int agent = (a.agent)();
 
         if (a.naki == TSUMO) {
             std::cout << "Game ends in tsumo.\n";
@@ -57,28 +67,28 @@ void Kyoku::analyze(Seat seat) {
             // Dont add claimed tiles to furo - they are already included as
             // part of pond; otherwise the claimed tile will be counted twice
             case CHI:
-                hands[a.agent].removeTile(a.chi1);
-                hands[a.agent].removeTile(a.chi2);
-                hands[a.agent+4].addTile(a.chi1);
-                hands[a.agent+4].addTile(a.chi2);
+                hands[agent].removeTile(a.chi1);
+                hands[agent].removeTile(a.chi2);
+                hands[agent+4].addTile(a.chi1);
+                hands[agent+4].addTile(a.chi2);
                 break;
             case PON:
-                hands[a.agent].removeTile(a.draw, 2);
-                hands[a.agent+4].addTile(a.draw, 2);
+                hands[agent].removeTile(a.draw, 2);
+                hands[agent+4].addTile(a.draw, 2);
                 break;
             case ANKAN:
-                hands[a.agent].removeTile(a.draw, 3);
-                hands[a.agent+4].addTile(a.draw, 4);
+                hands[agent].removeTile(a.draw, 3);
+                hands[agent+4].addTile(a.draw, 4);
                 break;
             case MINKAN:
-                hands[a.agent].removeTile(a.draw, 3);
-                hands[a.agent+4].addTile(a.draw, 3);
+                hands[agent].removeTile(a.draw, 3);
+                hands[agent+4].addTile(a.draw, 3);
                 break;
             case KAKAN:
-                hands[a.agent+4].addTile(a.draw);
+                hands[agent+4].addTile(a.draw);
                 break;
             default:
-                hands[a.agent].addTile(a.draw);
+                hands[agent].addTile(a.draw);
                 break;
         }
 
@@ -93,11 +103,11 @@ void Kyoku::analyze(Seat seat) {
 
             if (a.naki == TSUMO || a.naki == KAKAN || a.naki == ANKAN || a.naki == MINKAN) continue;
 
-            std::cout << "Tehai: " << hands[a.agent].getMPSZ() << ", "
-                      << hands[a.agent].getStringShanten() << ".\n";
+            std::cout << "Tehai: " << hands[agent].getMPSZ() << ", "
+                      << hands[agent].getStringShanten() << ".\n";
 
             Hand vis = hands[4] + hands[5] + hands[6] + hands[7] + pond; // furo + kawa
-            auto vtssi = hands[a.agent].getDiscard(vis);
+            auto vtssi = hands[agent].getDiscard(vis);
 
             // get index of player's discard choice in returned discard list `vtssi'
             size_t index = 0;
@@ -144,7 +154,7 @@ void Kyoku::analyze(Seat seat) {
             }
         }
         else if (a.naki != NO_NAKI) {
-            std::cout << "(" << a.getStringAgent() << " " << a.getStringNaki() << " ";
+            std::cout << "(" << a.agent.getString() << " " << a.getStringNaki() << " ";
             switch (a.naki) {
                 case CHI:
                 case PON:
@@ -158,6 +168,9 @@ void Kyoku::analyze(Seat seat) {
                     std::cout << cjong::_33toMPSZ(a.discard);
                     inRiichi = true;
                     break;
+                case NO_NAKI:
+                    // dummy case to suppress compiler warning
+                    break;
             }
             std::cout << ")\n";
         }
@@ -170,7 +183,7 @@ void Kyoku::analyze(Seat seat) {
 
         // discard
         if (a.naki == TSUMO || a.naki == ANKAN || a.naki == KAKAN || a.naki == MINKAN) continue;
-        hands[a.agent].removeTile(a.discard);
+        hands[agent].removeTile(a.discard);
         pond.addTile(a.discard);
     }
 }
@@ -230,10 +243,10 @@ void Kyoku::readJSON(json raw) {
     int recordedActions = 0;
 
     // read haipai
-    hands[JICHA].readTenhou(raw[4].get<std::vector<int>>());
-    hands[SHIMO].readTenhou(raw[7].get<std::vector<int>>());
-    hands[TOIMEN].readTenhou(raw[10].get<std::vector<int>>());
-    hands[KAMI].readTenhou(raw[13].get<std::vector<int>>());
+    hands[0].readTenhou(raw[4].get<std::vector<int>>());
+    hands[1].readTenhou(raw[7].get<std::vector<int>>());
+    hands[2].readTenhou(raw[10].get<std::vector<int>>());
+    hands[3].readTenhou(raw[13].get<std::vector<int>>());
 
     // declare stacks
     std::vector<std::stack<Action>> vsa(4, std::stack<Action>());
@@ -241,17 +254,17 @@ void Kyoku::readJSON(json raw) {
 
     // parse JSON arrays into stacks
     for (int i = 0; i < 4; i++) {
-        for (int j = (int)raw[5 + 3*i].size() - 1; j > -1; j--) {
+        for (int j = (int)(raw[5 + 3*i].size()) - 1; j > -1; j--) {
             Naki nk = NO_NAKI;
-            SeatIndicator si(i);
-            Seat pt = TOIMEN;
+            Seat si(i);
+            Seat pt = Seat::EAST;
             int draw = 0, disc = 0, c1 = -1, c2 = -1;
 
-            if (j == raw[6 + 3*i].size()) {
+            if (j == (int)(raw[6 + 3*i].size())) {
                 // when the game ends in tsumo, the discard array of the winner
                 // is one tile shorter than their draw array
                 draw = raw[5 + 3*i][j].get<int>();
-                Action a((Seat)i, TSUMO, cjong::TenhouTo33(draw), -1);
+                Action a(Seat(i), TSUMO, cjong::TenhouTo33(draw), -1);
                 vsa[i].push(a);
                 recordedActions++;
                 continue;
@@ -360,7 +373,7 @@ void Kyoku::readJSON(json raw) {
                     if (br) break;
                 }
             }
-            Action a((Seat)i, nk, cjong::TenhouTo33(draw),
+            Action a(Seat(i), nk, cjong::TenhouTo33(draw),
                      cjong::TenhouTo33(disc), pt, cjong::TenhouTo33(c1),
                      cjong::TenhouTo33(c2));
             vsa[i].push(a);
@@ -370,7 +383,7 @@ void Kyoku::readJSON(json raw) {
     }
 
     // serialize actions in `vsa'
-    SeatIndicator si(kn - 1);
+    Seat si(kn - 1);
     while (recordedActions > 0) {
         if (vsa[si()].empty()) {
             // in rare cases where one's pon and discard deals in but that
@@ -380,7 +393,6 @@ void Kyoku::readJSON(json raw) {
             continue;
         }
         Action a = vsa[si()].top();
-        bool skip = false;
         vsa[si()].pop();
         si++;
 
@@ -420,7 +432,9 @@ void Kyoku::readJSON(json raw) {
                     // it will read shimo's pon first, which results in not finding
                     // its source.
                     // If not source not found, return this action back and try next time.
+                    #ifdef DEBUG
                     std::cout << "skip hit." << "\n";
+                    #endif
                     while (!btc.empty()) {
                         sa.push(btc.top());
                         btc.pop();
@@ -435,7 +449,7 @@ void Kyoku::readJSON(json raw) {
                 while (!btc.empty()) {
                     Action b = btc.top();
                     btc.pop();
-                    vsa[b.agent].push(b);
+                    vsa[(b.agent)()].push(b);
                     recordedActions++;
                 }
                 break;
@@ -537,10 +551,10 @@ void Kyoku::readMJLOG(std::string raw) {
     std::string hp1 = cjong::fromIndexToChar(raw, raw.find('"', raw.find("hai1")) + 1, '"');
     std::string hp2 = cjong::fromIndexToChar(raw, raw.find('"', raw.find("hai2")) + 1, '"');
     std::string hp3 = cjong::fromIndexToChar(raw, raw.find('"', raw.find("hai3")) + 1, '"');
-    hands[JICHA].readMJLOG(hp0);
-    hands[SHIMO].readMJLOG(hp1);
-    hands[TOIMEN].readMJLOG(hp2);
-    hands[KAMI].readMJLOG(hp3);
+    hands[0].readMJLOG(hp0);
+    hands[1].readMJLOG(hp1);
+    hands[2].readMJLOG(hp2);
+    hands[3].readMJLOG(hp3);
 
     std::size_t idx = 1; // first element after <INIT .../>
     Action a;
@@ -552,16 +566,16 @@ void Kyoku::readMJLOG(std::string raw) {
         switch (c) {
             // draw
             case 'T':
-                a.agent = JICHA;
+                a.agent = Seat::EAST;
                 break;
             case 'U':
-                a.agent = SHIMO;
+                a.agent = Seat::SOUTH;
                 break;
             case 'V':
-                a.agent = TOIMEN;
+                a.agent = Seat::WEST;
                 break;
             case 'W':
-                a.agent = KAMI;
+                a.agent = Seat::NORTH;
                 break;
             // reveal new dora indicator
             case 'D':
@@ -575,7 +589,7 @@ void Kyoku::readMJLOG(std::string raw) {
                 // Wrap this part of code in {} since we have declared a local
                 // variable `m'; otherwise C++ compiler complains "error: jump
                 // to case label".
-                a.agent = (Seat)std::atoi(cjong::afterIndexBetweenChar(raw, idx, '"').c_str());
+                a.agent = Seat(std::atoi(cjong::afterIndexBetweenChar(raw, idx, '"').c_str()));
                 int m = std::atoi(cjong::afterIndexBetweenChar(raw, idx + 11, '"').c_str());
 
                 if (m & 0x4) {
@@ -703,24 +717,9 @@ void Kyoku::replay() {
     while (!sb.empty()) {
         Action a = sb.top();
         sb.pop();
-        std::string agent;
         std::string verb;
         std::string verb2;
-        switch (a.agent) {
-            case JICHA:
-                agent = "Jicha";
-                break;
-            case SHIMO:
-                agent = "Shimo";
-                break;
-            case TOIMEN:
-                agent = "Toimen";
-                break;
-            case KAMI:
-                agent = "Kami";
-                break;
-        }
-        std::cout << std::setw(7) << std::left << agent;
+        std::cout << std::setw(6) << std::left << a.agent.getString();
 
         switch (a.naki) {
             case ANKAN:

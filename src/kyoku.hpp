@@ -16,13 +16,6 @@
 
 using json = nlohmann::json;
 
-enum Seat {
-    JICHA,
-    SHIMO,
-    TOIMEN,
-    KAMI
-};
-
 enum Naki {
     CHI,
     PON,
@@ -34,30 +27,71 @@ enum Naki {
     NO_NAKI
 };
 
+class Seat {
+    // Class for seat (E, S, W, N)
+    // Using an int to store information and derive seat by modulo 4
+    // 0 defaults to chicha
+public:
+    Seat() : _i(0) {;}
+    Seat(int i) { (*this)(i); }
+    Seat(const Seat& s) { _i = s._i; }
+
+    Seat operator=(const Seat& s) { _i = s._i; return *this; }
+
+    // return int presentation of Seat object
+    int operator()() const { return (_i % 4 + 4) % 4; }
+
+    // set Seat object as other objects or int
+    Seat& operator()(const Seat& s) { _i = s._i; return *this;}
+    Seat& operator()(int i) { _i = i; return *this; }
+
+    // increment or decrement
+    int operator++(int) { return (_i++ % 4 + 4) % 4; }
+    int operator--(int) { return (_i-- % 4 + 4) % 4; }
+
+    // move clockwise or counterclockwise
+    int operator+(int i) const { return ((_i + i) % 4 + 4) % 4; }
+    int operator-(int i) const { return ((_i - i) % 4 + 4) % 4; }
+
+    // compare
+    bool operator==(const Seat& s) const { return (_i - s._i) % 4 == 0; }
+    bool operator==(int i) const { return (_i - i) % 4 == 0; }
+    bool operator!=(const Seat& s) const { return (_i - s._i) % 4 != 0; }
+    bool operator!=(int i) const { return (_i - i) % 4 != 0; }
+
+    std::string getString() const {
+        switch ((_i % 4 + 4) % 4) {
+            case 0:
+                return "East";
+            case 1:
+                return "South";
+            case 2:
+                return "West";
+            case 3:
+                return "North";
+        }
+        return "";
+    }
+
+    static Seat EAST;
+    static Seat SOUTH;
+    static Seat WEST;
+    static Seat NORTH;
+
+private:
+    int _i;
+};
+
 class Action {
 public:
-    Action() : agent(JICHA), patient(TOIMEN), naki(NO_NAKI), draw(-1), discard(-1), chi1(-1), chi2(-1) {;}
+    Action() : agent(Seat::EAST), patient(Seat::EAST), naki(NO_NAKI), draw(-1), discard(-1), chi1(-1), chi2(-1) {;}
 
     Action(Seat a, Naki n, int dr, int dc) :
-        agent(a), naki(n), draw(dr), discard(dc), patient(TOIMEN), chi1(-1), chi2(-1) {;}
+        agent(a), patient(Seat::EAST), naki(n), draw(dr), discard(dc), chi1(-1), chi2(-1) {;}
 
     Action(Seat a, Naki n, int dr, int dc, Seat p, int c1, int c2) :
-        agent(a), naki(n), draw(dr), discard(dc), patient(p), chi1(c1), chi2(c2) {;}
+        agent(a), patient(p), naki(n), draw(dr), discard(dc), chi1(c1), chi2(c2) {;}
 
-    std::string getStringAgent() {
-        switch (agent) {
-            case JICHA:
-                return "Jicha";
-            case SHIMO:
-                return "Shimo";
-            case TOIMEN:
-                return "Toimen";
-            case KAMI:
-                return "Kami";
-            // end case
-        }
-        return "Jicha";
-    }
     std::string getStringNaki() {
         switch (naki) {
             case CHI:
@@ -87,70 +121,6 @@ public:
     int discard;
     int chi1; // tile used in chii
     int chi2; // tile used in chii
-};
-
-class SeatIndicator {
-public:
-    SeatIndicator() : _i(0) {;}
-    SeatIndicator(int i) { (*this)(i); }
-    SeatIndicator(Seat s) { (*this)(s); }
-
-    Seat operator()() { return _intToSeat(_i); }
-    SeatIndicator& operator()(Seat s) { _i = _seatToInt(s); return *this;}
-    SeatIndicator& operator()(int i) { _i = i; return *this; }
-
-    Seat operator++(int) { return _intToSeat(_i++); }
-    Seat operator--(int) { return _intToSeat(_i--); }
-
-    // move clockwise or counterclockwise
-    Seat operator+(int i) { return _intToSeat(_i + i); }
-    Seat operator-(int i) { return _intToSeat(_i - i); }
-
-private:
-    int  _seatToInt(Seat s) {
-        int i = 0;
-        switch (s) {
-            case JICHA:
-                i = 0;
-                break;
-            case SHIMO:
-                i = 1;
-                break;
-            case TOIMEN:
-                i = 2;
-                break;
-            case KAMI:
-                i = 3;
-                break;
-        }
-        return i;
-    }
-    Seat _intToSeat(int i) {
-        Seat s = JICHA;
-        // handle negative i
-        // suppose i = -17
-        // i % 4           = -1
-        // i % 4 + 4       = 3
-        // (i % 4 + 4) % 4 = 3
-        i = (i % 4 + 4) % 4; 
-        switch (i % 4) {
-            case 0:
-                s = JICHA;
-                break;
-            case 1:
-                s = SHIMO;
-                break;
-            case 2:
-                s = TOIMEN;
-                break;
-            case 3:
-                s = KAMI;
-                break;
-        }
-        return s;
-    }
-
-    int _i;
 };
 
 class Kyoku {

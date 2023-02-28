@@ -71,8 +71,8 @@ C_FILE_SIM := calsht_dw hand simulation
 C_FILE_SIM := $(addprefix $(S_DIR)/, $(addsuffix .cpp, $(C_FILE_SIM)))
 
 CC = g++
-CFLAGS = --std=c++17 -Wall -Wextra -lcurl -DINDEX_PATH=\"index\"
-DFLAGS = --std=c++17 -Wall -Wextra -g3 -O0 -lcurl -DINDEX_PATH="index" -DDEBUG
+CFLAGS = --std=c++17 -Wall -lcurl -DINDEX_PATH=\"index\"
+DFLAGS = --std=c++17 -Wall -g3 -O0 -lcurl -DINDEX_PATH="index" -DDEBUG
 IFLAGS = $(addprefix -I, $(I_DIR))
 
 SHELL = /bin/sh
@@ -84,6 +84,7 @@ MAKE = make
 
 all: $(B_DIR)/$(EXEC)
 	ln -fs $(B_DIR)/$(EXEC) .
+	$(info A symbolic link `cjong` to the executable has been created in current directory.)
 
 # update rule of executable depends on CPP files and existence of index files
 $(B_DIR)/$(EXEC): $(C_FILE) $(H_FILE) $(CJONG_CPP) | $(IND_DIR) $(IND_FILE) $(B_DIR)

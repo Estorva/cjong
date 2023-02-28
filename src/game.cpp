@@ -1,17 +1,17 @@
 #include "game.hpp"
 
 void Game::analyze() {
-    Seat s = JICHA;
-    if (vn[0] == j) s = JICHA;
-    if (vn[1] == j) s = SHIMO;
-    if (vn[2] == j) s = TOIMEN;
-    if (vn[3] == j) s = KAMI;
+    Seat s = Seat::EAST;
+    if (vn[0] == j) s = Seat::EAST;
+    if (vn[1] == j) s = Seat::SOUTH;
+    if (vn[2] == j) s = Seat::WEST;
+    if (vn[3] == j) s = Seat::NORTH;
 
     std::cout << "=============== Game Info ===============" << "\n";
-    std::cout << "East  " << vn[0] << " " << ((s == JICHA) ? "(*)" : " ") << "\n";
-    std::cout << "South " << vn[1] << " " << ((s == SHIMO) ? "(*)" : " ") << "\n";
-    std::cout << "West  " << vn[2] << " " << ((s == TOIMEN) ? "(*)" : " ") << "\n";
-    std::cout << "North " << vn[3] << " " << ((s == KAMI) ? "(*)" : " ") << "\n";
+    std::cout << "East  " << vn[0] << " " << ((s == Seat::EAST) ? "(*)" : " ") << "\n";
+    std::cout << "South " << vn[1] << " " << ((s == Seat::SOUTH) ? "(*)" : " ") << "\n";
+    std::cout << "West  " << vn[2] << " " << ((s == Seat::WEST) ? "(*)" : " ") << "\n";
+    std::cout << "North " << vn[3] << " " << ((s == Seat::NORTH) ? "(*)" : " ") << "\n";
     std::cout << "\n";
 
     for (size_t i = 0; i < vk.size(); i++) {
@@ -22,7 +22,7 @@ void Game::analyze() {
 
 void Game::analyze(size_t i) {
     if (i >= vk.size()) return;
-    vk[i]->analyze(JICHA);
+    vk[i]->analyze(Seat::EAST);
 }
 
 void Game::initialize() {
