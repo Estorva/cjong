@@ -211,25 +211,21 @@ void Kyoku::readJSON(json raw) {
     //     - kyoku
     //     - honba
     //     - kyoutaku
-    // raw[1]: vector<int>(4),  initial points of players
-    // raw[2]: vector<int>(*),  dora indicator
-    // raw[3]: vector<int>(*),  uradora indicator, present if someone declares riichi and wins
-    // raw[4]: vector<int>(13), self haipai
-    // raw[5]: vector<*>(*),    self draw
-    // raw[6]: vector<int>(*),  self discard
-    // raw[7-9]:                shimo haipai, draw, discard
-    // raw[10-12]:              toimen haipai, draw, discard
-    // raw[13-15]:              kami haipai, draw, discard
-    // raw[16]: vector<*>(*),   end condition
-    //     - raw[16] = vector<*>(3) when a player tsumo or ron,
+    // raw[1]: vector<int>(4),       initial points of players
+    // raw[2]: vector<string>(*),    dora indicator
+    // raw[3]: vector<string>(*),    uradora indicator, present if someone declares riichi and wins
+    // raw[4-7]: vector<string>(13), haipai (chicha, shimo, toimen, kami)
+    // raw[8]:                       array of actions in custom structure
+    // raw[9]: vector<*>(*),   end condition
+    //     - raw[9] = vector<*>(3) when a player tsumo or ron,
     //         + "和了"
     //         + payment
     //         + players involved in payment and list of yaku
-    //     - raw[16] = vector<*>(2) when ryukyoku
+    //     - raw[9] = vector<*>(2) when ryukyoku
     //         + "Ryuukyoku"
     //         + payment, if any
     // * means uncertain number or type
-    // game always starts with self = whoever sits at east
+    // game always starts with self = whoever sits at east (chicha)
 
     // read kyoku info
     kw = raw[0][0].get<int>() / 4;
@@ -237,226 +233,122 @@ void Kyoku::readJSON(json raw) {
     hb = raw[0][1].get<int>();
 
     // read dora indicator
-    auto di = raw[2].get<std::vector<int>>();
-    for (int i : di) doraInd.push(cjong::TenhouTo33(i));
+    auto di = raw[2].get<std::vector<std::string>>();
+    for (auto i : di) doraInd.push(cjong::MPSZto33(i));
 
-    int recordedActions = 0;
+    Action a;
+    // Seat agent;   // the player who makes this call
+    // Seat patient; // the player whose discard triggered this call
+    // Naki naki;
+    // int draw;
+    // int discard;
+    // int chi1; // tile used in chii
+    // int chi2; // tile used in chii
 
-    // read haipai
-    hands[0].readTenhou(raw[4].get<std::vector<int>>());
-    hands[1].readTenhou(raw[7].get<std::vector<int>>());
-    hands[2].readTenhou(raw[10].get<std::vector<int>>());
-    hands[3].readTenhou(raw[13].get<std::vector<int>>());
-
-    // declare stacks
-    std::vector<std::stack<Action>> vsa(4, std::stack<Action>());
-    std::stack<Action> btc; // temporarily stack for backtracing
-
-    // parse JSON arrays into stacks
-    for (int i = 0; i < 4; i++) {
-        for (int j = (int)(raw[5 + 3*i].size()) - 1; j > -1; j--) {
-            Naki nk = NO_NAKI;
-            Seat si(i);
-            Seat pt = Seat::EAST;
-            int draw = 0, disc = 0, c1 = -1, c2 = -1;
-
-            if (j == (int)(raw[6 + 3*i].size())) {
-                // when the game ends in tsumo, the discard array of the winner
-                // is one tile shorter than their draw array
-                draw = raw[5 + 3*i][j].get<int>();
-                Action a(Seat(i), TSUMO, cjong::TenhouTo33(draw), -1);
-                vsa[i].push(a);
-                recordedActions++;
-                continue;
-            }
-
-            json jdraw = raw[5 + 3*i][j];
-            json jdisc = raw[6 + 3*i][j];
-
-            // parse draw
-            if (jdraw.is_number()) draw = jdraw.get<int>();
-            else {
-                // jdraw is a string, either "p121212", "c121314", or "m12121212"
-                std::string sdraw = jdraw.get<std::string>();
-                bool br = false;
-                for (size_t k = 0; k < sdraw.size() - 2; k++) {
-                    switch (sdraw[k]) {
-                        case 'p':
-                            draw = std::atoi(sdraw.substr(k+1, 2).c_str());
-                            nk = PON;
-                            br = true;
-                            switch (k) {
-                                case 0:
-                                    // PON kami of current player
-                                    pt = si - 1;
-                                    break;
-                                case 2:
-                                    // PON toimen of current player
-                                    pt = si + 2;
-                                    break;
-                                case 4:
-                                    // PON shimo of current player
-                                    pt = si + 1;
-                                    break;
-                            }
-                            break;
-                        case 'c':
-                            draw = std::atoi(sdraw.substr(k+1, 2).c_str());
-                            nk = CHI;
-                            br = true;
-                            switch (k) {
-                                case 0:
-                                    c1 = std::atoi(sdraw.substr(3, 2).c_str());
-                                    c2 = std::atoi(sdraw.substr(5, 2).c_str());
-                                    break;
-                                case 2:
-                                    c1 = std::atoi(sdraw.substr(0, 2).c_str());
-                                    c2 = std::atoi(sdraw.substr(5, 2).c_str());
-                                    break;
-                                case 4:
-                                    c1 = std::atoi(sdraw.substr(0, 2).c_str());
-                                    c2 = std::atoi(sdraw.substr(2, 2).c_str());
-                                    break;
-                            }
-                            break;
-                        case 'm':
-                            draw = std::atoi(sdraw.substr(k+1, 2).c_str());
-                            nk = MINKAN;
-                            br = true;
-                            switch (k) {
-                                case 0:
-                                    // PON kami of current player
-                                    pt = si - 1;
-                                    break;
-                                case 2:
-                                    // PON toimen of current player
-                                    pt = si + 2;
-                                    break;
-                                case 4:
-                                    // PON shimo of current player
-                                    pt = si + 1;
-                                    break;
-                            }
-                            break;
-                    }
-                    if (br) break;
-                }
-            }
-
-            // parse discard
-            if (jdisc.is_number()) {
-                if (jdisc.get<int>() == 60) disc = draw; // tsumogiri
-                else disc = jdisc.get<int>();
-            }
-            else {
-                // jdisc is a string, either "k12121212" or "121212a12"
-                std::string sdisc = jdisc.get<std::string>();
-                bool br = false;
-                for (size_t k = 0; k < sdisc.size() - 2; k++) {
-                    switch (sdisc[k]) {
-                        case 'k':
-                            disc = std::atoi(sdisc.substr(k+1, 2).c_str());
-                            nk = KAKAN;
-                            br = true;
-                            break;
-                        case 'a':
-                            disc = std::atoi(sdisc.substr(k+1, 2).c_str());
-                            nk = ANKAN;
-                            br = true;
-                            break;
-                        case 'r':
-                            disc = std::atoi(sdisc.substr(k+1, 2).c_str());
-                            if (disc == 60) disc = draw; // tsumogiri riichi
-                            nk = RIICHI;
-                            br = true;
-                    }
-                    if (br) break;
-                }
-            }
-            Action a(Seat(i), nk, cjong::TenhouTo33(draw),
-                     cjong::TenhouTo33(disc), pt, cjong::TenhouTo33(c1),
-                     cjong::TenhouTo33(c2));
-            vsa[i].push(a);
-
-            recordedActions++;
+    for (size_t i = 0; i < 4; i++) {
+        for (size_t j = 0; j < 13; j++) {
+            hands[0+i].addTile(cjong::MPSZto33(raw[4+i][j].get<std::string>()));
+        }
+        if (raw[4+i].size() == 14) {
+            // the dealer is given an extra tile at haipai
+            // make this 14th tile into part of an Action object
+            a.draw = cjong::MPSZto33(raw[4+i][13].get<std::string>());
         }
     }
 
-    // serialize actions in `vsa'
-    Seat si(kn - 1);
-    while (recordedActions > 0) {
-        if (vsa[si()].empty()) {
-            // in rare cases where one's pon and discard deals in but that
-            // action skips somebody, trying to access stack of the skipped player
-            // results in segmentation fault
-            si++;
-            continue;
-        }
-        Action a = vsa[si()].top();
-        vsa[si()].pop();
-        si++;
+    //////////////////////////////////////////////////
+    // 03/22: rework of parsing JSON with updated downloader script
+    // raw[8] = [
+    //     { "type": "T", "who": 0, "tile": "1m" },
+    //     { "type": "D", "who": 0, "tile": "3z" },
+    //     { "type": "T", "who": 1, "tile": "9m" },
+    //     { "type": "D", "who": 1, "tile": "1m" },
+    //     { "type": "T", "who": 2, "tile": "4p" },
+    //     { "type": "D", "who": 2, "tile": "1p" }, ...
+    // ]
+    // type - Type of action
+    //     T - tsumo
+    //     D - dahai
+    //     A - ankan
+    //     K - kakan
+    //     M - minkan
+    //     P - pon
+    //     C - chi
+    //     R - riichi
+    // who  - The player who performed this action
+    // tile - The tile involved in this action
+    // furo - The tiles that are revealed
 
-        #ifdef DEBUG
-        std::cout << "Processing action"
-                  << "  agent = " << a.agent
-                  << "  patient = " << a.patient
-                  << "  naki = " << a.naki
-                  << "  draw = " << a.draw
-                  << "  discard = " << a.discard << "\n";
-        #endif
+    for (size_t i = 0; i < raw[8].size(); i++) {
+        int who = raw[8][i]["who"].get<int>();
+        a.agent = Seat(who);
 
-        switch (a.naki) {
-            case ANKAN:
-            case KAKAN:
-                si--; // cancel si++
-            case NO_NAKI:
-            case RIICHI:
-            case CHI:
-            case TSUMO:
-                sa.push(a);
+        std::string tileMPSZ = raw[8][i]["tile"].get<std::string>();
+        int t = cjong::MPSZto33(tileMPSZ);
+        int f1 = -1;
+        int f2 = -1;
+
+        // switch quantity cannot be string
+        std::string type = raw[8][i]["type"].get<std::string>();
+        int n = (type == "T" ? 0 :
+                (type == "D" ? 1 :
+                (type == "A" ? 2 :
+                (type == "K" ? 3 :
+                (type == "M" ? 4 :
+                (type == "P" ? 5 :
+                (type == "C" ? 6 :
+                (type == "R" ? 7 : -1
+        ))))))));
+
+        switch (n) {
+            case 0: // Draw
+                a.draw = t;
                 break;
-            case MINKAN:
-                si--;
-            case PON:
-                // find who discards the tile
-                // f gamelog/2023_1_15_Jade_Room_South.json
-                while (sa.top().agent != a.patient && !sa.empty()) {
-                    btc.push(sa.top());
-                    sa.pop();
-                }
-
-                // handle edge cases
-                if (sa.empty() || (sa.top().agent == a.patient && sa.top().discard != a.draw)) {
-                    // In rare cases, for example, kami pons jicha's first discard,
-                    // and shimo pons kami's first discard, in current algorithm
-                    // it will read shimo's pon first, which results in not finding
-                    // its source.
-                    // If not source not found, return this action back and try next time.
-                    #ifdef DEBUG
-                    std::cout << "skip hit." << "\n";
-                    #endif
-                    while (!btc.empty()) {
-                        sa.push(btc.top());
-                        btc.pop();
-                    }
-                    vsa[si - 1].push(a);
-                    continue;
-                    break;
-                }
-
-                sa.push(a);
-                // place actions back to `vsa'
-                while (!btc.empty()) {
-                    Action b = btc.top();
-                    btc.pop();
-                    vsa[(b.agent)()].push(b);
-                    recordedActions++;
-                }
+            case 1: // Discard
+                a.discard = t;
+                a.naki = NO_NAKI;
                 break;
-            // end case
+            case 2: // Ankan
+                a.draw = t;
+                a.naki = ANKAN;
+                break;
+            case 3: // Kakan
+                a.draw = t;
+                a.naki = KAKAN;
+                break;
+            case 4: // Minkan
+                a.draw = t;
+                a.naki = MINKAN;
+                break;
+            case 5: // Pon
+                a.draw = t;
+                a.naki = PON;
+                break;
+            case 6: // Chi
+                a.draw = t;
+                a.naki = CHI;
+                f1 = cjong::MPSZto33(raw[8][i]["furo"][0].get<std::string>());
+                f2 = cjong::MPSZto33(raw[8][i]["furo"][1].get<std::string>());
+                break;
+            case 7: // Riichi
+                a.discard = t;
+                a.naki = RIICHI;
+                break;
+            default:
+                std::cout << "Something is wrong." << std::endl;
+                exit(1);
         }
 
-        recordedActions--;
+        // Conclude an action object `a' in these cases:
+        // 1. Discard
+        // 2. Ankan
+        // 3. Kakan
+        // 4. Riichi
+        // 5. Minkan
+        if (type == "D" || type == "A" || type == "K" || type == "R" || type == "M") {
+            sa.push(a);
+            a.naki = NO_NAKI;
+        }
     }
 }
 

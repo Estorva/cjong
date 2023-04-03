@@ -67,12 +67,12 @@ IND_FILE := index_dw_h.txt index_dw_s.txt
 IND_FILE := $(addprefix $(IND_DIR)/, $(IND_FILE))
 
 # subset of files related to simulation.cpp
-C_FILE_SIM := calsht_dw hand simulation
+C_FILE_SIM := calsht_dw hand simulation conversion
 C_FILE_SIM := $(addprefix $(S_DIR)/, $(addsuffix .cpp, $(C_FILE_SIM)))
 
 CC = g++
 CFLAGS = --std=c++17 -Wall -lcurl -DINDEX_PATH=\"index\"
-DFLAGS = --std=c++17 -Wall -g3 -O0 -lcurl -DINDEX_PATH="index" -DDEBUG
+DFLAGS = --std=c++17 -Wall -g3 -O0 -lcurl -DINDEX_PATH=\"index\" -DDEBUG
 IFLAGS = $(addprefix -I, $(I_DIR))
 
 SHELL = /bin/sh

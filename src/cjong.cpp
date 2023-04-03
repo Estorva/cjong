@@ -7,6 +7,7 @@
 // curl
 
 #include <algorithm>
+#include <filesystem> // C++17
 #include <iomanip>
 #include <iostream>
 #include <string>
@@ -19,6 +20,7 @@
 #include "game.hpp"
 
 #define VERSION "1.0"
+namespace fs = std::filesystem;
 
 //================================== MAIN ======================================
 int main(int argc, char** argv) {
@@ -32,15 +34,20 @@ int main(int argc, char** argv) {
     rootMenu -> Insert(
         "f",
         [&g](std::ostream& out, std::string fileName) {
-            // check if file exists
-            if (access(fileName.c_str(), F_OK) != -1) {
+            // check if path given leads to a regular file
+            const fs::path p(fileName);
+            if (fs::is_regular_file(p)) {
                 g.initialize();
                 g.read(fileName);
                 g.analyze();
+                return;
             }
-            else {
-                out << "File `" << fileName << "' does not exist!\n";
+            if (fs::is_directory(p)) {
+                out << "Path `" << fileName << "' is a directory!\n";
+                return;
             }
+
+            out << "Path `" << fileName << "' does not exist!\n";
         },
         "Read gamelog from file."
     );
@@ -52,15 +59,18 @@ int main(int argc, char** argv) {
             h.readMPSZ(handMPSZ);
             if (h.getNumTile() % 3 == 1) {
                 if (h.getShanten() > 0) {
-                    std::cout << "Shanten: " << h.getShanten() << std::endl;
-                    std::cout << "Ukeire: " << h.getWait() << std::endl;
+                    out << "Shanten: " << h.getShanten() << std::endl;
+                    out << "Ukeire: " << h.getWait() << std::endl;
+                }
+                else if (h.getShanten() == 0) {
+                    out << "Tenpai" << std::endl;
+                    out << "Ukeire: " << h.getWait() << std::endl;
                 }
                 else {
-                    std::cout << "Tenpai" << std::endl;
-                    std::cout << "Ukeire: " << h.getWait() << std::endl;
+                    out << "Hola!" << std::endl;
                 }
             }
-            if (h.getNumTile() % 3 == 2) {
+            else if (h.getNumTile() % 3 == 2) {
                 std::cout << "Cut Ukeire" << std::endl;
 
                 std::vector<std::tuple<std::string, std::string>> vtss = h.getDiscard();
@@ -68,6 +78,9 @@ int main(int argc, char** argv) {
                     auto [discard, ukeire] = *it;
                     std::cout << discard << "  " << ukeire << std::endl;
                 }
+            }
+            else {
+                out << "Illegal hand!" << std::endl;
             }
         },
         "Read hand in MPSZ format."
