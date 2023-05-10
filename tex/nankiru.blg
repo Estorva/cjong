@@ -1,0 +1,67 @@
+This is pBibTeX, Version 0.99d-j0.34 (utf8.euc) (TeX Live 2022)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: nankiru.aux
+The style file: jecon.bst
+Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
+Reallocated global_strs (elt_size=200001) to 20 items from 10.
+Reallocated glb_str_end (elt_size=4) to 20 items from 10.
+Reallocated glb_str_ptr (elt_size=4) to 30 items from 20.
+Reallocated global_strs (elt_size=200001) to 30 items from 20.
+Reallocated glb_str_end (elt_size=4) to 30 items from 20.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Reallocated wiz_functions (elt_size=4) to 9000 items from 6000.
+Database file #1: refmj.bib
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 12000 items from 9000.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Warning--empty publisher in rb1
+Warning--can't use both author and editor fields in tetsusenryaku
+Warning--can't use both author and editor fields in tetsuoshi
+Warning--can't use both author and editor fields in horiuchi
+You've used 23 entries,
+            9766 wiz_defined-function locations,
+            1881 strings with 15829 characters,
+and the built_in function-call counts, 27591 in all, are:
+= -- 4593
+> -- 579
+< -- 46
++ -- 187
+- -- 163
+* -- 1112
+:= -- 3850
+add.period$ -- 1
+call.type$ -- 23
+change.case$ -- 140
+chr.to.int$ -- 14
+cite$ -- 27
+duplicate$ -- 616
+empty$ -- 1752
+format.name$ -- 335
+if$ -- 7793
+int.to.chr$ -- 9
+int.to.str$ -- 0
+missing$ -- 0
+newline$ -- 94
+num.names$ -- 208
+pop$ -- 501
+preamble$ -- 1
+purify$ -- 140
+quote$ -- 0
+skip$ -- 2540
+stack$ -- 0
+substring$ -- 1649
+swap$ -- 3
+text.length$ -- 94
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 236
+warning$ -- 4
+while$ -- 139
+width$ -- 0
+write$ -- 343
+is.kanji.str$ -- 399
+(There were 4 warnings)

@@ -1,0 +1,2233 @@
+%==============! USE XELATEX TO COMPILE !==================%
+%==========================================================%
+% To compile:                                              %
+%     1. USE XELATEX                                       %
+%     2. USE XELATEX                                       %
+%     3. USE XELATEX                                       %
+%     4. Use \newcommand{\renderOption}{0} for fast render %
+%        (disabling most rendering of mahjong tiles)       %
+%==========================================================%
+
+\documentclass[10pt, twocolumn]{article}
+
+
+\newcommand{\renderOption}{0}
+% 0: fast render
+% 1: full render
+
+
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+\usepackage{graphicx, expl3, minibox, amsmath, stfloats, tablefootnote, tikz, float, threeparttable, xfrac, multirow, etoolbox, verbatim}
+
+\usepackage{enumitem}
+\setlist{noitemsep}
+
+\usepackage{mahjong-tsumogiri/mahjong}
+\graphicspath{{mahjong-tsumogiri/tiles/}}
+
+\usepackage[CJKspace]{xeCJK}
+\setCJKmainfont{YuMincho}
+
+\usepackage[hidelinks]{hyperref}
+
+\usepackage{natbib}
+\renewcommand{\refname}{参考文献}
+
+\usepackage{caption}
+\captionsetup[table]{name=表}
+
+\edef\restoreparindent{\parindent=\the\parindent\relax}
+\usepackage[skip=\glueexpr \baselineskip + 0pt plus 2pt\relax]{parskip}
+
+% store baselineskip
+% https://tex.stackexchange.com/questions/392269/default-baselineskip-for-corresponding-font-size
+\newlength\stdbls % standard baselineskip
+\AtBeginDocument{%
+  \setlength\stdbls{\baselineskip}%
+  \gdef\stdblsn{\strip@pt\stdbls}%
+}
+
+\newfloat{rittai}{t}{ritt}
+\floatname{rittai}{立体図}
+
+% mj command in footnote
+\newcommand{\mjfn}[1]{\raisebox{-.135\stdbls}{\mahjong[0.75\stdbls]{#1}}}
+
+\newcounter{tehaicount}
+\renewcommand{\thetehaicount}{(\arabic{tehaicount})}
+
+
+\ExplSyntaxOn
+
+\DeclareExpandableDocumentCommand{\IfNoValueOrEmptyF}{mm}
+{
+  \IfNoValueF {#1}
+  {
+    \tl_if_empty:nF {#1} {#2}
+  }
+}
+
+% adjust mahjong tile height
+\NewDocumentCommand{\mj}{m}{
+  \ifdefstring{\renderOption}{1}{
+    \raisebox{-.18\stdbls}{\mahjong{#1}}
+  }{
+    \tl_set:Nn \l_tmpa_tl {#1}
+    \tl_replace_all:Nnn \l_tmpa_tl { ^ } { / } % text mode does not allow ^
+    \tl_use:N \l_tmpa_tl
+  }
+}
+
+\NewDocumentCommand{\tehai}{smO{}O{}}{
+  % DECIDE FAST RENDER OR FULL RENDER
+  \ifdefstring{\renderOption}{1}{
+    \nankiru_drawTehai:nnnn {#1} {#2} {#3} {#4}
+  }{
+    \nankiru_drawTehaiFast:nnnn {#1} {#2} {#3} {#4}
+  }
+}
+
+\cs_new_protected:Npn \nankiru_drawTehai:nnnn #1 #2 #3 #4 {
+  \tl_if_empty:nTF {#3} {
+    \noindent \refstepcounter{tehaicount} \raisebox{-.35\height}{\mahjong[1.5\stdbls]{#2}} \hfill \IfBooleanF {#1} {\thetehaicount \phantomsection \IfNoValueOrEmptyF{#4}{\label{mj:#4}}}
+  }{
+    \noindent \refstepcounter{tehaicount} \minibox{#3 \\ \mahjong[1.5\stdbls]{#2}} \hfill \IfBooleanF {#1} { \thetehaicount \phantomsection \IfNoValueOrEmptyF{#4}{\label{mj:#4}}}
+  }
+}
+
+\cs_new_protected:Npn \nankiru_drawTehaiFast:nnnn #1 #2 #3 #4 {
+  % show plain text
+  \tl_set:Nn \l_tmpa_tl {#2}
+  \tl_replace_all:Nnn \l_tmpa_tl { ^ } { / } % text mode does not allow ^
+  \tl_if_empty:nTF {#3} {
+    \noindent \refstepcounter{tehaicount} \tl_use:N \l_tmpa_tl \hfill \IfBooleanF {#1} {\thetehaicount \phantomsection \IfNoValueOrEmptyF{#4}{\label{mj:#4}}}
+  }{
+    \noindent \refstepcounter{tehaicount} \minibox{#3 \\ \tl_use:N \l_tmpa_tl} \hfill \IfBooleanF {#1} { \thetehaicount \phantomsection \IfNoValueOrEmptyF{#4}{\label{mj:#4}}}
+  }
+}
+
+\cs_generate_variant:Nn \tl_remove_once:Nn { NV }
+\cs_generate_variant:Nn \tl_remove_once:Nn { Nx }
+
+% define keys for rittai
+\keys_define:nn { rittai }
+{
+  jicha/  seat  .tl_set:N = \l_rittai_jicha,
+  jicha/  seat  .initial:n = 東,
+  jicha/  hand  .tl_set:N = \l_rittai_jichahand,
+  jicha/  hand  .value_required:n = true,
+  jicha/  river .tl_set:N = \l_rittai_jichariver,
+  jicha/  riverb.tl_set:N = \l_rittai_jichariverb,
+  jicha/  riverc.tl_set:N = \l_rittai_jichariverc,
+  jicha/  point .tl_set:N = \l_rittai_jichapoint,
+  jicha/  point .initial:n = 25000,
+  
+  toimen/ hand  .tl_set:N = \l_rittai_toimenhand,
+  toimen/ hand  .initial:n = XXXXXXXXXXXXX,
+  toimen/ river .tl_set:N = \l_rittai_toimenriver,
+  toimen/ riverb.tl_set:N = \l_rittai_toimenriverb,
+  toimen/ riverc.tl_set:N = \l_rittai_toimenriverc,
+  toimen/ point .tl_set:N = \l_rittai_toimenpoint,
+  toimen/ point .initial:n = 25000,
+  
+  kami/   hand  .tl_set:N = \l_rittai_kamihand,
+  kami/ hand  .initial:n = XXXXXXXXXXXXX,
+  kami/   river .tl_set:N = \l_rittai_kamiriver,
+  kami/   riverb.tl_set:N = \l_rittai_kamiriverb,
+  kami/   riverc.tl_set:N = \l_rittai_kamiriverc,
+  kami/   point .tl_set:N = \l_rittai_kamipoint,
+  kami/   point .initial:n = 25000,
+  
+  shimo/  hand  .tl_set:N = \l_rittai_shimohand,
+  shimo/  hand  .initial:n = XXXXXXXXXXXXX,
+  shimo/  river .tl_set:N = \l_rittai_shimoriver,
+  shimo/  riverb.tl_set:N = \l_rittai_shimoriverb,
+  shimo/  riverc.tl_set:N = \l_rittai_shimoriverc,
+  shimo/  point .tl_set:N = \l_rittai_shimopoint,
+  shimo/  point .initial:n = 25000,
+  
+    
+  kyoku .tl_set:N = \l_rittai_kyoku,
+  kyoku .initial:n = 東1局,
+  dora  .tl_set:N = \l_rittai_dora,
+  dora  .initial:n = 0m,
+}
+
+\NewDocumentCommand{\drawrittai}{m}{
+  % DECIDE FAST RENDER OR FULL RENDER
+  \ifdefstring{\renderOption}{1}{
+    \nankiru_drawRittai:n {#1}
+  }{
+    \nankiru_drawRittaiFast:n {#1}
+  }
+}
+
+% draw rittai
+\tl_new:N \l_rittai_sws
+\tl_new:N \l_rittai_sw
+  
+\cs_new_protected:Npn \nankiru_drawRittai:n #1 {
+  \keys_set:nn { rittai } {#1}
+  
+  \begin{tikzpicture}
+    %----------------------hand
+    \node (self) at (0,-3.5) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichahand}};    
+    \node[rotate=180] (toimen) at (0,3.5) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenhand}};
+    \node[rotate=270] (kami) at (-3.5,0) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamihand}};
+    \node[rotate=90] (shimo) at (3.5,0) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimohand}};
+    
+    %----------------------kyoku
+    \node[draw, align=center] (center-kyoku) at (0,0) {\tl_use:N \l_rittai_kyoku\\ドラ \raisebox{-.25\height}{\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_dora}}};
+    
+    %----------------------seat wind
+    \tl_set:Nn \l_rittai_sws {東南西北東南西北}
+    
+    \int_do_while:nn { \l_tmpa_int < 5 } {
+      \tl_set:Nx \l_rittai_sw {\tl_head:N \l_rittai_sws}
+      
+      \tl_if_eq:NNT \l_rittai_sw \l_rittai_jicha {
+        \node at (0,-1) {\tl_use:N \l_rittai_jicha~\tl_use:N \l_rittai_jichapoint};
+        
+        \tl_remove_once:Nx \l_rittai_sws {\tl_head:N \l_rittai_sws}
+        \node[rotate=90] at (1,0) {\tl_head:N \l_rittai_sws~\tl_use:N \l_rittai_shimopoint};
+        
+        \tl_remove_once:Nx \l_rittai_sws {\tl_head:N \l_rittai_sws}
+        \node[rotate=180] at (0,1) {\tl_head:N \l_rittai_sws~\tl_use:N \l_rittai_toimenpoint};
+        
+        \tl_remove_once:Nx \l_rittai_sws {\tl_head:N \l_rittai_sws}
+        \node[rotate=270] at (-1,0) {\tl_head:N \l_rittai_sws~\tl_use:N \l_rittai_kamipoint};
+      }
+      
+      \int_incr:N \l_tmpa_int
+      \tl_remove_once:NV \l_rittai_sws \l_rittai_sw
+    }
+    
+    %----------------------river
+    \tl_if_empty:NF \l_rittai_jichariver {
+      \tl_if_empty:NTF \l_rittai_jichariverb {
+        \node[anchor=north~west, align=left] (riv-self) at (-1.25,-1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichariver}};
+      }{
+        \tl_if_empty:NTF \l_rittai_jichariverc {
+          \node[anchor=north~west, align=left] (riv-self) at (-1.25,-1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichariver} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichariverb}};
+        }{
+          \node[anchor=north~west, align=left] (riv-self) at (-1.25,-1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichariver} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichariverb} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichariverc}};
+        }
+      }
+    }
+    
+    \tl_if_empty:NF \l_rittai_toimenriver {
+      \tl_if_empty:NTF \l_rittai_toimenriverb {
+        \node[anchor=north~west, rotate=180, align=left] (riv-toimen) at (1.25,1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenriver}};
+      }{
+        \tl_if_empty:NTF \l_rittai_jichariverc {
+          \node[anchor=north~west, rotate=180, align=left] (riv-toimen) at (1.25,1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenriver} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenriverb}};
+        }{
+          \node[anchor=north~west, rotate=180, align=left] (riv-toimen) at (1.25,1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenriver} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenriverb} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenriverc}};
+        }
+      }
+    }
+    
+    \tl_if_empty:NF \l_rittai_kamiriver {
+      \tl_if_empty:NTF \l_rittai_kamiriverb {
+        \node[anchor=north~west, rotate=270, align=left] (riv-kami) at (-1.25,1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamiriver}};
+      }{
+        \tl_if_empty:NTF \l_rittai_kamiriverc {
+          \node[anchor=north~west, rotate=270, align=left] (riv-kami) at (-1.25,1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamiriver} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamiriverb}};
+        }{
+          \node[anchor=north~west, rotate=270, align=left] (riv-kami) at (-1.25,1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamiriver} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamiriverb} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamiriverc}};
+        }
+      }
+    }
+    
+    \tl_if_empty:NF \l_rittai_shimoriver {
+      \tl_if_empty:NTF \l_rittai_shimoriverb {
+        \node[anchor=north~west, rotate=90, align=left] (riv-shimo) at (1.25,-1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimoriver}};
+      }{
+        \tl_if_empty:NTF \l_rittai_shimoriverc {
+          \node[anchor=north~west, rotate=90, align=left] (riv-shimo) at (1.25,-1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimoriver} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimoriverb}};
+        }{
+          \node[anchor=north~west, rotate=90, align=left] (riv-shimo) at (1.25,-1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimoriver} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimoriverb} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimoriverc}};
+        }
+      }
+    }
+  \end{tikzpicture}
+}
+
+\cs_new_protected:Npn \nankiru_drawRittaiFast:n #1 {
+  （立体図のレンダリングは無効にされた）
+}
+
+\ExplSyntaxOff
+
+
+
+
+%================ END OF PREAMBLE ===================
+\begin{document}
+
+\title{spaghet boiの麻雀ノート}
+\author{\vspace{-5mm}}
+\maketitle
+
+\tableofcontents
+
+（最終のレンダリングではこれらの文字を消す）
+
+JECONの使用例として、文句の中では \verb+\citet[p. 100]{muhai}+ のように\citet[p. 100]{muhai}が挙げられるし、補足として \verb+\citep[][p. 300]{tetsusenryaku}+ を使用する\citep[][pp. 300--498]{tetsusenryaku}。
+
+
+\section{牌効率}
+
+何切る問題は、場況や点棒状況など他家のインフォーメーションを無視して、自分の手牌だけで最大限の効率や打点を極める問題である。従って、何切る問題には正解はない。ただし、ある目的に目指す条件があれば、その条件に応ずる最適な行動がある。打点上昇に応ずる選択とテンパイ速度に応ずる選択が異なることはよくある。それゆえに、これから列挙された問題を研究するとき、目的をよく認識しなければならない。
+
+
+\subsection{辺張とその複合形}
+% http://yabejp.web.fc2.com/mahjong/tactics/chapter01/section009.html
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{ll}
+  強さ & 辺張搭子 \\
+  \hline
+  孤立 \mj{3m} 以下 & \mj{1224m} \\
+  & \mj{1246m} \\
+  $\downarrow$ & \mj{1244m} \\
+  & \mj{1245m} \\
+  単独 \mj{12m} 以下 & \mj{1255m} \\
+  & \mj{1256m} \\
+  $\downarrow$ & \mj{1266m} \\
+  & \mj{1267m} \\
+  単独 \mj{12m} 以上 & \mj{12567m} \\
+  $\downarrow$ & \mj{12456m} \\
+  & \mj{11223m}
+  \end{tabular}
+  \caption{辺張と他の形との複合形の強さの比較。下に行けば行くほど強い}
+  \label{tab:pench}
+\end{table}
+
+辺張は搭子（辺張・嵌張・両面）の中にもっとも両面になりにくい搭子。けれど、状況によって辺張は強くなる場合もある。辺張の強さは表~\ref{tab:pench} の通りそのフォローに左右されている\citep{gendai-penchan}。
+
+\paragraph{フォローが二度受けになる場合} \hfill
+
+\mj{1224m} と \mj{1245m} の場合は辺張の受け入れと他の搭子の受け入れが重なっている。つまり、この辺張を払って辺張の受けの \mj{3m} を引いても損にならない\footnote{これからの話は搭子はもう足りている前提の上で成立する。搭子・頭はまだ不十分の場合、どんな弱いでもこれらの形は残しましょう。さらに、\mjfn{124m} という嵌張と辺張の複合形、\mjfn{1m} 引いたら頭ができ、\mjfn{3m}引いたらノベタンになり、孤立の \mjfn{1m} や \mjfn{2m} より有能かもしれない。}。
+
+\mj{1246m} の場合、\mj{1m} 切っても受けの \mj{3m} はリャンカンの受けになるので、あまりロスにならない。
+
+\paragraph{受けにフォローがある場合} \hfill
+
+\mj{1244m} の場合、\mj{3m} 引いたら頭＋1面子ができるが、\mj{1m} 切っても \mj{3m} がまだ \mj{244m} の受けに含んでいるので、もしくは \mj{3m} 引いても1面子＋孤立の \mj{4m} として働ける\footnote{要注意のは聴牌まで頭ができないとき振聴になるリスク。}。
+
+\paragraph{変化にフォロー搭子がある場合} \hfill
+
+\mj{1255m} と \mj{1256m} の場合、嵌張に変化する時が必要な \mj{4m} は他の搭子とさらに強い形になるので、搭子オーバーフローの時に辺張を払ってもあまり構わない。\mj{1266m} の場合も同じ、\mj{466m} の形が \mj{12m} より少し強い。
+
+\mj{1267m} の場合は、変化の結果の \mj{24m} がさらに \mj{45m} に変化するその受けの \mj{5m} が既に \mj{67m} の受けに含んでいる。だが、この程度は辺張をただ少し弱くするだけ、大きな差は出ない。
+
+\paragraph{変化が複合形になる場合} \hfill
+
+\mj{12567m} の場合、\mj{4m} 引いたら \mj{24567m} の形になり、\mj{3m} 引いたら既に2面子になるので単純の \mj{4567m} 四連形よりやや強い。\mj{12456m} の場合に \mj{7m} 引いたら上記と同じ。
+
+\subsection{外嵌張とその複合形}
+%http://yabejp.web.fc2.com/mahjong/tactics/chapter01/section010.html
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{ll}
+  強さ & 嵌張搭子 \\
+  \hline
+  単独 \mj{13m} 以下 & \mj{1346m} \\
+  & \mj{1344m} \\
+  & \mj{1124m} \\
+  & \mj{1335m} \\
+  $\downarrow$ & \mj{1334m} \\
+  & \mj{1356m} \\
+  & \mj{1366m} \\
+  & \mj{1367m} \\
+  & \mj{1355m}（頭が二つ以上） \\
+  単独 \mj{13m} 以上 & \mj{13678m} \\
+  & \mj{1355m}（\mj{5m} が唯一の頭） \\
+  & \mj{11233m} \\
+  & \mj{13345m} \\
+  $\downarrow$ & \mj{12234m} \\
+  & \mj{22344m} \\
+  & \mj{13567m} \\
+  & \mj{13456m}
+  \end{tabular}
+  \caption{嵌張と他の形との複合形の強さの比較。下に行けば行くほど強い}
+  \label{tab:kanch}
+\end{table}
+
+外嵌張は両面変化できる受け入れが4枚だけの嵌張、つまり \mj{13m}、\mj{24m}、\mj{68m}、\mj{79m}。外嵌張同士の比較基準は辺張の比較基準と同じ、両面変化の受けにフォローがあれば弱くなり、変化した形がフォローと組むと強くなる\citep{gendai-sotokanchan}。
+
+\paragraph{受けにフォローがある場合} \hfill
+
+\mj{1344m} の場合に要注意のは、\mj{1m} 引きで頭＋両面対子になるので他のフォローがある嵌張より残す。
+
+\mj{1124m} の場合、\mj{4m} 切ったら受け入れが一番広いが、\mj{14m} を切ったら \mj{5m} 引きの両面変化は逃される。タンヤオを見て \mj{11m} を落とすことも実戦では多い。
+
+\paragraph{他の搭子と組む場合} \hfill
+
+手牌の中に \mj{1355m} の形がある上、\mj{5m} が唯一の頭である場合、\mj{1m} 引きで受け入れが \mj{12345m} になる。他の頭が既に存在している場合、\mj{355m} の嵌張対子にするか \mj{135m} のリャンカンにするか場況次第。
+
+\mj{11233m} の形は完成すれば一盃口があり、\mj{134m} 引きで1面子＋嵌張対子ができる。
+
+\mj{13345m} の形は \mj{136m} 引きで1面子＋嵌張対子ができ、ツモ \mj{5m} で1面子＋リャンカンができる。
+
+\mj{12234m} の形は \mj{12456m} 引きで1面子＋複合面子ができる。
+
+\mj{13567m} の形は \mj{4m} 引きで三面張、\mj{58m} でリャンカンができる。ですが、両面変化2種・リャンカン変化2種の内嵌張ほどではない。
+
+\mj{13456m} の形は \mj{4m} で両面変化、\mj{5m} で両面嵌張、\mj{7m} で三面張、\mj{8m} で長いリャンカンができるので、内嵌張より強い。
+
+
+\paragraph{内嵌張の比較} \hfill
+
+内嵌張の比較は外嵌張とほぼ同じ。上記の通り、内嵌張に両面変化の受けとリャンカン変化の受けが外嵌張より多いので、\mj{13456m}の場合を除け外嵌張より強い\citep{gendai-uchikanchan}。
+
+
+\subsection{複合搭子}
+
+複合搭子とは、単独搭子（辺張・嵌張・両面）と孤立牌が複合した形。3枚の牌を使用している複合搭子は表~\ref{tab:fkgtt-1} にあげられている。
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    名称 & 形 & 受け入れ \\
+    \hline
+    辺張対子 & \mj{112m} & \mj{13m} 6枚 \\
+    嵌張対子 & \mj{113m} & \mj{12m} 6枚 \\
+    両嵌張 & \mj{135m} & \mj{24m} 8枚 \\
+    両面対子 & \mj{223m} & \mj{124m} 10枚
+  \end{tabular}
+  \caption{複合搭子の種類}
+  \label{tab:fkgtt-1}
+\end{table}
+
+リャンカン以外の複合搭子は対子含みなので、手牌に頭がないときはこれらの形は複合搭子として働かない。逆に対子含みの複合搭子が二つ以上あれば、対子が多すぎて手牌を弱くする。複合搭子同士の比較をする場合は、孤立牌同士や搭子同士を比較する場合と異なって全て外すのではなく、複合搭子から1枚外すことになる。よって、最終的な待ちが良くなりやすいように、強いほうから1枚外すのが原則である\citep{gendai-complex1, gendai-complex2}。
+
+\paragraph{対子が二つの場合} \hfill
+
+\tehai{12334578m 233p 466s}[][fkgtt-1]
+
+手牌\ref{mj:fkgtt-1}は\mj{233p}と\mj{466s}の選択。対子を二つにすると \mj{2p} と \mj{4s} の選択。表~\ref{tab:fkgtt-2} の通り、\mj{4s} 切りは \mj{2p} 切りより4枚の受け入れがある。この場合は、強い複合搭子から切るではなく、弱い複合搭子を頭にするケース。
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    切る牌 & 受け入れ & 枚数 \\
+    \hline
+    \mj{4s} & \mj{69m 134p 6s} & 6種20枚 \\
+    \mj{2p} & \mj{69m 3p 56s} & 5種16枚
+  \end{tabular}
+  \caption{手牌\ref{mj:fkgtt-1}の受け入れ}
+  \label{tab:fkgtt-2}
+\end{table}
+
+\paragraph{対子が三つ、複合搭子二つ} \hfill
+
+\tehai{12334588m 233p 466s}[][fkgtt-2]
+
+対子が多すぎるので二つにすると打 \mj{3p} と打 \mj{6s} の選択。両方の受け入れは同じ5種16枚だが、良形聴牌になる受け入れは表~\ref{tab:fkgtt-3} の通り打 \mj{3p} の方が多いので、強い複合搭子を単独搭子にするケース。
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    切る牌 & 受け入れ & 枚数 \\
+    \hline
+    \mj{3p} & \mj{8m 56s} & 3種8枚 \\
+    \mj{6s} & \mj{5s} & 1種4枚
+  \end{tabular}
+  \caption{手牌\ref{mj:fkgtt-2}の良形聴牌になる受け入れ}
+  \label{tab:fkgtt-3}
+\end{table}
+
+\tehai{12334588m 133p 466s}[][fkgtt-3]
+
+愚形含み同士なら両面変化が多い方を単独搭子にする。手牌\ref{mj:fkgtt-3}は良形聴牌にならない。よって、\ref{mj:fkgtt-3}は打 \mj{6s} にしてツモ \mj{37s} で両面に渡るのを期待する。
+
+\tehai{123345m 11366p 899s}[][fkgtt-4]
+
+全ての複合搭子の両面変化が乏しくて単独の対子が両面になりやすい場合、一番弱い複合搭子を対子にして、中寄りの対子の両面変化を期待する。よって、\ref{mj:fkgtt-4}は打 \mj{8s} にしよう。
+
+\paragraph{対子が三つ、複合搭子三つ（両面対子なし）} \hfill
+
+\tehai{12378m 113668p 899s}[][fkgtt-5]
+
+\tehai{12378m 113678p 99s}[][fkgtt-5-1]
+
+\tehai{12378m 113678p 89s}[][fkgtt-5-2]
+
+対子含みの複合搭子が三つあれば両面変化が一番乏しい方を頭にする。そうすると、残りの複合搭子が両面になる時には余剰牌は出ない。手牌\ref{mj:fkgtt-5}では両面にならない \mj{899s} から \mj{8s} を落とす。頭に固定する場合は辺張に固定する場合より2枚損だが、 \mj{7p} 引いた時受け入れが4枚得。
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    切る牌 & 受け入れ & 枚数 \\
+    \hline
+    \mj{8s} & \mj{69m1267p9s} & 7種22枚 \\
+    \mj{9s} & \mj{69m1267p7s} & 7種24枚 
+  \end{tabular}
+  \caption{手牌\ref{mj:fkgtt-5}の受け入れ}
+  \label{tab:fkgtt-4}
+\end{table}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    手牌 & 受け入れ & 枚数 \\
+    \hline
+    \ref{mj:fkgtt-5-1} & \mj{69m12p9s} & 5種16枚 \\
+    \ref{mj:fkgtt-5-2} & \mj{69m7s} & 3種12枚 
+  \end{tabular}
+  \caption{手牌\ref{mj:fkgtt-5}の\mj{668p}を面子にする後の受け入れ}
+  \label{tab:fkgtt-5}
+\end{table}
+
+\paragraph{対子が三つ、複合搭子三つ（両面対子一つ）} \hfill
+
+\tehai{12378m 223668p 899s}[][fkgtt-6]
+
+両面対子が一つならそこを両面固定とする。これは「強いほうから1枚外す」の原則を従っている。よって、\ref{mj:fkgtt-6}では \mj{2p6p9s} のどちらを切っても受け入れの枚数は同じ8種28枚だが、両面を残して打 \mj{2p} とする。
+
+\paragraph{対子が三つ、複合搭子三つ（両面対子二つ）} \hfill
+
+両面対子が二つあれば残りの愚形含みの複合搭子を頭にする。そうすると対子が減らない上、どちらの両面対子を単独両面にする選択に比べると2枚損になるが、一向聴のとき受け入れの広さを考えると前者の方が有利。表~\ref{tab:fkgtt-6} の通り、打 \mj{2p} とすると受け入れが9種32枚あるが、ツモ \mj{568p79s} で複合搭子の方が先に面子になると余剰牌が出て受け入れが両面の両端だけになる。一方、打 \mj{8s} とするとどちらの牌を引いても完全一向聴になる。
+
+\begin{table*}[ht]
+  \centering
+  \begin{tabular}{llllllllll}
+    手牌 & \multicolumn{8}{l}{\tehai*{12378m223677p899s}} \\
+    \hline
+    \multirow{2}{*}{受け入れ} & 打\mj{2p} & \mj{69m14p} &         & \mj{58p} & \mj{6p} & \mj{7s} & \mj{9s} & $\rightarrow$ & \sfrac{9}{32} \\
+    & 打\mj{8s} & \mj{69m14p} & \mj{2p} & \mj{58p} & \mj{6p} &         & \mj{9s} & $\rightarrow$ & \sfrac{9}{30} \\
+    & $\downarrow$ & $\downarrow$ & $\downarrow$ & $\downarrow$ & $\downarrow$ & $\downarrow$ \\
+    \multirow{2}{*}{ツモ後の打牌} & 打\mj{2p} & \mj{8s}：\sfrac{6}{20} & & \mj{6p}：{\color{red}\sfrac{4}{16}} & \mj{7p}：{\color{red}\sfrac{4}{16}} & \mj{7p}/\mj{9s}：{\color{red}\sfrac{4}{16}} & \mj{7p}/\mj{8s}：{\color{red}\sfrac{4}{16}} \\
+    & 打\mj{8s} & \mj{2p}：\sfrac{6}{20} & \mj{3p}：\sfrac{6}{20} & \mj{6p}：\sfrac{6}{20} & \mj{7p}：\sfrac{6}{20} & & \mj{3p}/\mj{7p}：\sfrac{6}{20}
+  \end{tabular}
+  \caption{両面対子が二つと愚形含みの複合搭子が一つある場合}
+  \label{tab:fkgtt-6}
+\end{table*}
+
+
+
+\subsection{リャンカン}
+
+\mj{135m} の形は「両嵌張」と呼ばれている。略として「リャンカン」。多くの場合はリャンカンを残して他の複合搭子を崩す。両面対子があればそれを両面にする。両面に変化しやすい嵌張対子があれば（例え \mj{335m} とか \mj{557m} とか）それを嵌張にする。なぜなら、リャンカンを嵌張にすると振聴にならない前提で両面になりにくい\citep[][p. 82]{uzaku-haikouritsu}。
+
+\paragraph{リャンカンに構えない形} 手牌\ref{mj:rk-1}にはリャンカンと暗刻がある。切る牌の選択の受け入れは表~\ref{tab:rk-1} に挙げられている。頭がないので、搭子が面子になるとき暗刻を頭にすると縦引きで搭子を頭にする二つの可能性があるので、その受け入れは \mj{8s} の頭を固定してリャンカンと両面の完成を期待するの受け入れより広い\citep[][p. 84]{uzaku-haikouritsu}。
+
+\tehai{246m 23467p 45688 -8s}[][rk-1]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    切る牌 & 受け入れ & 枚数 \\
+    \hline
+    \mj{2m} & \mj{456m5678p} & 7種24枚 \\
+    \mj{6m} & \mj{234m5678p} & 7種24枚 \\
+    \mj{8s} & \mj{35m58p}    & 4種16枚
+  \end{tabular}
+  \caption{手牌\ref{mj:rk-1}のそれぞれの切る牌の受け入れ}
+  \label{tab:rk-1}
+\end{table}
+
+
+\paragraph{リャンカンにフォロー牌がついた形} \hfill
+
+手牌\ref{mj:rk-2}でリャンカン \mj{468p} にフォロー牌 \mj{4p} がついている。打 \mj{4p} でリャンカンを固定するか打 \mj{8p} で頭を二つにするかの選択の比較は表~\ref{tab:rk-2} に挙げられている。単にピンフになる確率で選択すれば、打 \mj{4p} は有利。タンヤオがないため \mj{9m} や \mj{4p} が暗刻になっても嬉しくない。完全一向聴になるツモ牌も \mj{3p} だけ\citep[][p. 86]{uzaku-haikouritsu}。
+
+\tehai{12399m 4468p 3478 -9s}[][rk-2]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    切る牌 & \mj{4p} & \mj{8p} \\
+    \hline
+    受け入れ & \mj{57p25s} & \mj{9m45p25s} \\
+    枚数 & 4種16枚 & 5種16枚 \\
+    ピンフがつくツモ & \mj{57p} (50\%) & \mj{5p} (25\%)
+  \end{tabular}
+  \caption{手牌\ref{mj:rk-2}のそれぞれの切る牌の受け入れ}
+  \label{tab:rk-2}
+\end{table}
+
+\tehai{12377m 4468p 3478 -9s}[][rk-3]
+
+手牌\ref{mj:rk-3}は\ref{mj:rk-2}と違い、その一つの頭が \mj{7m} となり、完全一向聴になるツモ牌（ \mj{68m3p} ）が増えている。よって、ここは \mj{8p} を切る\citep[][p. 88]{uzaku-haikouritsu}。
+
+
+\paragraph{離れリャンカン} \hfill
+
+「離れリャンカン」という形は\ref{mj:rk-4}のピンズの部分のような \mj{38p} が受け入れになる形。\mj{2p} や \mj{9p} を切ると二つの嵌張のどちらが固定されるが、表~\ref{tab:rk-3} によるとその受け入れの差はない。打 \mj{6m} や打 \mj{2p} にすると三色の可能性が残る。よって、ピンフと三色の確率によりここで打 \mj{6m} にする\citep[][p. 89]{uzaku-haikouritsu}。
+
+\tehai{566m 245679p 45699s}[][rk-4]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{llll}
+    切る牌 & \mj{6m} & \mj{2p} & \mj{9p} \\
+    \hline
+    受け入れ & \mj{47m38p} & \mj{467m8p9s} & \mj{467m3p9s} \\
+    枚数 & 4種16枚 & 5種16枚 & 5種16枚 \\
+    \minibox{ピンフが\\つくツモ} & \mj{38p} (50\%) & \mj{8p} (25\%) & \mj{3p} (25\%) \\
+    \minibox{三色が\\つくツモ} & \mj{4m8p} (50\%)\tablefootnote{\mj{8p}ツモれば\mj{47m}の待ちで50\%の確率で三色がつく} & \mj{4m8p} (50\%) & (0\%)
+  \end{tabular}
+  \caption{手牌\ref{mj:rk-4}のそれぞれの切る牌の受け入れ}
+  \label{tab:rk-3}
+\end{table}
+
+
+\subsection{並び対子}
+
+\mj{3344p} のような形は、\mj{33p} と \mj{44p} の二つの対子と、\mj{34p} の順子が二重になる形の両方に解釈できる。ピンフに向かうなら、「順子や他の対子＜並び対子＜愚形」の切る順で行こう。
+
+\tehai{33678m 3344p 2347 -8s}[][narabtt-1]
+
+\tehai{33678m 3344p 2346 -8s}[][narabtt-2]
+
+\tehai{33678m 8899p 2346 -8s}[][narabtt-3]
+
+手牌\ref{mj:narabtt-1}はピンフがつく可能性が高いので、\mj{34p} のどちらを切って完全ー向聴をとる。手牌\ref{mj:narabtt-2}は嵌張 \mj{68s} があって、ピンフがつく可能性はそこまで高くないので、嵌張を落として \mj{25p} の引きを期待する。手牌\ref{mj:narabtt-3}は対子の一つが么九牌になるので価値が高くない。\mj{9p} の対子さえなくなればタンヤオが確定するのでここで \mj{9p} を落とす\citep[][pp. 112--113]{uzaku-haikouritsu}。
+
+
+\subsection{飛び対子}
+
+\mj{7799p}のような対子が一つ離れた形は「飛び対子」と呼ばれている。順子に解釈できないため、多くの場合では3枚構成の1ブロックに構えるべき。それでも、概ね切る順は並び対子と同じ「順子・他の対子＜飛び対子＜愚形」\citep[][pp. 114--117]{uzaku-haikouritsu}。
+
+\tehai{7799m 123456p 557 -8s}[][tobitt-1]
+
+\tehai{237799m 123456p 6 -8s}[][tobitt-2]
+
+手牌\ref{mj:tobitt-1}からは \mj{7m} や \mj{9m} を切る。\mj{9m} の双碰に狙うなら \mj{7m} を切る。ツモ \mj{6m} による完全一向聴に狙うなら \mj{9m} を切る。手牌\ref{mj:tobitt-2}の場合、愚形があるから先に愚形を払う。ツモ \mj{5s} による両面変化を見て \mj{8s} から切る。
+
+\tehai{678m 224466p 123s -??}[][tobitt-3]
+
+\begin{table}
+  \centering
+  \begin{tabular}{lll}
+    \mj{??}  & 切る牌 \\
+    \hline
+    \mj{78s} & \mj{4p} \\
+    \mj{99s} & \mj{9s} \\
+    \mj{77s} & \mj{7s}：一盃口狙い \\
+             & \minibox{\mj{4p}：鳴く前提や\\　　ソーズの変化}
+  \end{tabular}
+  \caption{飛び対子が繋がった形の選択}
+  \label{tab:tobitt-1}
+\end{table}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{llll}
+    \mj{??} & 切る牌 & 受け入れ & 枚数 \\
+    \hline
+    \mj{78s} & \mj{4p} & \mj{2356p69s} & 6種20枚 \\
+    & \mj{2p} & \mj{346p69s}  & 5種16枚 \\
+    & \mj{6p} & \mj{245p69s}  & 5種16枚 \\
+    \mj{77s} & \mj{4p} & \mj{2356p7s} & 5種14枚 \\
+    & \mj{2p} & \mj{3456p7s} & 5種14枚 \\
+    & \mj{6p} & \mj{2345p7s} & 5種14枚 \\
+    & \mj{7s} & \mj{23456p}  & 5種14枚
+  \end{tabular}
+  \caption{手牌\ref{mj:tobitt-3}の受け入れ}
+  \label{tab:tobitt-2}
+\end{table}
+
+飛び対子が繋がった形は\ref{mj:tobitt-3}のように三つの対子が見える。多くの場合には \mj{4p} を切って縦引きの \mj{26p} でも横引きの \mj{35p} でも一つ面子＋一つ頭ができるので、打 \mj{4p} の受け入れは最大。ですが、\mj{4p} 切らず \mj{35p} 引いたら一盃口があるので、他の部分（ \ref{mj:tobitt-3}の \mj{??} ）が弱いなら飛び対子を残す。
+
+
+\subsection{3対子の扱い}
+
+実戦を見てみよう。立体図~\ref{rittai:stts-1} のようなオーラスで、最下位との点差は僅かな1600点。なんの役があっても早く上がりたい状況。\mj{1m}、\mj{4s} と \mj{8s} の選択。一見に打 \mj{1m} だとしたらタンヤオがつきそうだが、表~\ref{tab:stts-1} によれば打 \mj{4s} や打 \mj{8s} でピンフを狙う方がより早い。
+
+\begin{rittai}[tb]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 南,
+    jicha/hand = 11567m 56p 445678 -8s,
+    jicha/river = 66^z 2z,
+    jicha/point = 14300,
+    %
+    toimen/river = 1s 2p 9s,
+    toimen/point = 39900,
+    %
+    kami/river = 4z 1p 2z 9m,
+    kami/point = 33100,
+    %
+    shimo/river = 4z 9m 4^z,
+    shimo/point = 12700,
+    %
+    kyoku = 南4局,
+    dora = 5z
+  }
+  
+  \caption{オーラスの場面で対子が三つ揃えった。}
+  \label{rittai:stts-1}
+\end{rittai}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    切る牌 & 受け入れ & 枚数 \\
+    \hline
+    \mj{1m} & \mj{47m48s} & 4種12枚 \\
+    \mj{4s} & \mj{147m3689s}  & 7種23枚 \\
+    \mj{8s} & \mj{147m3469s}  & 7種23枚
+  \end{tabular}
+  \caption{立体図~\ref{rittai:stts-1} で自分の手の受け入れ。}
+  \label{tab:stts-1}
+\end{table}
+
+
+\subsection{両面嵌張}
+
+\mj{455679p}という形は両面嵌張と呼ばれている。\mj{456p} の順子と \mj{579p} のリャンカン、\mj{45p} の両面と \mj{567p} の順子（と \mj{9p} の余り牌）、と両方に解釈できるので、二つ面子できる受け入れは \mj{368p} 3種11枚で、\mj{9p} 引いたら頭ができる。\mj{134556m} の形も両面嵌張\citep[][p. 118]{uzaku-haikouritsu}。
+
+\tehai{67m 11456p 235677 -8s}[][rmkc-1]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    切る牌 & 受け入れ & 枚数 \\
+    \hline
+    \mj{2s}   & \mj{58m469s} & 5種19枚 \\
+    \mj{578s} & \mj{58m14s}  & 4種16枚
+  \end{tabular}
+  \caption{手牌\ref{mj:rmkc-1}の受け入れ}
+  \label{tab:rmkc-1}
+\end{table}
+
+手牌\ref{mj:rmkc-1}は搭子オーバーの手牌。\mj{67m} と \mj{23s} と \mj{78s} の中から一つ両面を切らなければならない。表~\ref{tab:rmkc-1} によれば\mj{56778s} の部分を四連形や中ぶくれにすると打 \mj{2s} により両面嵌張の構えより3枚損。
+
+\tehai{67m 23456p 235677 -8s}[][rmkc-2]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    切る牌 & 受け入れ & 枚数 \\
+    \hline
+    \mj{2s} & \mj{5m}--\mj{8m}、\mj{1p}--\mj{7p}、\mj{3s}--\mj{9s}          & 18種59枚 \\
+    \mj{3s} & \mj{5m}--\mj{8m}、\mj{1p}--\mj{7p}、\mj{2s}、\mj{4s}--\mj{9s} & 18種59枚 \\
+    \mj{7s} & \mj{5m}--\mj{8m}、\mj{1p}--\mj{7p}、\mj{1s}--\mj{5s}、\mj{8s} & 17種57枚 \\
+    \mj{6m} & \mj{7m}、\mj{1p}--\mj{7p}、\mj{1s}--\mj{9s}                   & 17種55枚
+  \end{tabular}
+  
+  \vspace{\stdbls}
+  
+  \begin{tabular}{lll}
+    切る牌 & 頭ができる受け入れ & 枚数 \\
+    \hline
+    \mj{7s} & \mj{67m2356p2358s} & 10種30枚 \\
+    \mj{2s} & \mj{67m2356p378s}  & 9種26枚 \\
+    \mj{3s} & \mj{67m2356p278s}  & 9種26枚 \\
+    \mj{6m} & \mj{7m2356s2378s}  & 9種26枚
+  \end{tabular}
+  \caption{手牌\ref{mj:rmkc-2}の受け入れ}
+  \label{tab:rmkc-2}
+\end{table}
+
+頭がない形ならなんだろう。手牌\ref{mj:rmkc-2}は\ref{mj:rmkc-1}の \mj{11p} 頭が \mj{23p} 両面になって、向聴数が一つ戻る。単騎待ちを外して、単に頭ができる受け入れによれば、打 \mj{7s} で \mj{5678s} の四連形を取るのが最適であろう。
+
+\tehai{678m455679p2238 -8s}[][rmkc-3]
+
+手牌\ref{mj:rmkc-3}では打 \mj{9p} の受け入れ枚数は打 \mj{2s} と同じ19枚に過ぎない。打 \mj{9p} で \mj{28s} の縦引きによるとタンヤオ狙いか、打 \mj{2s} でピンフ確定か、という選択。タンヤオのみは出アガリでもツモでもピンフのみより符が多い上、鳴くことができるので、ここで打 \mj{9p} にする。
+
+\tehai{345m34455688p348 -8s}[][rmkc-31]
+
+手牌\ref{mj:rmkc-31}の場合は1枚離れた \mj{8p} が重なって、切る牌の候補は対子同士の比較。\mj{8p} を切るとピンフが確定なので \mj{8s} を残そう。
+
+\paragraph{一盃口との選択} \hfill
+
+リャンカンと重なった形は一枚余って四連形になると\ref{mj:rmkc-4}のような一盃口の可能性が出る。
+
+\tehai{3556778m 45p 1238 -8s}[][rmkc-4]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    切る牌 & \mj{3m} & \mj{5m} \\
+    \hline
+    受け入れ & \mj{569m36p8s} & \mj{469m36p} \\
+    枚数 & 6種19枚 & 5種19枚 \\
+    \minibox{ピンフが\\つくツモ} & \mj{69m36p} (78.9\%) & \mj{469m36p} (100\%) \\
+    \minibox{一盃口が\\つくツモ} & \mj{6m} (15.8\%) & (0\%)
+  \end{tabular}
+  \caption{手牌\ref{mj:rmkc-4}の受け入れ}
+  \label{tab:rmkc-4}
+\end{table}
+
+表~\ref{tab:rmkc-4} によると打 \mj{3m} で一盃口の可能性があるが、その代わりにピンフが崩れるリスクもある。打 \mj{5m} だとしたらピンフが確定されたがそのリターンの最大値は打 \mj{3m} の場合に及ばない。よって、打点が欲しい時は \mj{3m} を切っていーペイこを狙い、ダマにすれば \mj{5m} を切ってピンフで闇聴をとる。
+
+\paragraph{両面嵌張の先導形}  \hfill
+
+両面嵌張から一枚外しの先導形は見逃されやすい。例え、\mj{356778m} の \mj{5m} がなくなる \mj{36778m} の形は一見で \mj{3m} は \mj{6m} の筋なので切りやすい。例え、\mj{356778m} の \mj{8m} がなくなる \mj{35677m} の形でも \mj{3m} は不要に見えそう。
+
+\tehai{348m 34458p 357788s}[][rmkc-5]
+
+\tehai{348m 44568p 357788s}[][rmkc-6]
+
+手牌\ref{mj:rmkc-5}と\ref{mj:rmkc-6}は同じ \mj{8m} と \mj{8p} の二択。ツモ \mj{3p} や \mj{6p} によって両面嵌張ができるのでどちらでも一番孤立されている \mj{8m} を切るべき。
+
+
+\subsection{2335の形}
+
+例え手牌の中に \mj{2335m} の形があったら、要すると、1ブロックにしたい時は打 \mj{5m}、1面子と一つの頭が欲しいなら打 \mj{2m}。\mj{5m} がなくなると受け入れが \mj{134m} になったが、\mj{134m} のどちらをツモったら \mj{33m} の部分が頭になれない。\mj{2m} を切ったら \mj{33m} が頭になって、受け入れが \mj{5m} のくっつきで広がるが、ツモ \mj{37m} でピンフが消え、ツモ \mj{7m} で嬉しくない愚形が残す。
+
+\tehai{123m 2335p 123789s -9m}[][nssg-1]
+
+\begin{table*}[!tb]
+  \centering
+	\begin{threeparttable}
+  \begin{tabular}{llll}
+    切る牌 & \mj{2p} & \mj{5p} & \mj{9m} \\
+    \hline
+    受け入れ & \mj{789m34567p} & \mj{789m1234p} & \mj{1234567p} \\
+    枚数 & 8種28枚 & 7種24枚 & 7種24枚 \\
+    ピンフがつくツモ & \mj{46p} (28.6\%) & \mj{9m3p}\tnote{1} (20.8\%) & \mj{3p}\tnote{1} \mj{46p} (41.7\%)
+  \end{tabular}
+  
+  \smallskip
+  \footnotesize
+  \begin{tablenotes}
+  \item[1] 待ちが\mjfn{124p}になるが\mjfn{2p}で和了ればピンフがない
+  \end{tablenotes}
+  
+  \caption{手牌\ref{mj:nssg-1}の受け入れ}
+  \label{tab:nssg-1}
+  \end{threeparttable}
+\end{table*}
+
+
+\subsection{112246の形}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{ll}
+    切る牌 & 条件 \\
+    \hline
+    \mj{1m} & タンヤオに向かう \\
+    \mj{2m} & ピンフに向かう \\
+    \mj{6m} & タンヤオもピンフもならない
+  \end{tabular}
+  %\caption{キャップション}
+\end{table}
+
+\tehai{112246m34p34566-6s}[][1-1]
+
+\tehai{112246m789p3467-8s}[][1-2]
+
+\tehai{112246m999p3467-8s}[][1-3]
+
+\tehai{112246m34678s11-1z}[][1-4]
+
+手牌\ref{mj:1-1}はタンヤオが見えるので、\mj{1m} を切って仕掛けでもしてタンヤオを目指す。手牌\ref{mj:1-2}にはタンヤオはちょっと無理だけど、ピンフがつく可能性が高いなら \mj{2m} を切ってリャンカンを残す。手牌\ref{mj:1-3}のような立直のみを目指す場合は \mj{6m} を切って \mj{12m} の双碰を狙う。手牌\ref{mj:1-4}は役牌に絡んでいるのでポン材を残し \mj{46m} の嵌張を落とす\citep{yuusee-112246}。
+
+
+\subsection{6889の形}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    形 & \mj{6889m} & \mj{688m} \\
+    \hline
+    枚数 & 6枚 (\mj{7m}$\times4$ + \mj{8m}$\times2$) & 6枚 (\mj{7m}$\times4$ + \mj{8m}$\times2$)
+  \end{tabular}
+  \caption{1面子になる枚数の比べ}
+\end{table}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    形 & \mj{6889m} & \mj{688m} \\
+    \hline
+    変化 & \mj{567m} + \mj{88m} & \mj{567m} + \mj{88m} \\
+     & \mj{56m} + \mj{789m} & 
+  \end{tabular}
+  \caption{\mj{5m} と \mj{7m} を引いた場合（頭はもう一つできている上に）}
+\end{table}
+
+多くの場合では6889の形の中の9は余り牌ので切ると大した差は出ないが、\mj{5m} と \mj{7m} を引いたら \mj{9m} が残る方が少し有利（ \mj{8m}とあと一つのペアの双碰または \mj{56m} の両面）。ですので、\mj{9m} を残す基準は孤立の么九牌や役牌との比較である\citep{yuusee-6889}。
+
+\tehai{6889m1235p167s44z-8s}[東1局 西家 ドラ\mj{7s}][2-1]
+
+\tehai{6889m1235p67s445z-8s}[東1局 西家 ドラ\mj{7s}][2-2]
+
+一向聴に絞るとき基本的に \mj{9m} 切りは効率的な方であるが、手牌\ref{mj:2-1}または\ref{mj:2-2}のような切る候補は孤立の么九牌や役牌の場合 \mj{9m} を残す方は少し有利である。
+
+\tehai{6889m125p1668s44z-5z}[東1局 西家 ドラ\mj{7s}][2-3]
+
+\tehai{6889m125p668s445z-2z}[東1局 西家 ドラ\mj{7s}][2-4]
+
+手牌\ref{mj:2-3}と\ref{mj:2-4}のようなテンパイまで遠い場合は孤立の么九牌やオタ風を切る方がマシである。
+
+\tehai{6889m125p2668s44z-5z}[東1局 西家 ドラ\mj{7s}][2-5]
+
+切る候補は \mj{9m} と孤立の役牌の場合、役牌を残し方がいい。
+
+\tehai{26889m237p456s44z-5z}[東1局 西家 ドラ\mj{7s}][2-6]
+
+しかし、横引きが期待でき立直を目指す手牌なら孤立の役牌を切る方がいい。
+
+
+\subsection{2468の形}
+%https://www.youtube.com/watch?v=2chbGHCzpnY
+
+1ブロックとしては膨大なスペースに対して効率が低下すぎるので普段は2や8を切る方がいいが、タンヤオを目指すとき24と68のリャンカンと見える、また縦重なりも期待できる。従って、手牌\ref{mj:3-1}から \mj{8s} を切り僅かな三色の可能性を残し、手牌\ref{mj:3-2}から \mj{11m} の対子を落とす\citep{yuusee-2468}。
+
+\tehai{24m 44699p 2468s 77-7z}[][3-1]
+
+\tehai{11357m 4668p 2468s -8p}[][3-2]
+
+
+\subsection{134の1がドラであるとき}
+%https://www.youtube.com/watch?v=VxUirDseXPw
+
+\tehai{?67m 134p 11?67s -7'77z}[東1局 西家 ドラ\mj{1p}][134]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    \mj{?} & \mj{1p}切り & \mj{4p}切り \\
+    \hline
+    \mj{5m} と \mj{5s} & 1000点7枚、2000点1枚 & 2000点 \\
+    \mj{5m} と \mj{0s} & 2000点7枚、3900点1枚 & 3900点 \\
+    \mj{0m} と \mj{0s} & 3900点7枚、7700点1枚 & 7700点
+  \end{tabular}
+  \caption{赤ドラの有無で\ref{mj:134}の期待値}
+  \label{tab:134}
+\end{table}
+
+表~\ref{tab:134} の通り、赤ドラがないとき、\mj{2p} の嵌張待ちは \mj{25p} の両面待ちより打点上昇の程度は大きくないため、\mj{1p} 切りはおすすめである。しかし、赤ドラまたは他のドラが1枚以上あれば、\mj{1p} を残し、\mj{1s} ポンで \mj{1p} 単騎に移行することや \mj{1p} を引いて双碰待ちことによる大きい打点上昇は期待できるので\textbf{序盤}では \mj{4p} を切る方がいい\citep{yuusee-134}。
+
+
+\subsection{578の5が赤ドラであるとき}
+%https://www.youtube.com/watch?v=5Lx03nDGkOw
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{ll}
+    聴牌まで遠い & \mj{078m}を残す \\
+    一向聴 & タンヤオがないとき\mj{0m}切り \\
+    聴牌 & 基本的に\mj{0m}切り \\
+  \end{tabular}
+\end{table}
+
+\tehai{078m 23557p 22478s -7s}[][5-1]
+
+\tehai{078m 23557p 22478s -1p}[][5-2]
+
+\tehai{078m 2456p 688s 555z -2p}[][5-3]
+
+\tehai{078m 22456p 22256s -7s}[][5-4]
+
+\tehai{078m 22567p 22256s -7s}[][5-5]
+
+聴牌まで遠いとき、\mj{078m} を \mj{0m}のくっつきと \mj{78m} の両面と見直すと、\mj{34567m} のどちらを引いて2ブロックができる。ですので、\ref{mj:5-1}の場合 \mj{0m} と \mj{8m} のどちらを切るより \mj{78s} の両面を固定してツモギリしよう。\ref{mj:5-2}のような \mj{1p} を引いてしまうとき立直のみを避けるようになるべく \mj{0m} を使って \mj{4s} を切ろう\citep{yuusee-578}。
+
+一向聴をとるとき、他の役があれば \mj{0m} を切って受け入れを最大限にするべきである。例外として、タンヤオや三色を見込むとき、\mj{8m} を切って仕掛けしても早く聴牌を目指そう。なので、\ref{mj:5-3}のように役牌がもうすでにある場合は \mj{0m} を切ろう。
+
+聴牌を取るとき、基本的には \mj{0m} を切って両面待ちで立直する。なので、\ref{mj:5-4}の場合 \mj{69m} の待ちにして \mj{0m} を切るのがおすすめ。ただし、\ref{mj:5-5}のように567の三色があれば \mj{8m} を切って闇聴しよう。
+
+
+\subsection{多面張} \label{subsec:tmc}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    形 & 分析 & 待ち \\
+    \hline
+    \mj{3334568m} & \mj{333m} + \mj{456m} + \mj{8m}   & \mj{8m} \\
+                  & \mj{33m}  + \mj{345m} + \mj{68m}  & \mj{7m} \\
+    \mj{3335567m} & \mj{333m} + \mj{55m}  + \mj{67m}  & \mj{58m} \\
+                  & \mj{33m}  + \mj{35m}  + \mj{567m} & \mj{4m} \\
+    \mj{3335678m} & \mj{333m} + \mj{5678m}            & \mj{58m} \\
+                  & \mj{33m}  + \mj{35m}  + \mj{678m} & \mj{4m} \\
+    \mj{3334556m} & \mj{333m} + \mj{456m} + \mj{5m}   & \mj{5m} \\
+                  & \mj{33m}  + \mj{345m} + \mj{56m}  & \mj{47m} \\
+    \mj{3335777m} & \mj{333m} + \mj{5m}   + \mj{777m} & \mj{5m} \\
+                  & \mj{333m} + \mj{57m}  + \mj{77m}  & \mj{6m} \\
+                  & \mj{33m}  + \mj{35m}  + \mj{777m} & \mj{4m} \\
+    \mj{3344455m} & \mj{33m}  + \mj{444m} + \mj{55m}  & \mj{35m} \\
+                  & \mj{345m} + \mj{345m} + \mj{4m}   & \mj{4m} \\
+    \mj{3444567m} & \mj{34567m} + \mj{44m}            & \mj{258m} \\
+                  & \mj{3m}   + \mj{444m} + \mj{567m} & \mj{3m} \\
+    \mj{3334445m} & \mj{333m} + \mj{444m} + \mj{5m}   & \mj{5m} \\
+                  & \mj{333m} + \mj{44m}  + \mj{45m}  & \mj{36m} \\
+                  & \mj{345m} + \mj{33m}  + \mj{44m}  & \mj{34m} \\
+    \mj{3334455m} & \mj{333m} + \mj{44m}  + \mj{55m}  & \mj{45m} \\
+                  & \mj{33m}  + \mj{345m} + \mj{45m}  & \mj{36m} \\
+    \mj{3334456m} & \mj{333m} + \mj{44m}  + \mj{56m}  & \mj{47m} \\
+                  & \mj{33m}  + \mj{34m}  + \mj{456m} & \mj{25m} \\
+    \mj{3334567m} & \mj{333m} + \mj{4567m}            & \mj{47m} \\
+                  & \mj{33m}  + \mj{34567m}           & \mj{258m} \\
+    \mj{3334555m} & \mj{333m} + \mj{45m}  + \mj{55m}  & \mj{36m} \\
+                  & \mj{333m} + \mj{4m}   + \mj{555m} & \mj{4m} \\
+                  & \mj{33m}  + \mj{34m}  + \mj{555m} & \mj{25m}
+  \end{tabular}
+  \caption{7枚の牌を使っている多面張}
+  \label{tab:nanatmc}
+\end{table}
+
+多面張とは、最小単位の待ち（単騎・辺張・嵌張・双碰・両面）が複数存在している手牌の組み合わせ。\mj{23456m} のような形の三面張は、待ちが \mj{147m} なので多面張に該当し、もっとも知られている多面張である。\citet[pp. 124--125]{uzaku-haikouritsu}が書いた表~\ref{tab:nanatmc} に挙げられている形は全て7枚を使っていて、多面張に該当する条件は下記の通り。
+
+\begin{enumerate}
+\item 2面子＋浮き牌
+\item 1面子＋嵌張・両面＋頭
+\end{enumerate}
+
+「2面子＋浮き牌」の場合、その浮き牌はあと1面子に関連し、\mj{3334568m} の場合を除け、頭ができやすい。よって、13枚の手牌の他6枚の部分には頭がない時、7枚の多面張は十分に機能する。逆に他6枚の部分に頭がすでにできているなら手牌は非常に弱い。
+
+\tehai{3334555m123p3478s}
+
+孤立の \mj{4m} を切って、待ちが \mj{2s} --- \mj{9s} の28枚になる超広い一向聴。暗刻あり頭なし、そして他の搭子は全て両面、有効牌を引いたら必ず良形聴牌になる。
+
+\tehai{3334555m123p3468s}
+
+残りの搭子は全て良形でなくても、最大に6ブロックができているので、\mj{68s} の愚形を払って良形聴牌に期待する。
+
+\tehai{3334555m139p4478s}
+
+頭がもうできているので、向聴戻ししない前提で孤立の \mj{4m} や \mj{9p} を切らなければならない。\mj{9p} 切っても残りの \mj{4m} は浮き牌だけとして働いていて、受け入れが狭い。
+
+\tehai{3334555m179p2266s} % 8p 26s
+
+7枚の多面張があっても、受け入れが僅かな \mj{8p26s} の8枚で、非常に狭い一向聴。
+
+\paragraph{他の多面張} \hfill
+
+\tehai{99m111234567p456s}
+
+待ちは \mj{9m147p}。
+
+
+\subsection{一向聴(1)：種類}
+% https://majann-daisuki.com/majan-ishanten/?utm_source=rss&utm_medium=rss&utm_campaign=majan-ishanten
+
+麻雀は14枚の牌で「4面子＋1頭」をできるゲームなので、聴牌の時は「頭なし4面子」（単騎・延べ単）と「3面子＋1頭＋1搭子」（辺張・嵌張・両面）もしくは多面張。一向聴は、前述の形をもう一回崩して、その種類は下記の通り\citep{tomo-iishanten}。
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lllll}
+    & 面子 & 対子 & 他の搭子 & 浮き牌 \\
+    \hline
+    余剰牌一向聴 & 2 & 1 & 2 & 1 \\
+    完全一向聴 & 2 & 1 & 2 & 1 \\
+    ヘッドレス一向聴 & 3 & 0 & 2 & 0 \\
+    くっつき一向聴 & 3 & 1 & 0 & 2
+  \end{tabular}
+  \caption{一向聴の種類}
+\end{table}
+
+\paragraph{余剰牌一向聴} \hfill
+
+余剰牌がある一向聴は、面子が二つ、搭子（対子含み）が二つがある上、あと一つの孤立牌が浮いている状態を指す。その余剰牌の機能は下記の通り三つある：
+
+\begin{enumerate}
+  \item 安全牌
+  \item 良形変化
+  \item 打点上昇
+\end{enumerate}
+
+\tehai{12389m12366p78s-?}[][ist-1]
+
+手牌\ref{mj:ist-1}の \mj{?} が \mj{4z} の場合、誰にも不要な字牌を抱えて守備へ寄っている。\mj{4s} の場合、\mj{35s} 引いたら良形ができ \mj{89m} の辺張を払う。\mj{2s} の場合、\mj{13s} 引いたら下の三色が見える。余剰牌が出ているため、受け入れが狭い。手牌\ref{mj:ist-1}の受け入れは \mj{7m69s} 最大3種12枚。\mj{89m} が \mj{78m} になっても受け入れが4種16枚に過ぎない。
+
+手牌が良形確定なら余剰牌を安牌としてを抱えていく。愚形があるなら自分の手で優先して良形変化への余剰牌を持っていく。
+
+\paragraph{完全一向聴} \hfill
+
+\tehai{123789m23566p88s}[][ist-2]
+
+\tehai{123788m23456p88s}[][ist-3]
+
+完全一向聴は\ref{mj:ist-2}のように、その浮き牌がある両面搭子に重なってできる両面対子がある形。その受け入れが、ある順子が両面対子のともに二度受けになるという最低の場合でも5種16枚。両面搭子が順子に繋がって三面張ができる場合、例え\ref{mj:ist-3}のように、受け入れが \mj{689m147p8s} 7種23枚となる。
+
+\paragraph{ヘッドレス一向聴} \hfill
+
+\tehai{123789m23567p78s}[][ist-4]
+
+\tehai{111789m23567p78s}[][ist-5]
+
+\tehai{111789m34567p78s}[][ist-6]
+
+ヘッドレス一向聴は\ref{mj:ist-4}のように全ての搭子には対子がない形。\mj{23p78s} のどちらが先に重なったら良形聴牌になるが、\mj{14p69s} 先に引いたら単騎になってしまうリスクがある。従って、手牌\ref{mj:ist-4}の受け入れが \mj{1234p6789s} 8種28枚となるが、良形聴牌できるツモ牌はただ4種12枚。
+
+暗刻が含まれているヘッドレス一向聴は必ず良形聴牌になる。例え\ref{mj:ist-5}のように、\mj{14p69s} 引いても \mj{1m} 切って残りの両面が十分に働く。よって、\ref{mj:ist-4}と\ref{mj:ist-5}の受け入れが同じ8種28枚であるが、良形聴牌率によると後の方が圧倒的に有利。そして\ref{mj:ist-6}のようにある両面が順子につながって三面張ができたら受け入れが一気に11種37枚になるので、非常に強い形である。
+
+\paragraph{くっつき一向聴} \hfill
+
+\tehai{12355789m3789p3s}[][ist-7]
+
+\tehai{12355789m1789p1s}[][ist-8]
+
+くっつき一向聴は\ref{mj:ist-7}のように、二つの浮き牌と頭に関連する牌が引いたら聴牌できる形。その受け入れが11種40枚（\mj{5m} + \mj{12345p} + \mj{12345s}）あり、一番聴牌になりやすい形であるが、良形聴牌できる牌は \mj{24p24s} 4種16枚だけ。さらに\ref{mj:ist-8}のように浮き牌が端牌になる場合、受け入れが7種24枚になり、有効牌引いても必ず愚形聴牌になる。
+
+
+\subsection{一向聴(2)：選択}
+%http://beginners.biz/pairi/pairi13.html
+
+ここまでの話は全ての搭子に愚形がないという前提の上で成立する。愚形があったら受け入れがさらに減って、不十分と思える形。聴牌になりにくくて、聴牌になっても高い確率で愚形聴牌になるので、\textbf{不十分の一向聴の場合で考えるのは良形変化と向聴戻し}\citep{manboo-iishanten}。
+
+\tehai{122357m5678p2245s}[][ist-9]
+
+手牌\ref{mj:ist-9}では \mj{2m58p} どちら切っても受け入れが \mj{6m36s} 3種12枚になるが、\mj{58p} を残して \mj{4679p} を引いたら良形になるのでここで \mj{2m} を切る。
+
+\tehai{1223467p2345778s}[][ist-10]
+
+手牌\ref{mj:ist-10}では \mj{258s}　どちら切っても受け入れが \mj{358p} 3種11枚になる上、一枚の \mj{3p} が既に手牌にあるので、巡目がまだ深くないなら打 \mj{2p} で両向聴に戻ってよりいい一向聴を取るのは得。
+
+\tehai{4578999m45p11145s}[][ist-11]
+
+手牌\ref{mj:ist-11}では \mj{45m}・\mj{45p}・\mj{45s} の三択。どちらを切っても受け入れに差が出ないけれど、\mj{45m} を落とした場合 \mj{6m} を引いたら暗刻ありヘッドなしの広い一向聴になるのでそっちの方がより有利。
+
+\tehai{4668m34445p23777s}[][ist-14]
+
+手牌\ref{mj:ist-14}では、打 \mj{6m} の受け入れ（\mj{57m14s} 4種16枚）が打 \mj{8m} の受け入れ（\mj{67m4p14s} 5種15枚）により1枚多いけれども、打 \mj{8m} の後に \mj{56p} 引いて \mj{4m} 切りで完全一向聴ができるので、受け入れの枚数に差が大きくない場合良形変化を優先させる。
+
+\paragraph{強い待ちを残す} \hfill
+
+\tehai{22356799p234556s}[][ist-12]
+
+手牌\ref{mj:ist-12}では \mj{2p} と \mj{5s} の二択。どちらの受け入れも同じだけど、\mj{556s} に \mj{5s} の受け入れを残した場合 \mj{5s9p} の双碰受けに引いたら三面張が崩れてしまうのでここで打 \mj{2p} として三面張を固定する。
+
+\tehai{223m22789p445s -7'77z}[][ist-3-1]
+
+手牌\ref{mj:ist-3-1}では \mj{2m} と \mj{4s} の二択。\mj{2m} の方が仕掛けやすい（聴牌できる確率がより高い）が、\mj{14m} 待ちの和了できる率がより高い。どっちにせよ、聴牌率は常に上がり率より高いので、上がり率を重視してここで \mj{2m} を切る。
+
+\paragraph{搭子オーバー形} \hfill
+
+\tehai{12356m2267p23456s}[][ist-1-1]
+
+%http://yabejp.web.fc2.com/mahjong/tactics/chapter01/section045.html
+搭子オーバー形であればターツ落としの基準でターツ同士の比較をすることとなる。受け入れに差が無く、裏目を引いた場合にもフォローがあるのであればそれも考慮する。たとえ、\ref{mj:ist-1-1}で \mj{4m} 引いても \mj{123m} の搭子が \mj{234m} へ変化できるので \mj{56m} を落とす。
+
+内寄りのターツを残したほうが変化が多いが、外寄りのターツが待ちになった時に有利になる。これは即テンパイするケースと変化するケースの頻度の差と、待ちになった場合の和了率との差を考慮して判断することになる。内嵌張と外嵌張程度の差なら和了率にそこまで差がないので内嵌張を残すが、２･８対子と客風対子となら和了率の差が大きいので後者を残すことが多い。
+
+\paragraph{役による打牌判断} \hfill
+
+いくらの役があっても、一向聴の時では速度を優先すべき。選択肢同士の受け入れに差が出ない場合、役で判断しよう。
+
+\tehai{67m45688p3345556s}[][ist-13]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{ll}
+    打牌 & 受け入れ \\
+    \hline
+    \mj{3s} & \sfrac{7}{22}：\mj{58m8p2457s} \\
+    \mj{6s} & \sfrac{7}{20}：\mj{58m8p2345s} \\
+    \mj{5s} & \sfrac{6}{19}：\mj{58m8p347s}
+  \end{tabular}
+  \caption{手牌\ref{mj:ist-13}の受け入れ}
+\end{table}
+
+手牌\ref{mj:ist-13}の場合、\mj{5s} を切って \mj{334455s} の一盃口になる可能性があるが打 \mj{3s} の受け入れと良形聴牌率で比べると不利なのでここで一盃口を見切って打 \mj{3s} とする。
+
+\tehai{12355m1334556p23s}[][ist-15]
+
+手牌\ref{mj:ist-15}では打 \mj{1p} と打 \mj{3p} の受け入れが同じだが、打 \mj{1p} の方に一盃口チャンスがあり、一方打 \mj{3p} の方に三色とピンフの可能性がある。よって、ここで打 \mj{3p} とする。
+
+\tehai{11155m1334556p23s}[][ist-16]
+
+手牌\ref{mj:ist-16}は\ref{mj:ist-15}の変化形、三色もピンフもつかない。この状況なら \mj{1p} を切って、ツモ \mj{5p} で完全一向聴を期待する。
+
+\tehai{1222m112378p5567s}[][ist-19]
+
+手牌\ref{mj:ist-19}に打 \mj{1m} に受け入れが20枚、打 \mj{1p} に21枚、打 \mj{5s} にも21枚あるが、ピンフができる選択は打 \mj{1m} だけ。よって、ここで打 \mj{1p}　としてツモ \mj{46s} で良形変化を期待する。
+
+\paragraph{愚形含み完全一向聴} \hfill
+%http://yabejp.web.fc2.com/mahjong/tactics/chapter01/section047.html
+
+普通には安牌を持つためにも良形完全一向聴を余剰牌一向聴にはしない\footnote{受け入れが枯れている場合なら安牌を残す。}。単独搭子が愚形である場合、選択肢が下記のように三つある。
+
+\begin{enumerate}
+\item 複合搭子を両面にして余剰牌一向聴を取る
+\item 浮き牌を切って愚形含み完全一向聴を取る
+\item 愚形搭子を払って両向聴に戻る
+\end{enumerate}
+
+\tehai{2347m5589p123788s}[][ist-20]
+
+手牌\ref{mj:ist-20}は \mj{7m} を切ると「愚形含み」完全一向聴になる。\mj{8s} 切りで余剰牌一向聴になる。\mj{7m} がドラそばの場合、\mj{8s} 切りでドラ絡みの嵌張・両面を期待する。そうでなければ \mj{7m} 切りで素直に愚形含み完全一向聴を取る方がいい。
+
+\tehai{2347m4699p123788s}[][ist-21]
+
+手牌\ref{mj:ist-21}なら愚形が内嵌張になって両面変化ができやすいので \mj{7m} がよほど重要ではないのでここで切る。
+
+\tehai{2345m5589p123788s}[][ist-22]
+
+手牌\ref{mj:ist-22}なら孤立牌が順子についているので良形ができやすい。よって、ここで \mj{8s} を切って6ブロックにする。
+
+\tehai{2345m6689p123788s}[][ist-23]
+
+手牌\ref{mj:ist-23}でさらに頭が \mj{6p} になって \mj{7p} のフォローができるので、直接に \mj{89p} を落としても \mj{7p} がロースにならないので向聴戻ししてもいい。
+
+\tehai{2345m4699p123788s}[][ist-24]
+
+四連形と内嵌張の組み合わせ。極稀の２３４三色のために打 \mj{5m} にする。打 \mj{8s} で6ブロックにしても良いか \mj{37p} 引きで完全一向聴にならないのは損。
+
+\tehai{234m45589p123788s}[][ist-25]
+
+手牌\ref{mj:ist-24}では二つの両面対子の選択。\mj{0p} 引きと \mj{69s} 待ちで \mj{8s} を切る。
+
+\paragraph{愚形含みヘッドレス一向聴} \hfill
+
+\tehai{234888m57p112367s}[][ist-17]
+
+手牌\ref{mj:ist-17}で打 \mj{1s} で広いヘッドレス一向聴ができるが、ソーズの \mj{5678s} を引いたら必ずカン \mj{6p} 待ちになる。よって、巡目がまだ早いなら愚形の崩してよりいい形を待つのは有利。ただし、聴牌を遅らせる余裕がないなら素直に \mj{1s} を切るべき。
+
+\tehai{234888m57p112389s}[][ist-18]
+
+手牌\ref{mj:ist-18}には良形聴牌ができないので、素直に \mj{1s} を切って聴牌を目指す。その時立直するか黙聴するか考えればいい。
+
+
+%=============================================================
+\section{序盤戦略}
+
+\subsection{バラバラの配牌を打点上昇}
+
+以下のようなバラバラの配牌は、和了る確率が低くても、稀に和了れた時には満貫以上の高い打点にしたい。打点があれば、仮に先制立直を打たれても一向聴から押していくこともあるかもしれない\citep[][pp. 40--47]{tetsusenryaku}。
+
+\tehai{135m 127p 25899s 22 -4z}[東1局　西家　ドラ \mj{4z}]
+
+和了れなさそうな配牌。チートイ、チャンタ、下の三色が見える。チャンタに向かう \mj{5m} や \mj{5s} を切ると \mj{0m} と \mj{0s} の受けが無くなり、\mj{7p} にくっつくと三色が消滅する。門前で行けば赤引きの可能性を残し \mj{7p} を切ってチートイ立直を目指す。ちなみに \mj{2s} はチャンタや三色のどちらにも使えるので、\mj{5s} より残したい。チャンタと三色は仕掛けると打点が下がるので要注意である。
+
+\tehai{11224m 246p 389s 11 -4z}[東1局　西家　ドラ \mj{4z}]
+
+面子手で和了ると辺張より浮き牌を切る。ですがこんな聴牌まで遠い階段なら東をスルーしてもあり、チートイに目指すなら \mj{8s} を先切りにする。
+
+
+\subsection{高くてバラバラの配牌}
+
+字牌が重なる可能性が低いが、重なると鳴きにより数牌で面子を整えるのより早いので、役牌に絡む役（チャンタとか）も見込む。もちろん、毎回字牌が重なるそして誰かが鳴かせるわけではない、それでも字牌が重なるチャンスを見逃さない。誰かが字牌を切っても安易に合わせもしない\citep[][pp. 56--63]{tetsusenryaku}。
+
+\tehai{1116m 127p 2679s 16 -7z}[東1局　西家　ドラ \mj{1m}]
+
+立直に目指せば浮き牌の \mj{6m} と \mj{2s} を比べると \mj{6m} の方がわずかな強い。チャンタに向かうなら \mj{3p} でもチーして \mj{6m6s} を落とす。
+
+
+\subsection{辺張外し}
+
+いい待ちになりやすければ、または打点が上昇すれば、序盤で辺張を外すのは正解。打点十分であれば、または辺張を落としても打点やアガリ率も上がらないなら、そのまま聴牌を取るべき。特に、巡目が深くなれば（6〜7巡以降）、辺張落とすのは不利になる。ただし、その場合、辺張待ちになったら立直しない方がおすすめ\citep[][pp. 48--55]{tetsusenryaku}。
+
+\tehai{4678m 3589p 11067 -7s}[東1局　西家　3巡目　ドラ \mj{2m}]
+
+タンヤオがないため、辺張を落としても打点はよほどよくならなさそう。聴牌のときの最終形の想定すれば、ペン\mj{7p}を避けるもっといい待ちを作る。
+
+\tehai{4678m 3589p 11067 -7s}[東1局　西家　3巡目　ドラ \mj{1s}]
+
+ドラ3で打点はもう十分である場合は、素直に聴牌に向かうべき。ですが、ソウズの部分が \mj{114067s} になったら伸びやすいので辺張を外すのはおすすめ。
+
+
+\subsection{嵌張外し}
+
+\tehai{344m 79m 5667p 2267 -8s}[東1局　西家　4巡目　ドラ \mj{2p}]
+
+マジョリティは \mj{79m} の嵌張を落としてタンヤオを確定するが、\mj{8m} が先に埋まったメンピンの可能性が消滅する。\mj{79m} を落としても \mj{344m} からもう一つ面子ができる可能性が低いので、\mj{4m} 切りがおすすめ\citep[][pp. 92--97]{tetsusenryaku}。
+
+
+\subsection{両面聴牌外し}
+
+\tehai{34m 234p 3335567s 2 -2z}[東1局　西家　3巡目　ドラ \mj{7m}]
+
+\tehai{34m 2345p 333567s 2 -2z}[東1局　西家　3巡目　ドラ \mj{7m}][2-4-1]
+
+\tehai{34m 2346p 333567s 2 -2z}[東1局　西家　3巡目　ドラ \mj{7m}][2-4-2]
+
+全ての状況は早めの3巡目。そのまま立直すれば打点はただの1300ですが、\mj{22z} を落としタンヤオや三色やピンフで打点は大きく上昇する。\ref{mj:2-4-1}は\mj{22z} を落として \mj{25m} を引けばまだ三色やピンフに替わり機会が多いのでダマはおすすめ。\ref{mj:2-4-2}が \mj{6p} 単騎になる可能性があるので、それを避けて即リーがおすすめ\citep[][pp. 68--73]{tetsusenryaku}。
+
+
+\subsection{対子外し}
+
+\tehai{123 89m 79p 155s 244 -4z}[南4局　南家　1巡目　ドラ \mj{1s}]
+
+チャンタが見えるが、愚形ばかりな手牌。そのままで立直すれば大体2600に過ぎない。ですので、\mj{5s} の対子を落とし、\mj{2z} 重なりや \mj{4z} 槓で打点を最大限にするのはおすすめ\citep[][pp. 74--79]{tetsusenryaku}。
+
+
+\subsection{アガリトップ}
+
+\tehai{588m 12699p 266s 25 -7z}[南4局　西家　1巡目　ドラ \mj{5z}　アガリトップ]
+
+一気に見ると和了れなさそうな配牌であるが、供託があるのでアガったらトップになる、ワンスリー\footnote{トップ目のポイントは$+30$にして、二着目のは$+10$、三着目のは$-10$、ラス目のは$-30$。}であれば是非トップになってほしい。まずは門前でチートイ以外はほぼ無理。\mj{9p} の対子と役牌を落とすと僅かな確率でタンヤオがつく。役牌で和了れば、浮き牌の \mj{2s} とドラ表示牌の \mj{7z} が打牌候補になる\citep[][pp. 114--119]{tetsusenryaku}。
+
+
+\subsection{役牌の副露判断}
+
+手牌を短くするリスクと和了する価値を天秤にかけて、後者の方が重いなら仕掛けにより一歩も早く和了に辿り着く。たとえば、アガリトップ、南場のトップ目、東風戦の場合、誰より早く和了るべき場面なら、後付けのリスクを負い仕掛けするだろう\citep[][pp. 138--145]{tetsusenryaku}。
+
+\tehai{135m 4789p 268s 277z}[東1局　西家　3巡目　ドラ \mj{7m}][2-5-1]
+
+\tehai{222m 23467p 40s 277z}[東1局　西家　5巡目　ドラ \mj{4p}][2-5-2]
+
+手牌\ref{mj:2-5-1}のような聴牌まで遠すぎる手牌は鳴かないで、\ref{mj:2-5-2}のような受け入れが広い手牌も鳴かない。守備力や打点を無理矢理下げるのは損。
+
+\tehai{123m 23467p 45s 277z}[東1局　西家　5巡目　ドラ \mj{4p}][2-5-3]
+
+\tehai{123m 23467p 89s 277z}[東1局　西家　5巡目　ドラ \mj{4p}][2-5-4]
+
+手牌\ref{mj:2-5-3}は一向聴だが鳴いたら価値はそこまで高くない。そして \mj{7z} を鳴いたら頭がない故、受け入れが \mj{58p36s} の16枚から \mj{67p45s} の12枚に減る。ただし、残りの搭子は愚形の場合、たとえ\ref{mj:2-5-4}のような辺張 \mj{89s} がある場合、\mj{7z} をポンして \mj{58p} の待ちやチーテンを残して辺張を落とす。
+
+\tehai{24779m 1267p 5s 477z}[東1局　西家　4巡目　ドラ \mj{7s}][2-6-1]
+
+\tehai{24779m 2267p 5s 477z}[東1局　西家　4巡目　ドラ \mj{2m}][2-6-2]
+
+\tehai{24779m 2206p 5s 477z}[東1局　西家　4巡目　ドラ \mj{2m}][2-6-3]
+
+手牌\ref{mj:2-6-1}の場合、価値も速度もないため、アガリトップではないとほぼ鳴かない。親番なら、タンヤオの可能性を残し、\mj{3m} からチーする\footnote{\mjfn{123'p} の副露を見せたら手牌の役は役牌絡みのが知らせられて、役牌が出る確率が下がるわけである。}。手牌\ref{mj:2-6-2}なら、頭の候補が３つある上、鳴いてもも鳴かなくてもどちらもいい\footnote{子で一向聴になるなら鳴こう。}。手牌\ref{mj:2-6-3}のように価値がさらに高まるなら鳴き寄りになる\citep[][pp. 146--151]{tetsusenryaku}。
+
+\tehai{23899m 45p 136s 477z}[東1局　西家　4巡目　ドラ \mj{7z}][2-6-4]
+
+\tehai{23667m 45p 247s 477z}[東1局　西家　4巡目　ドラ \mj{7z}][2-6-5]
+
+役牌対子がドラになると天秤が鳴きに寄るが、タンヤオではない副露を見せたら役牌が出る確率が下がるので、\ref{mj:2-6-4}は \mj{2s} チーしないが、\ref{mj:2-6-5}ならチーしても門前で行ってもいい\citep[][pp. 152--159]{tetsusenryaku}。
+
+\tehai{23899m 468p 13s 477z}[東1局　西家　4巡目　ドラ \mj{7z}][2-6-6]
+
+手牌\ref{mj:2-6-6}のような門前に厳しい場合ならチーでもする。あとは同卓の人によりタンヤオではない仕掛けをしても役牌は警戒されないなら仕掛けしよう。
+
+\tehai{307m 4789p 207s 277z}[東1局　西家　4巡目　ドラ \mj{8p}][2-6-7]
+
+手牌\ref{mj:2-6-7}で \mj{7z} をポンしたら頭がなくなるが、最低でも7700があるので最終の待ちが単騎になってもやはり押すのだろう。
+
+
+\subsection{タンヤオの副露判断}
+
+\tehai{23467m 334p 35889s}[東1局　西家　4巡目　ドラ \mj{1s}][2-7-1]
+
+速度があるけれど鳴いたら手牌の価値が1000に過ぎないならスルーした方がいい。よって、\ref{mj:2-7-1}のような手牌は \mj{4s} をチーしない。234の三色を見込もう\citep[][pp. 170--175]{tetsusenryaku}。
+
+\tehai{23468m 246p 35889s}[東1局　西家　4巡目　ドラ \mj{8s}][2-7-2]
+
+\tehai{23467m 334p 35889s}[東1局　西家　4巡目　ドラ \mj{8s}][2-7-3]
+
+3900の価値があったら鳴く。特にドラポンで価値が二倍になると迷わず鳴こう。手牌\ref{mj:2-7-2}のような「鳴いたら残る形がバラバラ」の手牌でも\ref{mj:2-7-3}のような「門前で行けそう」の手牌でも同じ。
+
+
+%=============================================================
+\section{立直判断}
+
+\subsection{先制両面立直}
+
+\begin{table*}[t]
+  \centering
+  \begin{tabular}{l|llllll}
+    巡目       & \multicolumn{2}{l}{5巡目} & \multicolumn{2}{l}{8巡目} & \multicolumn{2}{l}{12巡目} \\
+    手牌基本価値 & 立直 & ダマ & 立直 & ダマ & 立直 & ダマ \\
+    \hline
+    のみ手     & 1300 & -- & 600 & -- & -100 & -- \\
+    1飜30符    & 1900 & 600 & 1100 & 200 & 300 & -300 \\
+    1飜40符    & 2800 & 1000 & 1900 & 500 & 900 & 0 \\
+    2飜30符    & 3600 & 1600 & 2600 & 1000 & 1400 & 400 \\
+    2飜40符    & 4500 & 2300 & 3400 & 1600 & 1900 & 800 \\
+    3飜30符    & 5500 & 3400 & 4200 & 2600 & 2600 & 1600 \\
+    3飜40符    & 5600 & 4800 & 4300 & 3800 & 2600 & 2500 \\
+    3飜50符    & 5600 & 5600 & {\color{red}4300} & {\color{red}4500} & {\color{red}2600} & {\color{red}3000} \\
+    4飜30符    & 7000 & 6300 & 5500 & 5100 & {\color{red}3500} & {\color{red}3600} \\
+    満貫確定    & 7000 & 6500 & 5500 & 5300 & {\color{red}3500} & {\color{red}3700} \\
+    立直で跳満 & 8300 & 7500 & 6500 & 6100 & {\color{red}4300} & {\color{red}4400} \\
+    跳満確定    & {\color{red}9600} & {\color{red}9900} & {\color{red}7600} & {\color{red}8200} & {\color{red}5100} & {\color{red}5900}
+  \end{tabular}
+  \caption{先制両面立直とダマの局収支\citep[][p. 23]{miinin-stat}。赤字はダマの方が有利の場面}
+  \label{tab:ev-ryanmen-riichi}
+\end{table*}
+
+表~\ref{tab:ev-ryanmen-riichi} は先制立直とダマの局収支の比較。例え、手牌が1飜40符があって、5巡目で立直するとその局収支は2800点、一方ダマにするとその局収支は1000点しかないので、早めに先制立直を打つのは大体正解。中盤（8巡目ごろ）では、手牌の価値は\ref{mj:rch-1-1}の3飜50符\footnote{門前加符30符 ＋么九牌暗刻8符＋么九牌暗刻8符＝50符（切り上げ）。詳細な点数計算は\ref{sec:point}参照。}より少ないなら立直するのは大体正解。
+
+\tehai{12388m 67p 555 666z}[東1局　南家　8巡目　ドラ \mj{1m}][rch-1-1]
+
+終盤（12巡目以降）で\ref{mj:rch-1-2}のような3飜40符手牌があるなら、立直とダマの局収支に大きな差は出ないから、アガリ率を優先してダマにするのがおすすめ。
+
+\tehai{233445m 2267p 888s}[東1局　南家　12巡目　ドラ \mj{2p}][rch-1-2]
+
+
+%--------------------------------------------
+\subsection{先制愚形立直}
+
+\begin{table*}[t]
+  \centering
+  \begin{tabular}{l|llllll}
+    巡目       & \multicolumn{2}{l}{5巡目} & \multicolumn{2}{l}{8巡目} & \multicolumn{2}{l}{12巡目} \\
+    手牌基本価値 & 立直 & ダマ & 立直 & ダマ & 立直 & ダマ \\
+    \hline
+    のみ手     & 500 & -- & -100 & -- & -600 & -- \\
+    1飜40符    & 1600 & 500 & 800 & 0 & 0 & -500 \\
+    2飜40符    & 2900 & 1600 & 1900 & 900 & 800 & 100 \\
+    3飜40符    & 3800 & 3800 & 2700 & 2600 & 1400 & 1300 \\
+    3飜50符    & 3800 & 4500 & 2700 & 3100 & 1400 & 1700 \\
+    満貫確定    & 4800 & 5300 & 3500 & 3700 & 1900 & 2100 \\
+    立直で跳満 & 5900 & 6100 & 4300 & 4400 & 2600 & 2600 \\
+    跳満確定    & 6900 & 8200 & 5200 & 6000 & 2100 & 3700
+  \end{tabular}
+  \caption{先制愚形立直とダマの局収支\citep[][p. 28]{miinin-stat}}
+  \label{tab:ev-gukei-riichi}
+\end{table*}
+
+\citet{rb1}[p. 165]によると、親なら、もしくは立直しなくても手牌にもう1飜がついていたら、愚形でも立直すべき。表~\ref{tab:ev-gukei-riichi} によると、巡目に関わらず、手牌の価値は3飜40符（ダマで5200、立直で満貫）があればダマしてもいい。例え\ref{mj:rch-2-1}のような手牌は立直してもダマしても局収支に大きな差がついていないので和了率優先ならダマにしよう。
+
+\tehai{112233m 22789p 68s}[東1局　南家　8巡目　ドラ \mj{2m}][rch-2-1]
+
+\paragraph{愚形のみ手} \hfill
+
+\citet{rb1}[p. 165]によると、子でドラなし愚形のみ手を立直してはいけない。\citet{miinin-stat}[p. 30]もそういう手を非推奨する。そうすると選択肢には（ア）聴牌とってダマ（イ）聴牌外し（ウ）ベタオリ、三つある。（ウ）の局収支は-1500点のでそれも除ける\citep{miinin-stat}[p. 30]。（ア）の局収支は表~\ref{tab:ev-tsumosen} の通り、必ず0以下になる。
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{llll}
+    巡目 & 5巡目 & 8巡目 & 12巡目 \\
+    \hline
+    局収支 & 0 & -300 & -700
+  \end{tabular}
+  \caption{役なしドラなし愚形（ツモ専）の局収支\citep[][p. 32]{horiuchi}}
+  \label{tab:ev-tsumosen}
+\end{table}
+
+よって、通常の愚形よりいい待ち（筋待ち・1289待ち）の場合、\citet{miinin-stat}[p. 30]は「立直をかけて」と主張し、他の愚形（特に456待ち）は「終巡ならばダマして形式聴牌を狙い、中巡より前であれば聴牌外し」の選択を提出した。
+
+\paragraph{真ん中の愚形} \hfill
+
+456待ちの愚形は1289待ちよりアガリにくい。けれど、\citet{nisi-456kanchan}のシミュレーションによると中盤に入ったら真ん中の愚形でも立直すればダマより局収支が高い。\citet{ayataka}によると「先制であれば多くの場合でリーチ有利」。
+
+\paragraph{手変わりの有効局面} \hfill
+
+前に触られた「聴牌外し」は、いつも序盤で立直より有利なわけではない。例え\ref{mj:rch-2-2}のようなツモ専の手牌は、\mj{7s} 切りで立直すれば1300点、\mj{1p} 切ればくっつき一向聴になる。しかし、リーのみと聴牌外しとの和了率の差は5巡目ではすでに5％あって、巡目が進むほどこの差は大きくなる\citep[][p. 34]{miinin-stat}。よって、聴牌を外して良形になれそうでも先制立直をするのは正解。
+
+\tehai{234999m 1277p 4567s}[東1局　南家　5巡目　ドラ \mj{6z}][rch-2-2]
+
+聴牌外しにより打点上昇のケースは\ref{mj:rch-2-3}のように辺張を払えばタンヤオがつく場面。中盤でも聴牌外しの方が若干有利\citep[][p. 35]{miinin-stat}。しかし、\mj{2m} がドラになって手牌に既に1飜があるなら、序盤で聴牌外しの方が有利だが、中盤では場況によって判断する。特に\ref{mj:rch-2-4}のような形は別に強くない場合は立直に寄る。
+
+\tehai{234888m 1288p 4567s}[東1局　南家　5巡目　ドラ \mj{6z}][rch-2-3]
+
+\tehai{234888m 1288p 4888s}[東1局　南家　8巡目　ドラ \mj{2m}][rch-2-4]
+
+要注意のは序盤でドラ1の愚形のみ手の場合、手変わりができれば、\citet{miinin-stat}[p. 35]の主張は\citet{rb1}[p. 165]と異なる。前者は「聴牌外し」を推奨し、後者は「即リー」を推奨する。
+
+\paragraph{当たり牌の種類と残り枚数} \hfill
+
+\begin{table*}[t]
+  \centering
+  \begin{tabular}{l|llllllll}
+               & \multicolumn{2}{l}{全体} & \multicolumn{2}{l}{場に0枚見え} & \multicolumn{2}{l}{場に1枚見え} & \multicolumn{2}{l}{場に2枚見え} \\
+               & 和了 (\%) & ツモ (\%) & 和了 (\%) & ツモ (\%) & 和了 (\%) & ツモ (\%) & 和了 (\%) & ツモ (\%) \\
+    \hline
+    無筋456 & 34 & 62 & 37 & 63 & 30 & 61 & 23 & 57 \\
+    無筋37  & 40 & 51 & 43 & 52 & 36 & 49 & 28 & 46 \\
+    無筋28  & 43 & 46 & 46 & 47 & 41 & 46 & 34 & 42 \\
+    片筋456 & 36 & 52 & 40 & 53 & 32 & 52 & 24 & 48 \\
+    無筋19  & 46 & 36 & -- & -- & 47 & 37 & {\color{red}44} & 33 \\
+    筋37    & 48 & 36 & 51 & 37 & 44 & 34 & 35 & 32 \\
+    筋28    & 51 & 31 & 55 & 32 & 50 & 31 & {\color{red}43} & 30 \\
+    両筋456 & 47 & 33 & 51 & 34 & 42 & 33 & 36 & 31 \\
+    筋19    & 57 & 24 & -- & -- & 58 & 24 & {\color{red}56} & 25
+  \end{tabular}
+  \caption{当たり牌の種類・枚数別5〜12巡目の先制単騎・嵌張立直の和了率とツモの割合\citep[][p. 38]{miinin-stat}。赤字は12巡目の先制両面立直より和了率が高い立直}
+  \label{tab:ev-gukei-riichi-machi}
+\end{table*}
+
+基準として、12巡目の先制両面立直の和了率は42\%、そのときのツモの割合は54\%\citep[][p. 26]{miinin-stat}。表~\ref{tab:ev-gukei-riichi-machi} によると、自分から2枚見えても、基準より和了率が高いのは無筋19・筋19・筋28。これらの待ちになったら立直をかけるのは正解。
+
+\paragraph{モロ引っ掛け} \hfill
+
+待ちが立直宣言牌の筋（モロ引っ掛け）の場合は相手に警戒されやすいが、その和了率はまだ十分。筋待ちなので、無筋よりいい待ち\citep[][p. 77]{miinin-stat}。表~\ref{tab:winrate-28} と表~\ref{tab:winrate-37} によると、モロ引っ掛けの和了率は非モロヒより3\%低いが、無筋の方と比べるとそんなに大きな差ではない。なお、赤を切って筋を作る（赤モロヒ）のは警戒されにくいが、3\%の和了率差に1飜を減らすのは損。
+
+\begin{table}[ht]
+  \centering
+  \begin{minipage}{.48\linewidth}
+    \centering
+      \begin{tabular}{ll}
+        & (\%) \\
+        \hline
+        無筋28 & 46 \\
+        黒モロヒ28 & 54 \\
+        赤モロヒ28 & 57 \\
+        非モロヒ & 57
+      \end{tabular}
+      \caption{嵌28の和了率（5〜12巡目）}
+      \label{tab:winrate-28}
+    \end{minipage}%
+  \begin{minipage}{.48\linewidth}
+    \centering
+    \begin{tabular}{ll}
+      & (\%) \\
+      \hline
+      無筋37 & 43 \\
+      モロヒ37 & 50 \\
+      非モロヒ & 53
+    \end{tabular}
+    \caption{嵌37の和了率（5〜12巡目）}
+    \label{tab:winrate-37}
+  \end{minipage}%
+\end{table}
+
+%\begin{table}[ht]
+%  \begin{tabular}{ll}
+%    & 和了率(\%) \\
+%    \hline
+%    無筋28 & 46 \\
+%    黒モロヒ28 & 54 \\
+%    赤モロヒ28 & 57 \\
+%    非モロヒ & 57
+%  \end{tabular}
+%  \caption{嵌28の和了率（5〜12巡目）}
+%  \label{tab:winrate-28}
+%\end{table}
+%
+%\begin{table}[ht]
+%  \centering
+%  \begin{tabular}{ll}
+%    & 和了率(\%) \\
+%    無筋37 & 43 \\
+%    モロヒ37 & 50 \\
+%    非モロヒ & 53
+%  \end{tabular}
+%  \caption{嵌37の和了率（5〜12巡目）}
+%  \label{tab:winrate-37}
+%\end{table}
+
+
+%--------------------------------------------
+\subsection{愚形の打点が両面より高い場合}
+
+例として、手牌\ref{mj:rch-5-1}は両面と嵌張の選択。\mj{25m} の両面にして立直をかけるとこの手の価値は2飜30符となり、その局収支は表~\ref{tab:ev-ryanmen-riichi} によると1100点となる。一方、嵌 \mj{2m} にすると三色がついて、表~\ref{tab:ev-gukei-riichi} によると3飜40符の局収支は1900点となる。両面平和より嵌張三色の方が高いので、ここで \mj{4m} 切り立直すべき\citep[][p. 55]{miinin-stat}。
+
+\tehai{134m 123p 12356799s}[東1局　南家　8巡目　ドラ \mj{6z}][rch-5-1]
+
+ドラが1枚あるならどうでしょう。両面にすると局収支は2600点となり、嵌張にすると局収支は2700点となる。どっちでもいい場合\citep[][p. 56]{miinin-stat}。
+
+\tehai{134m 123p 12356799s}[東1局　南家　8巡目　ドラ \mj{1p}][rch-5-2]
+
+よって、表~\ref{tab:ev-ryanmen-gukei-compare} の通り、両面待ちには1飜だけなら愚形にして打点を高くにするのは正解。両面待ちにもう3飜がついているなら立直する。両面待ちに2飜があるなら愚形立直と局収支はほぼ同じだが、巡目が深くなるなら愚形ダマの方が有利。
+
+\begin{table*}[t]
+  \centering
+  \begin{tabular}{l|lllllllll}
+    巡目       & \multicolumn{3}{l}{5巡目} & \multicolumn{3}{l}{8巡目} & \multicolumn{3}{l}{12巡目} \\
+    手牌価値（両面--愚形）& 両面 & 愚形リー & 愚形ダマ & 両面 & 愚形リー & 愚形ダマ & 両面 & 愚形リー & 愚形ダマ \\
+    \hline
+    1飜30符--2飜40符    & {\color{red}1900} & {\color{red}2900} & {\color{red}1600} & {\color{red}1100} & {\color{red}1900} & {\color{red}900} & {\color{red}300} & {\color{red}800} & {\color{red}100} \\
+    2飜30符--3飜40符    & 3600 & 3800 & 3800 & {\color{blue}2600} & {\color{blue}2700} & {\color{blue}3100} & {\color{blue}1400} & {\color{blue}1400} & {\color{blue}1700} \\
+    3飜30符--満貫       & 5500 & 4800 & 5300 & 4200 & 3500 & 3700 & 2600 & 1900 & 2100 \\
+  \end{tabular}
+  \caption{愚形と両面の比較。特に愚形の打点がより高い場面。赤字は愚形が有利の場面。青字はダマが有利の場面}
+  \label{tab:ev-ryanmen-gukei-compare}
+\end{table*}
+
+
+%--------------------------------------------
+\subsection{字牌待ち}
+
+\citet[p. 46]{miinin-stat}によると、立直以外1飜以上の価値があれば\textbf{全ての場面では立直が有利}。唯一の要注意は12巡目字牌待ちののみ手の局収支は-300。ダマにすべきの場面は、自分の持ち点が多くて和了率が優先する状況だけ。例え、\ref{mj:rch-4-1}のような跳満確定の手は、自分が四位なら立直して、自分がトップならダマにする。
+
+\tehai{340m 340s 340p 88p 44z}[南3局　南家　8巡目　ドラ \mj{3m}][rch-4-1]
+
+\paragraph{両面と字牌待ちの選択} \hfill
+
+\textbf{打点（高目安目があっても）が高いの方を選ぶのは正解}\citep[][p.50]{miinin-stat}。字牌待ちと両面待ちの和了率はほぼ同じだから。例えば、手牌\ref{mj:rch-4-2}を \mj{36p} 待ちにすれば1300点に過ぎない。逆に \mj{4p5z} の双碰にすれば高目が2600点になる。和了率がほぼ同じなら高目があるから局収支も高くなる。しかし、手牌\ref{mj:rch-4-3}のように字牌がオタ風の場合、\mj{36p} の場合にピンフがつくのでそれにするのは正解。
+
+\tehai{234567m 445p 789s 55z}[東1局　南家　8巡目　ドラ \mj{6z}][rch-4-2]
+
+\tehai{234567m 445p 789s 44z}[東1局　南家　8巡目　ドラ \mj{6z}][rch-4-3]
+
+\emph{どちらの待ちにしても打点が変わらない場合は両面にする}\citep[][p.52]{miinin-stat}。両面待ちのツモ割合がより高いから、和了時の平均得点もより高い。手牌\ref{mj:rch-4-4}の場合は \mj{2p} 切って立直。
+
+\tehai{234567m 223p 888s 44z}[東1局　南家　8巡目　ドラ \mj{2m}][rch-4-4] 
+
+\paragraph{字牌単騎待ちについて枚数別の和了率} \hfill
+
+これまでの話は字牌双碰に関する。チートイなどの字牌単騎の場合、\textbf{河に1枚切れの単騎の和了率は最も高い}\citep[][p. 64]{miinin-stat}。表~\ref{tab:winrate-jihai-tanki} によるとその和了率は両面よりも高い。従って、手牌\ref{mj:rch-4-5}は \mj{3z} が1枚切れなら字牌単騎にしよう。でなければ \mj{58p} の両面をとる。
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{llll}
+    和了率(\%) & 5巡目 & 8巡目 & 12巡目 \\
+    \hline
+    字牌単騎（1枚切れ） & 70 & 58 & 45 \\
+    両面             & 68 & 57 & 42 \\
+    字牌単騎（生牌）   & 65 & 49 & 30 \\
+    字牌単騎（2枚切れ）& 55 & 48 & 40
+  \end{tabular}
+  \caption{枚数別字牌単騎の和了率と両面立直の比較}
+  \label{tab:winrate-jihai-tanki}
+\end{table}
+
+\tehai{123888m 345s 6788p 3z}[東1局　南家　12巡目　ドラ \mj{1m}][rch-4-5] 
+
+
+
+
+
+
+
+
+%=============================================================
+\section{立直の対応}
+
+\subsection{序盤の押し引き}
+
+序盤では通っている筋の本数はまだ少ないので、押し引きはちょっと押し寄りであろう。切った牌が少ないため、安全度の読みはあまりできない。手牌\ref{mj:3-1-1}から\ref{mj:3-1-4}までは全て立体図 \ref{rittai:3-1} を仮定している\citep[][pp. 16--21]{tetsuoshi}。
+
+\begin{rittai}[tb]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 北,
+    jicha/hand = ??????????????,
+    jicha/river = 1z 1m 9s 8p 3z,
+    %
+    toimen/river = 2z 9s 4z 2m 3'p 9^p,
+    %
+    kami/river = 1p 1z 2z 8s 5z 9p,
+    %
+    shimo/river = 3z 1m 5z 2m 7p 3z,
+    %
+    dora = 6p
+  }
+  
+  \caption{序盤の立体図}
+  \label{rittai:3-1}
+\end{rittai}
+
+\tehai{340788m 23789p 11 -7s}[][3-1-1]
+
+\tehai{3407m 123789p 113 -7s}[][3-1-2]
+
+\tehai{307m 123789p 1167 -3s}[][3-1-3]
+
+\tehai{34m 123789p 56999 -3s}[][3-1-4]
+
+手牌\ref{mj:3-1-1}は、切る牌は無筋の2378であるが無筋の456よりちょっと放銃率が低いので、価値が3900ある上受け入れが最大限なので押すことにしよう\citep[][pp. 16--21]{tetsuoshi}。
+
+手牌\ref{mj:3-1-2}なら、\mj{7m} と \mj{7s} のくっつきで嵌張ができてしまう可能性があるので立直を含み価値の最低限が2600になっている上、カン \mj{8s} になったら枚数で不利になる。まだ序盤なので \mj{3s} は推せるだが、待ちが悪い聴牌になったらダマの方がいい\citep[][pp. 22--25]{tetsuoshi}。
+
+手牌\ref{mj:3-1-3}の受け入れがより少ない上、最終形はあまり強くないので、2600〜3900を押すのはちょっと無理。ただし、ドラが2枚以上持っているなら押すのは得である\citep[][pp. 26--29]{tetsuoshi}。
+
+手牌\ref{mj:3-1-4}の受け入れは打 \mj{3s} で8種の \mj{2345m4567s} があるが、価値の最低限は1300、裏ドラ乗っても打点の上昇幅はそんなに大きくないので、のみ手の場合はオリは若干有利である\citep[][pp. 30--35]{tetsuoshi}。
+
+
+\subsection{副露手の押し引き}
+
+\tehai{222340m 56p 3667s -4'35m}[][3-2-1]
+
+同じの立体図 \ref{rittai:3-1} を想定して、今回は\ref{mj:3-2-1}のような3900一向聴の副露手。副露手は一発・裏ドラ・ツモがつかないため平均打点は門前手より低いだが、鳴けるので門前手より早い。打点が2000としても序盤で残り筋が多いなら押す\citep[][pp. 46--49]{tetsuoshi}。
+
+
+\subsection{チー対子の押し引き}
+
+\begin{rittai}[tb]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 北,
+    jicha/hand = 22057m 33p 11899s 7z -6p,
+    jicha/river = 1z 1m 2s 8p 3z,
+    %
+    toimen/river = 2z 1s 4z 2m 3'p 4^m,
+    %
+    kami/river = 1p 1z 2z 8s 5z 9p,
+    %
+    shimo/river = 3z 1m 5z 2m 7p 3z,
+    %
+    dora = 5p
+  }
+  
+  \caption{序盤で自分の手牌が七対子一向聴の場合}
+  \label{rittai:chiitoi}
+\end{rittai}
+
+七対子の待ちが3枚に過ぎないので、先手でなければ非常に不利である。立体図\ref{rittai:chiitoi}であれば、ドラが重なったり、待ち牌が場況によっていい待ちであったり、序盤で切る牌が嵌張（\mj{68m}）・辺張（\mj{89m}）に放銃する確率を負って押しのが少し有利。ただし、これらの条件が整わないなら \mj{1s} でオリよう\citep[][pp. 50--55]{tetsuoshi}。
+
+
+\subsection{安め高めがある手牌の押し引き}
+
+\begin{rittai}[tb]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 北,
+    jicha/hand = 222478m 6789p 367 -8s,
+    jicha/river = 1z 1s 2s 8p 3z,
+    %
+    toimen/river = 2z 2s 4z 2m 3'p 4^m,
+    %
+    kami/river = 1z 2z 8s 5z 5z 4z,
+    %
+    shimo/river = 3z 1p 5z 7p 6z 3p,
+    %
+    dora = 3z
+  }
+  
+  \caption{序盤で手牌の価値の範囲が大きい場合}
+  \label{rittai:3-2}
+\end{rittai}
+
+立体図 \ref{rittai:3-2} を想定する。自分の手は高めで立直・タンヤオ・ピンフ・三色の8000（一発・裏ドラ・ツモのどちらがあったら12000）、安めで立直のみの1300。ここで現物の \mj{4m} を切ると \mj{3m} の受け入れと \mj{5m} の入れ替えが無くなり、打点が一気に下がるので、序盤で \mj{3s} 切りは有利。以降の巡目で \mj{6m} を引いたらダマにしよう\citep[][pp. 62--65]{tetsuoshi}。
+
+
+\subsection{中盤の押し引き}
+
+\begin{rittai}[tb]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 北,
+    jicha/hand = 340788m 23789p 11 -3s,
+    jicha/river = 1z 1m 9s 8p 3z 7^s,
+    jicha/riverb = 1^m 3^p 7^z 7^z 4^z,
+    %
+    toimen/river = 2z 9s 4z 2m 3'p 9^p,
+    toimen/riverb = 1^z 6^p 6^m 1^p 5^s 8^m,
+    %
+    kami/river = 1p 1z 2z 8s 5z 9p,
+    kami/riverb = 2m 6p 3z 4s 5s 4z,
+    %
+    shimo/river = 3z 1m 5z 2m 7p 3z,
+    shimo/riverb = 4s 3p 2^z 9m 2s 2s,
+    %
+    dora = 5p
+  }
+  
+  \caption{中盤の立体図}
+  \label{rittai:chuuban}
+\end{rittai}
+
+立体図 \ref{rittai:chuuban} は立体図 \ref{rittai:3-1} に続いて、6回のツモ切りもしてもまだ一向聴の状態。残り筋が6本（ \mj{47m}、\mj{25p}、\mj{47p}、\mj{58p}、\mj{36s}、\mj{69s} ）で、\mj{3s} を切ったら$1/6\approx17.8\%$の確率で放銃する。巡目はもう中盤〜終盤なので和了率はそこまで高くないので一旦 \mj{8m} を切ってオリよう。もし \mj{2s} を引いたら \mj{14p} の闇聴にしよう\citep[][pp. 40--45]{tetsuoshi}。
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lllllll}
+    筋    & 14 & 25 & 36 & 47 & 58 & 69 \\
+    \hline
+    マンズ & $\times$ & $\times$ & $\times$ & & $\times$ & $\times$ \\
+    ピンズ & $\times$ & & $\times$ & & & $\times$ \\
+    ソウズ & $\times$ & $\times$ & & $\times$ & $\times$ &
+  \end{tabular}
+  \caption{全ての筋のなかでまだ6本の筋が通っていない。$\times$マークがついているのは通っている筋}
+\end{table}
+
+
+\subsection{切る牌が本命牌の場合}
+
+\tehai*{7z 8s 2p 5m 3^z 7'm 1^z}[対面の河][]
+
+\tehai{22566788p 34678s -9m}[自分の手牌(1)][3-6-1]
+
+\tehai{22566788p 34789s -9m}[自分の手牌(2)][3-6-2]
+
+\mj{5m} を先に切って \mj{7m} で立直を宣言するのは、もともと手牌の中に \mj{5799m} や \mj{5778m} の形がある確率が非常に高い。そして自分の手牌は、\ref{mj:3-6-1}なら最大限で立直・タンヤオ・一盃口・ピンフで7700以上（ツモれば8000以上）、\ref{mj:3-6-2}ならタンヤオがつかないためほぼ3900である。ですので、\ref{mj:3-6-1}を押すのはちょっと微妙であるが、\ref{mj:3-6-2}を押すのは流石に無理である\citep[][pp. 66--73]{tetsuoshi}。
+
+
+\subsection{切る牌が安全に見える場合}
+
+
+%=============================================================
+\section{河読み}
+
+\subsection{一点読み}
+
+一点読みとは、他家のただ一つの切る牌で手牌の構成や役や待ちを読むことである\citep[][p. 42]{takizawa-yomi}。
+
+\begin{rittai}[tb]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 東,
+    jicha/hand = 234m 23457p 33578s -7s,
+    jicha/river = 9m 1z 3z 4z 2^m 5^z,
+    jicha/riverb = 7^z 1^m 7^z 1m,
+    jicha/point = 28000,
+    %
+    toimen/river = 4z 1m 3z 4^z 1s 1^s,
+    toimen/riverb = 79m 7z 2p 9^p,
+    toimen/point = 22000,
+    %
+    kami/river = 3z 1z 5z 6z 4^z 1p,
+    kami/riverb = 9^p 9^m 6p 7^z 8s,
+    kami/point = 34000,
+    %
+    shimo/hand = XXXXXXXXXX -7'68m,
+    shimo/river = 1m 6z 8s 1^z 5^z 4s,
+    shimo/riverb = 9p 2m 6p 6^z 3p,
+    shimo/point = 36000,
+    %
+    kyoku = 東3局,
+    dora = 2s
+  }
+  
+  \caption{下家の \mj{3p} はカン \mj{7m} をチーするあとの手出し}
+  \label{rittai:ittenyomi}
+\end{rittai}
+
+立体図 \ref{rittai:ittenyomi} によると、下家が終盤で \mj{7m} をチーして、タンヤオの聴牌だと仮定して、\mj{3p} が出るパータンは以下になる、
+
+\begin{enumerate}
+  \item \mj{334p}
+  \item \mj{335p}
+  \item \mj{355p}
+  \item \mj{344p}
+  \item \mj{357p}
+  \item \mj{233p}
+  \item \mj{356778p}
+  \item \mj{223p}
+\end{enumerate}
+
+まず下家が直前に \mj{6p} を捨てているので \mj{335p} と \mj{355p} の形は否定された。\mj{357p} のリャンカンなら \mj{6p} は切らない。\mj{356778p} の形なら \mj{6p} も切らない、仮に \mj{6p} を打っていなかったとしてもこの形で \mj{3p} を切れば3枚しかないの \mj{6p} 待ちになるので、\mj{4p} が枯れていないなら普通にはカン \mj{4p} にするでしょう。\mj{344p} の形から \mj{3p} を切るのは両面を放棄して双碰にしないと頭の固定でしょう。\mj{223p} の形なら前巡西家が \mj{2p} を切ったときはもう \mj{2p} をポンするでしょう。
+
+これらの仮定の形を情報により消去すると \mj{334p} から \mj{3p} を切って \mj{25p} 待ちの可能性が高い。ただし、一枚も出てないの \mj{4p} を怖がって \mj{3p} を切って \mj{4p} と何かの双碰にするとお手上げである。
+
+
+\subsection{ポンテン・トイトイ}
+
+\tehai{334m 22p 78p 123s -6'66z}[][4-0-1]
+
+\tehai{334m 22p 77p 123s -6'66z}[][4-0-2]
+
+前に触れたチーテンは一点読みが成立しやすいが、ポンテンはソバテン成立しにくい。たとえ、手牌が\ref{mj:4-0-1}のように一つの対子と対子・両面の複合形があり、\mj{2p} ポンしたら頭がないので \mj{4m} を切って\mj{69p}待ちになる。その場合、切る牌の \mj{4m} と待ちの \mj{69p} は関係が全くない。ポンテンにソバテンがある場合は\ref{mj:4-0-2}のように対子が三つ見える場合。\mj{7p} ポンしたら \mj{3m} を切ってそばの \mj{25m} 待ちになる。
+
+対子が増えるほどソバテンが高まり、トイトイがつく可能性も高まる。ただし手牌のポン材はよほど良くないなら、トイトイに無理やり狙いづらいので、対子のそばにフォロー牌を残すケースも多い。だとしたら、トイトイの場合は仕掛けた後の手出しのソバテンは要注意。
+
+
+\subsection{混一色・清一色}
+
+序盤から二色の牌をいっぱい切る、字牌やあと一色の牌をいっぱい（副露も含んで）持っていそうなら、そちらは高い確率で混一色を狙っている。混一色狙い対するには一般的な進行具合は捨て牌に少し読める。それは
+
+\begin{itemize}
+  \item 場に出ている字牌＝一向聴以上
+  \item 生牌の字牌＝聴牌か一向聴か
+  \item 集めている色の牌＝聴牌
+\end{itemize}
+
+\tehai{1489^p 7^9m 2z 9^p 7^z 3s 1^s -5'55z}[対面の河と副露][4-2-1]
+
+従って、河\ref{mj:4-2-1}によると対面は中盤からソウズを切り始め、おそらくもうソウズ染めの聴牌であろう。混一色狙い者の上家なら、その色の牌を切るには要注意。対面や下家ならその色の真ん中から切る。あとは場に全然出ない端牌も鳴かせないようにしよう。
+
+\tehai{7m 148p 3346799s 67z}[対面の手牌(1)][4-2-2]
+
+\tehai{67m 46p 123346799s}[対面の手牌(2)][4-2-3]
+
+\tehai{18p 67z 4^z 64p 6m}[対面の河][4-2-4]
+
+清一色の場合は、手牌の横引きがよくて、孤立の字牌と他の色の搭子を落とした後で成立するケースが多い。たとえ、対面の配牌が\ref{mj:4-2-2}のように、ツモ次第で\ref{mj:4-2-3}に移行して、その捨て牌は\ref{mj:4-2-4}になる。
+
+
+\subsection{タンヤオ以外の役}
+
+相手がタンヤオの面子を仕掛ける場合はほとんど食いタンだが、以下のように挙げられるケースにはタンヤオの面子が仕掛けられても端牌や役牌が要注意。
+
+\begin{enumerate}
+  \item 捨て牌にタンヤオ牌が多く捨てられている場合
+  \item ドラがタンヤオ牌ではない場合。特にドラが役牌の場合
+  \item 仕掛けた後数巡経過してから端牌が手出しされた場合
+\end{enumerate}
+
+\tehai{1p 5s 2z 8m 1^m 5m -7'56m}[対面の河と副露　ドラ\mj{9p}][4-4-1]
+
+たとえ対面の捨て牌と副露が\ref{mj:4-4-1}の場合。対面が6巡目に両面をチーして、一気にタンヤオに見えそうだが、2巡目に切ったこの \mj{5s} はやはり怪しい。早めに真ん中の \mj{5s} を切るいくつかのパターンには、可能性がもっとも高いのは \mj{235s} や \mj{578s} からの \mj{5s} 切り。特に、\mj{5s} 切りの後に \mj{2z} が手出しされたことで、\mj{14s} や \mj{69s} の危険度はより高まる。
+
+
+\subsection{ポンしなかった牌}
+
+\begin{rittai}[tb]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 北,
+    jicha/hand = 22266m 345789p 35s -6p,
+    jicha/river = 32z 91m 98^s,
+    jicha/riverb = 9^s 1^m 2p,
+    jicha/point = 28000,
+    %
+    toimen/river = 1p 1z 9p 2^z 7m 9^p,
+    toimen/riverb = 5^6z 1s 2p 7z,
+    toimen/point = 22000,
+    %
+    kami/river = 3z 1s 2z 1^m 2^p 8m,
+    kami/riverb = 1z 5z 2s 7p 1^m,
+    kami/point = 34000,
+    %
+    shimo/hand = XXXXXXXXXX -6'66z,
+    shimo/river = 1p 1s 2z 8m 1^5m,
+    shimo/riverb = 4s 2^p 7^z 1^z 7p,
+    shimo/point = 36000,
+    %
+    kyoku = 南2局,
+    dora = 6z
+  }
+  
+  \caption{親がドラ\mj{6z}をポンして打\mj{4s}。3巡ツモ切りの後\mj{7p}が出てきた}
+  \label{rittai:nopon}
+\end{rittai}
+
+立体図 \ref{rittai:nopon} によると、下家がドラ \mj{6z} を仕掛けて最後の手出しの \mj{7p} のそばは怖く見えるが、実はそんなに怖がる必要がない。同巡、上家が \mj{7p} を切っており、もし手牌の中に \mj{677p} や \mj{778p} があったら既にポンしたはずである。\mj{9p} が3枚見えるので \mj{799p} の形も否定された。\mj{788p} の形なら普通に \mj{8p} を切って両面をとる。こう見ると、\mj{9p} と \mj{8p} は下家に対してかなり安全。\mj{9p} が当たる場合は、下家が \mj{4s} を切るときは既に \mj{6789p} のノベタン聴牌であるが、\mj{7p} をツモった時意地悪にあえて手出しした。
+
+
+\subsection{チーしなかった牌}
+
+\begin{rittai}[tb]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 西,
+    jicha/hand = 678m 112589p 1356s -5s,
+    jicha/river = 327z 1m 98^s,
+    jicha/riverb = 9^m 6^z,
+    jicha/point = 28000,
+    %
+    toimen/river = 31z 9s 79^m 6^z,
+    toimen/riverb = 4^z 4^p,
+    toimen/point = 22000,
+    %
+    kami/hand = XXXXXXXXXX -5'55z,
+    kami/river = 327z 1^m 8s 8m,
+    kami/riverb = 2s 1^4^z,
+    kami/point = 34000,
+    %
+    shimo/river = 1p 1s 2z 8m 1^m 8s,
+    shimo/riverb = 1^m 3^z,
+    shimo/point = 36000,
+    %
+    kyoku = 南2局,
+    dora = 5z
+  }
+  
+  \caption{6巡目に上家がドラ\mj{5z}をポンして打\mj{8m}}
+  \label{rittai:nochi}
+\end{rittai}
+
+立体図~\ref{rittai:nochi} によると、上家は対面が切った \mj{4p} をチーしなくて、\mj{4z} をツモ切りした。もし上家の手牌の中に \mj{23p} や \mj{35p} や \mj{56p} の搭子があればもうチーするまたはロンするつもりである。しかも \mj{1p} が3枚見えるので、\mj{1p} の双碰に当たらない上、上家が手出ししない限り \mj{14p} はかなり安全と推論できる。（ただし \mj{7p} は \mj{89p}の辺張に当たる可能性がまだある。）
+
+\tehai{222m 1234p 223s -5'55z}[][4-5-1]
+
+もし上家の手牌が\ref{mj:4-5-1}のようにノベタンがあり、ツモ \mj{1s} で \mj{2s} の手出しをして、チーしなかった \mj{4p} は当たり牌になる\footnote{立体図~\ref{rittai:nochi} によるとノベタン聴牌は \mjfn{2s} 切りの後なので対面が \mjfn{4p} を捨てる時は既にロンするはず。ですので、ノベタンに要注意の時点は手出しの後。つまり、上家の \mjfn{2s} が対面の \mjfn{4p} の後で出ると \mjfn{1234p} のノベタンに警戒しよう。}。
+
+
+\subsection{チャンタ・純チャン}
+
+チャンタ・純チャンは123789の数牌と字牌しか使うことできない役で、頭と暗刻は么九牌出なければならないので、聴牌打牌が2や8の場合ソバテンはほぼない。なぜなら、たとえ \mj{122s} の搭子があり、\mj{2s} が重なって暗刻になると全然嬉しくないので、\mj{2s} が出る場合は孤立牌を切るときまたはまた聴牌しないとき。もちろん、他の役牌をポンしており、手牌の中に対子が二つあり、\mj{122s} から \mj{2s} を切ってチャンタを狙うケースもあり、純チャンの場合なら \mj{2s} を先きる傾向が強くなる。
+
+
+\subsection{立直宣言牌}
+
+「不要な牌から順番に捨てる」というのは手作りの原則。よって、立直宣言牌のソバテンはよくあるが、頭の固定などの原因でソバテンにならないケースも多い。それでもやはり最初に疑うべきは立直宣言牌の跨ぎ筋。
+
+\paragraph{両面落としのソバテン} \hfill
+
+河\ref{mj:4-6-1}のような \mj{67m} の両面を落とす河に対して \mj{58m} は相当危険。早めに \mj{6m} を切ったのにギリギリ \mj{7m} を引っ張ったのは、多分 \mj{6677m} の形から \mj{6m} を切って完全一向聴を取り、最後に \mj{67m} の両面を固定する。
+
+\tehai{24z 9p 6m 76z 3p 7'm}[][4-6-1]
+
+ただし単純に搭子を落とす場合もある。手牌\ref{mj:4-6-2}のように三色の一向聴だが456か567に決められない場合、とりあえず \mj{6m} を切って、その後ツモにより \mj{4m} か \mj{7m} を切る。
+
+\tehai{45667m 5566p 2256s -7p}[][4-6-2]
+
+\paragraph{嵌張落としのソバテン} \hfill
+
+$4\to2$と$6\to8$の切り順は1や9の双碰待ちが多い。なぜなら、\mj{1124s} や \mj{6899s} から \mj{4s} や \mj{6s} を切ると受け入れが一番広いからである。
+
+\paragraph{赤5と黒い5} \hfill
+
+たとえ立直宣言牌は \mj{0s} の場合、多くは \mj{230s} や \mj{078s} から赤ドラを切って両面をとる。もちろん他のところで面子ができ \mj{0s} がくっつかなかった場合もある。そして、\mj{0s} が捨て牌なら手牌に \mj{5s} がないことも推論でき、\mj{36s} や \mj{47s} の跨ぎ筋もかなり安全に見える。
+
+立直宣言牌は \mj{5s} の場合、跨ぎ筋の \mj{36s} や \mj{47s} が危険に見えそう上裏筋の \mj{14s} や \mj{69s} で待つの確率が下がるので \mj{1s} や \mj{9s} はかなり安全。けれど、\mj{1s9s} は絶対に安全とは言い切れない。なぜなら、\ref{mj:4-6-3}のように \mj{4567m} の部分に頭ができ \mj{4556s} から \mj{5s} を切りイッツーの狙うケースもあるのである。
+
+\tehai{4567m 234556789s -7m}[][4-6-3]
+
+
+\subsection{逆の切り順}
+
+普通の面前手なら字牌や端牌は一番不要な牌なので切り順はだいたい外からである。切り順が逆になると、チャンタ・純チャン・七対子、または国士を狙う確率が非常に高い。では\ref{mj:4-7-1}のように、まず么九牌を切り、真ん中の牌を手出し、最後の立直宣言牌は端牌の場合はどうであろう。
+
+\tehai{42z 1m 2s 7z 1s 6p 2^z 9'p}[捨て牌][4-7-1]
+
+\tehai{45678m 11p 66789p 7 -8s}[手牌(1)][4-7-2]
+
+\tehai{456789m 11p 6899p 7 -8s}[手牌(2)][4-7-3]
+
+\mj{9p} を \mj{6p} より最後まで残すのは、ほとんど \mj{789p} そしてそれに絡む三色である。手牌\ref{mj:4-7-2}の場合、678や789の三色の両天秤にかける \mj{6p} を切り、最後に678になったので \mj{9p} 切りで立直する。手牌\ref{mj:4-7-3}の場合、\mj{899p} の搭子に先に \mj{7p} が埋まったので \mj{9p} 切りで立直する。
+
+\tehai{42z 1s 9p 9m 7z 5s 2^z 2's}[捨て牌][4-7-4]
+
+\tehai{34m 23344p 88p 2345 -5s}[手牌][4-7-5]
+
+河\ref{mj:4-7-4}のように、\mj{5s} $\to$ \mj{2s}という逆の切り順も、234や345の両天秤を作るため \mj{23455s} の形から \mj{5s} を切り、最後に345の三色にするので \mj{2s} 切りで立直する。
+
+
+\subsection{立直の字牌双碰待ち}
+
+\begin{rittai}[tb]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 北,
+    jicha/hand = 123344m 307789s 4z -7z,
+    jicha/river = 1p 2z 1s 6p 6p 2p,
+    jicha/riverb = 6m 6z 4p 6m 55z,
+    jicha/point = 42900,
+    %
+    toimen/river = 6s 4m 6^z 9m 5p 5s,
+    toimen/riverb = 3p 8m 1p 1s 8m 1z,
+    toimen/riverc = 8s,
+    toimen/point = 20500,
+    %
+    kami/river = 1z 2s 3z 8m 9m 8s,
+    kami/riverb = 8p 9s 3p 5z 1'm 3^s,
+    kami/riverc = 2^m,
+    kami/point = 11700,
+    %
+    shimo/river = 3z 1m 9p 1s 7s 2m,
+    shimo/riverb = 2p 7m 5m 9m 9m 8s,
+    shimo/riverc = 5'm,
+    shimo/point = 21900,
+    %
+    kyoku = 南2局,
+    dora = 4z
+  }
+  
+  \caption{Mリーグ2020 11/16 第2回戦 南2局 2本場}
+  \label{rittai:20201116}
+\end{rittai}
+
+立体図 \ref{rittai:20201116} を見て、13巡目で \mj{7z} を引いて、1枚しか見えないのドラ \mj{4z} は切れるかのを考えよう。対面の捨て牌は真ん中からだが、\mj{6z} はツモ切りだった。もし対面が \mj{44z} のオタ風対子が持っているなら、\mj{6z} を使いたいし、ピンフに行くなら序盤で \mj{6s} や \mj{4m} を切るのは非常に不自然である。下家の河端から切っているは典型的なピンフの捨て牌。
+
+問題なのは上家。2枚切れの西は \mj{2s} のあとで出て、普通の切り順の逆である。早めに \mj{2s8s} を切るのは、もしソウズの真ん中に1ブロックある。\mj{89m} も早めに切るのは、真ん中や下\footnote{数字が小さい方が下である。}にブロックがある。ピンズが他人の手牌に沢山いそうだと考えると、\mj{1m} を切って立直するのは、おそらく \mj{2m} や \mj{3m} と字牌の双碰待ち。
+
+\tehai{068m 123p 245s 3477z -9m}[上家　2巡目][4-1-1]
+
+\tehai{067m 123p 456s 4477 -7z}[上家のアガリ形][]
+
+結果下家が \mj{7z} で放銃した。上家は \ref{mj:4-1-1} のように \mj{47z} の双碰待ちでした。早めに2や8を切っているのは、字牌の対子があって七対子・チャンタ・国士無双に向かうなら孤立の2や8が使いにくいのである。ただ、これは他の河読みの技術と同じ、あくまで割合の話であり、実際の読みは他のことも含めてトータルの情報を基に行おう。
+
+
+\subsection{山読み}
+
+\begin{rittai}[tb]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 南,
+    jicha/hand = 55789m 67p 113789s -8p,
+    jicha/river = 1p 3z 4p 5z 9p 3p,
+    jicha/riverb = 44z 2m,
+    jicha/point = 36400,
+    %
+    toimen/river = 6z 2s 6z 989p,
+    toimen/riverb = 3m 4z,
+    toimen/point = 2800,
+    %
+    kami/hand = XXXXXXX -2'22m111'z,
+    kami/river = 8m 211p 7z 3m,
+    kami/riverb = 6m 4z 1m 6z 7p,
+    kami/point = 46100,
+    %
+    shimo/river = 9s 1m 3z 8s 7m 8s,
+    shimo/riverb = 3s 1m 7z,
+    shimo/point = 14700,
+    %
+    kyoku = 南2局,
+    dora = 6p
+  }
+  
+  \caption{Mリーグ2020 1/2 第2回戦 南2局 0本場}
+  \label{rittai:20200102}
+\end{rittai}
+
+立体図 \ref{rittai:20200102} のように、\mj{8p} を引いて \mj{5m1s} の双碰待ちと \mj{2s} の単騎待ちを選択する状況である。河によると、下家が2巡前に \mj{3s} を切って、手牌の中に \mj{2s} がいそうである。一方、対面が早めに \mj{2s} を切って、手牌に \mj{1s} がいなさそうである。そして上家が \mj{8m} と \mj{2p} から切って、そのあと真ん中の \mj{3m} と \mj{6m} を切った。もし上家に \mj{1s} があったらそこから切っているであろう。しかも \mj{2m} もポンしたので、ソウズの染め手でもない。これらの情報によると、\mj{5m} はちょっと厳しいけれど \mj{1s} はまだ山にありそうなので \mj{5m1s} の双碰待ちにしよう。
+
+
+\subsection{ツモ切り立直読み}
+
+\begin{rittai}[tb]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 南,
+    jicha/hand = 466678m 45p 678s 33z -3m,
+    jicha/river = 1s 1p 4z 482p,
+    jicha/riverb = 2m,
+    jicha/point = 17000,
+    %
+    toimen/river = 431p 1m 26p,
+    toimen/riverb = 1m,
+    toimen/point = 25300,
+    %
+    kami/river = 1m 99^s 9^8^p 2^m,
+    kami/riverb = 7^s 2vs,
+    kami/point = 46500,
+    %
+    shimo/river = 575p 24s 8p,
+    shimo/riverb = 8m,
+    shimo/point = 10200,
+    %
+    kyoku = 南1局,
+    dora = 4s
+  }
+  
+  \caption{Mリーグ2020 2/5 第2回戦 南1局 1本場}
+  \label{rittai:20200205}
+\end{rittai}
+
+立体図 \ref{rittai:20200205} によると、上家が3巡目からずっとツモ切りして、8巡目でツモ切り立直する。そのツモ切り立直の直前で、自分が切った \mj{2m} と対面が切った \mj{1m} は上家の捨て牌なので、あまり関係がない。よって、下家が切った \mj{8m} こそこのツモ切り立直を誘発する捨て牌である。ツモ切り立直の原因はいくつがある、
+
+\begin{enumerate}
+  \item 手変わりする牌が切られた
+  \item 捨て牌が待ちだが役なし愚形なのでアガれない
+\end{enumerate}
+
+\tehai{57789m 406777p 44s}[上家　2巡目][4-3-1]
+
+そして今回は上家の手牌が\ref{mj:4-3-1}のように、\mj{57m} の嵌張を \mj{78m} の両面に変える機会が減ったせいで、ツモ切り立直に至った。
+
+
+
+%=============================================================
+\clearpage
+\appendix
+
+\section{数値計算}
+
+\subsection{点数計算} \label{sec:point}
+
+立直麻雀では点数の計算は\eqref{eq:tensuu}に基づく。まず基本点を算出し、アガった方が子か親か、アガリの状況がツモかロンか、表\ref{tab:multiply}のように各自の負担額を決める。例え、子が手牌\ref{mj:a-1}で他の子をロンするとき、ロンする子の得点は1飜30符の基本点の4倍。場ゾロを2飜と仮定し、\eqref{eq:tensuu}によるとその得点は960であるが、100点未満の端数は切り上げとなり、得点が1000になる。従って、この切り上げによってロンとツモ、子と親の最終の得点が異なる。結論としての得点は表\ref{tab:fu}で表されている。40符と60符の場合は列挙されていないのは、\eqref{eq:tensuu}によると、ある飜数と40符の組み合わせの得点は、その飜数のもう1飜と20符の組み合わせの得点と同じである。例えば、子として、2飜40符の得点は3飜20符の得点と同じ、700/1300である。
+%
+\begin{align}
+  \text{基本点} = \text{符} \times 2^{\text{飜数} + \text{場ゾロ}} \label{eq:tensuu}
+\end{align}
+
+\tehai{234 666m 22 678p 45-6s}[東3局 北家 ドラ \mj{9p} ロンアガリ][a-1]
+
+\begin{table*}[!b]
+  \centering
+  \begin{tabular}{l|llll}
+    子 & 1飜 & 2飜 & 3飜 & 4飜 \\
+    \hline
+    20符 & & -- (400/700) & -- (700/1300) & -- (1300/2600) \\
+    25符 & & 1600 & 3200 & 6400 \\
+    30符 & 1000 (300/500) & 2000 & 3900 (1000/2000) & 7700 (2000/3900) \\
+    50符 & 1600 & 3200 & 6400 & 満貫 \\
+  \end{tabular}
+  
+  \vspace{\stdbls}
+  
+  \centering
+  \begin{tabular}{l|llll}
+    親 & 1飜 & 2飜 & 3飜 & 4飜 \\
+    \hline
+    20符 & & (700オール) & (1300オール) & (2600オール) \\
+    25符 & & 2400 & 4800 & 9600 \\
+    30符 & 1500 & 2900 (1000オール) & 5800 (2000オール) & 11600(3900オール) \\
+    50符 & 2400 & 4800 & 9600 & 満貫 \\
+  \end{tabular}
+  \caption{点数早見表}
+  \label{tab:fu}
+\end{table*}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+     & 親の負担額 & 子の負担額 \\
+    \hline
+    親のアガリ & -- & $\times 6$ \\
+    親のツモ & -- & $\times 2$ \\
+    子のアガリ & $\times 4$ & $\times 4$ \\
+    子のツモ & $\times 2$ & $\times 1$ \\
+  \end{tabular}
+  \caption{基本点の倍数}
+  \label{tab:multiply}
+\end{table}
+
+符の計算は手牌の構成とアガリの状況に基づき、それぞれの項目を加算し、10符単位に切り上げた結果である。要すると、符計算の公式は\eqref{eq:fu}の通りである。面子、頭、そして待ちによる符は表\ref{tab:fu2}に表示されている。
+%
+\begin{align}
+  \text{符} = \begin{cases} 20, & \text{ツモピンフ} \\ 25, & \text{チートイ} \\ 30, & \text{食いピンフ} \\ \begin{aligned} &20 + \text{面子の符} \\ &+ \text{頭の符} + \text{待ちの符} \\ &(+ \text{門前加符} + \text{ツモ符}) \end{aligned}, & \text{その他} \end{cases} \label{eq:fu}
+\end{align}
+
+門前の状態でロンでアガった場合はさらに10符ができ、それは\textbf{門前加符}という。ツモでアガった場合にさらに2符が与えられ、それは\textbf{ツモ符}といい、副露した場合にもつく。ただし、門前ピンフでツモした場合は一律20符となる。副露したピンフ、即ち\textbf{食いピンフ}は一律30符となる。
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lllll}
+    面子の種類 & 明刻 & 暗刻 & 明槓 & 暗槓 \\
+    \hline
+    中張牌 & 2符 & 4符 & 6符 & 8符 \\
+    么九牌 & 4符 & 8符 & 16符 & 32符
+  \end{tabular}
+  
+  \vspace{\stdbls}
+  
+  \centering
+  \begin{tabular}{lll}
+    頭の種類 & 自風牌、場風牌、三元牌 & 連風牌 \\
+    \hline
+     & 2符 & 4符\tablefootnote{規則により2符となる場合もある。雀魂と天鳳では4符。}
+  \end{tabular}
+  
+  \vspace{\stdbls}
+  
+  \centering
+  \begin{tabular}{lllll}
+    待ちの種類 & 嵌張、辺張、単騎 \\
+    \hline
+     & 2符
+  \end{tabular}
+  \caption{各項目の符。表に挙がられていない場合は全て0符とされている}
+  \label{tab:fu2}
+\end{table}
+
+\tehai{24m 234 789p 11z -X99sX}[東1局 東家 ドラ \mj{0m} ツモ][fu-ex1]
+
+例として、\ref{mj:fu-ex1}には、\mj{9s}の暗槓の32符と、連風牌の4符と、嵌張待ちの2符と、ツモ符2符と符底20符がついていて、合計して60符がある。
+
+\tehai{123m 123 55p 45s -12'3s}[東1局 東家 ドラ \mj{0m}][fu-ex2]
+
+手牌\ref{mj:fu-ex2}の場合はロンしてもツモしても一律30符となる。ツモすればツモ符の2符が付いていて、ロンすれば食いピンフになり30符となる。
+
+\tehai{1z -99"9m 3"33p X33Xz 777'z}[東1局 東家 ドラ \mj{0m} ツモ][fu-ex3]
+
+手牌\ref{mj:fu-ex3}には、\mj{9m}の明槓の16符と、\mj{3p}の明槓の8符と、\mj{3z}の暗槓の32符と、\mj{7z}の明刻の4符と、連風牌の4符と、単騎待ちの2符と、ツモ符2符と符底20符がついていて、合計して88符があり、切り上げで90符となる。
+
+\tehai{12388m 23467s 345p}[東1局 南家 ドラ \mj{0m}][fu-ex4]
+
+門前ピンフの手牌。立直はしないと仮定する。ツモすると20符となり、ピンフと門前ツモで2飜20符ができ、子だから得点は1500。誰かをロンすると30符となり、ピンフだけで1飜30符ができ、子だから得点は1000。
+
+
+\subsection{局収支}
+
+局収支（きょくしゅうし）とは、点棒の収支期待値のこと\citep[][p. 17]{miinin-stat}。その求め方は\eqref{eq:shuushi}の通り\citep[][p. 18]{miinin-stat}。
+%
+\begin{align}
+  \text{局収支} &= \text{和了率} \times \text{和了時得点} \nonumber \\
+  &+ \text{流局率} \times \text{流局時得点} \nonumber \\
+  &- \text{横移動率} \times \text{横移動時失点} \nonumber \\
+  &- \text{放銃率} \times \text{放銃時失点} \label{eq:shuushi}
+\end{align}
+
+例え、子の自分と子の相手が共に満貫両面聴牌でどちらか先にあがるという状況で、和了率を0.5と、ツモられる確率（横移動）を0.25、放銃率を0.25と想定し、その局収支は表~\ref{tab:kss1} の通り1500となる。
+
+\begin{table}
+  \centering
+  \begin{tabular}{llll}
+    結果 & 確率 & 得失点 & 期待値 \\
+    \hline
+    和了  & 0.5 & 8000  & 4000 \\
+    流局  & 0 & --      & 0 \\
+    横移動 & 0.25 & 2000 & -500 \\
+    放銃  & 0.25 & 8000 & -2000 \\
+    総合 & & & 1500
+  \end{tabular}
+  \caption{子の自分と子の相手が共に満貫両面聴牌という状況の局収支}
+  \label{tab:kss1}
+\end{table}
+
+基本的には、局収支の高い方の選択肢を選ぶのは正しい戦術。ですが、観測結果による数値計算に必ず誤差があって、局収支の差が100点しかないという状況で局収支の低い方を選ぶのは最善手になる可能性もある\citep[][p. 21]{miinin-stat}。具体的に局収支の差が400点よりも少ない場合は「どちらでもいい」と判断している\citep[][p.25]{miinin-stat}。
+
+
+\nocite{*}
+\bibliographystyle{jecon}
+\bibliography{refmj}
+
+
+
+
+
+
+
+\end{document}

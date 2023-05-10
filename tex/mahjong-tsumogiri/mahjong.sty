@@ -1,0 +1,422 @@
+%%
+%% This is file `mahjong.sty',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% mahjong.dtx  (with options: `pkg')
+%% Copyright (c) 2021 Daniel Schmitz
+%% 
+%% Permission is hereby granted, free of charge, to any person obtaining a copy of this software and
+%% associated documentation files (the "Software"), to deal in the Software without restriction,
+%% including without limitation the rights to use, copy, modify, merge, publish, distribute,
+%% sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
+%% furnished to do so, subject to the following conditions:
+%% 
+%% The above copyright notice and this permission notice shall be included in all copies or substantial
+%% portions of the Software.
+%% 
+%% THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT
+%% NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+%% NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+%% DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT
+%% OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+\NeedsTeXFormat{LaTeX2e}[2019/10/01]
+\ProvidesExplPackage{mahjong-tsumogiri/mahjong}{2023/02/24}{1.0.0}{Typeset Mahjong Hands}
+\RequirePackage{xparse}
+\RequirePackage{expl3}
+\RequirePackage{l3keys2e}
+\RequirePackage{graphicx}
+\RequirePackage{stackengine}
+\RequirePackage{tikz}
+\RequirePackage{float}
+\RequirePackage{stfloats}
+\RequirePackage{minibox}
+\graphicspath{{mahjong-tsumogiri/tiles/}}
+
+\msg_new:nnnn {mahjong} {invalid_token}
+{Token ~ #1 ~ is ~ not ~ valid ~ in ~ MPSZ ~ notation}
+{Valid ~ tokens ~ are ~ digits ~ 0-9, ~ m, ~ p, ~ s, ~ z, ~ x, ~ -, ~ ?, ~ ', ~ and ~ " }
+\msg_new:nnnn {mahjong} {unknown_tile}
+{I~don't~know~tile~#1.}
+{Please~check~the~documentation~for~recognized~tiles.}
+\msg_new:nnnn {mahjong} {unknown_orientation}
+{Orientation ~ #1 ~ is ~ unknown}
+{This ~ should ~ not ~ happen.~ Please ~ create ~ a ~ bug ~ report.}
+
+\keys_define:nn {mahjong} {
+    height .dim_gset:N = \g_mahjong_default_height
+}
+
+%========================== DRAWING MAHJONG TILES ================================
+\cs_new:Npn \c__mahjong_suits_tl {mpsz}
+\cs_new:Npn \c__mahjong_allowed_tokens_tl {0123456789mpsz-?x'"^v}
+
+\tl_new:N \l__mahjong_suit_tl
+\tl_new:N \l__mahjong_tiles_tl
+\tl_new:N \l__mahjong_reversed_tl
+\tl_new:N \l__mahjong_hand_tl
+\tl_new:N \l__mahjong_current_suit_tl
+\tl_new:N \l__mahjong_current_group_tl
+\tl_new:N \l__mahjong_current_char
+
+\dim_set:Nn \g_mahjong_default_height {\baselineskip}
+\dim_new:N \l_mahjong_tile_height
+
+\int_new:N \l__mahjong_tile_orientation_int
+\seq_new:N \l__mahjong_tile_maps_seq
+\str_new:N \l__mahjong_file_path_str
+
+\ProcessKeysPackageOptions{mahjong}
+
+\cs_set:Npn \__mahjong_make_tile:nn #1#2 {
+    \file_if_exist:nTF {#1} {
+        \int_case:nnF {#2} {
+            {0} {
+                \stackinset{c}{0pt}{c}{0pt}{
+                    \includegraphics[
+                        angle=0,
+                        height=.85\l_mahjong_tile_height]
+                    {#1}
+                }{
+                    \includegraphics[
+                        angle=0,
+                        height=\l_mahjong_tile_height]
+                    {tiles/mahjong-Front.pdf}
+                }
+            } {1} {
+                \stackinset{c}{0pt}{c}{0pt}{
+                    \includegraphics[
+                        angle=90,
+                        width=.85\l_mahjong_tile_height]
+                    {#1}
+                }{
+                    \includegraphics[
+                        angle=90,
+                        width=\l_mahjong_tile_height]
+                    {tiles/mahjong-Front.pdf}
+                }
+            } {2} {
+                % Stack 2 rotated tiles on top of each other.
+                \stackon [0pt] {
+                    \__mahjong_make_tile:nn {#1} {1}
+                } {
+                    \__mahjong_make_tile:nn {#1} {1}
+                }
+            } {3} {
+                % Gray out
+                \stackinset{c}{0pt}{c}{0pt}{
+                    \includegraphics[
+                        angle=0,
+                        height=.85\l_mahjong_tile_height]
+                    {#1}
+                }{
+                    \includegraphics[
+                        angle=0,
+                        height=\l_mahjong_tile_height]
+                    {mahjong-Gray.pdf}
+                }
+            } {4} {
+                % Gray out and rotate
+                \stackinset{c}{0pt}{c}{0pt}{
+                    \includegraphics[
+                        angle=90,
+                        width=.85\l_mahjong_tile_height]
+                    {#1}
+                }{
+                    \includegraphics[
+                        angle=90,
+                        width=\l_mahjong_tile_height]
+                    {mahjong-Gray.pdf}
+                }
+            }
+        } {
+            \msg_fatal:nnx {mahjong} {unknown_orientation} {#2}
+        }
+    } {
+        \msg_error:nnx {mahjong} {unknown_tile} {#1}
+    }
+}
+
+\cs_generate_variant:Nn \__mahjong_make_tile:nn {VV, xV, nV}
+\cs_set:Npn \mahjong_typeset_hand:n #1 {
+    \tl_set:Nx \l__mahjong_hand_tl {\text_lowercase:n {#1}}
+    % MPSZ notation is easier to parse right-to-left, so reverse string
+    % There is no string reversal function but we can reverse token lists
+    % Token lists and strings are freely convertible between each other
+    \tl_set:Nx \l__mahjong_reversed_tl {\tl_reverse:V \l__mahjong_hand_tl}
+    \tl_map_variable:NNn \l__mahjong_reversed_tl \l__mahjong_current_char {
+        % Check if we recognize the current token
+        \exp_args:NVV \tl_if_in:nnF \c__mahjong_allowed_tokens_tl \l__mahjong_current_char {
+            \msg_error:nnx {mahjong} {invalid_token} {\l__mahjong_current_char}
+        }
+        \exp_args:NVV \tl_if_in:nnTF \c__mahjong_suits_tl \l__mahjong_current_char {
+            % If we've found a suit identifier, change the current suit
+            \tl_set:NV \l__mahjong_current_suit_tl \l__mahjong_current_char
+        } {
+            \str_case:VnF \l__mahjong_current_char {
+                {'} {
+                    % An apostrophe indicates that the next tile is rotated
+                    \int_set:Nn \l__mahjong_tile_orientation_int {1}
+                }
+                {"} {
+                    % Quotes mean the next tile is actually 2 rotated tiles stacked on top of each other
+                    \int_set:Nn \l__mahjong_tile_orientation_int {2}
+                }
+                {^} {
+                    % Wedges mean the next tile is tsumogiri (grayed out)
+                    \int_set:Nn \l__mahjong_tile_orientation_int {3}
+                }
+                {v} {
+                    % `v' mean the next tile is tsumogiri riichi (grayed out and rotated)
+                    \int_set:Nn \l__mahjong_tile_orientation_int {4}
+                }
+            } {
+                % Default case: We've got a complete tile identifier
+                % Turn it into a property list
+                \prop_clear:N \l_tmpa_prop
+                \prop_put:NnV \l_tmpa_prop {suit} \l__mahjong_current_suit_tl
+                \prop_put:NnV \l_tmpa_prop {face} \l__mahjong_current_char
+                \prop_put:NnV \l_tmpa_prop {orientation} \l__mahjong_tile_orientation_int
+                % Add it to the beginning of the sequence (we are parsing in reverse)
+                \seq_put_left:NV \l__mahjong_tile_maps_seq \l_tmpa_prop
+                \int_set:Nn \l__mahjong_tile_orientation_int {0}
+            }
+        }
+    }
+    % Typesetting begins here. Sequence is in correct order
+    \seq_map_variable:NNn \l__mahjong_tile_maps_seq \l_tmpa_prop {
+        \prop_get:NnN \l_tmpa_prop {face} \l_tmpa_tl
+        \prop_get:NnN \l_tmpa_prop {orientation} \l_tmpa_int
+        \str_case:VnF \l_tmpa_tl {
+            {-} {
+                % If the current face is a dash, insert a space
+                \includegraphics[height=\l_mahjong_tile_height]{tiles/mahjong-Space.pdf}
+            } {x} {
+                % Insert a flipped tile
+                \int_case:nn {\l_tmpa_int} {
+                    {0} { % Upright
+                        \includegraphics[
+                        angle=0,
+                        height=\l_mahjong_tile_height]
+                        {tiles/mahjong-Back.pdf}
+                    } {1} { % Rotated
+                        \includegraphics[
+                        angle=90,
+                        width=\l_mahjong_tile_height]
+                        {tiles/mahjong-Back.pdf}
+                    } {2} { % Rotated and stacked
+                        \stackon [0pt] {
+                            \includegraphics[
+                                angle=90,
+                                width=\l_mahjong_tile_height]
+                                {tiles/mahjong-Back.pdf}
+                        } {
+                            \includegraphics[angle=90,
+                            width=\l_mahjong_tile_height]
+                            {tiles/mahjong-Back.pdf}
+                        }
+                    }
+                }
+            } {?} { % Blank tile
+                \__mahjong_make_tile:nV {tiles/mahjong-Blank.pdf} \l_tmpa_int
+            }
+        } { % Any other tile identified by a code.
+            \__mahjong_make_tile:xV {tiles/mahjong-\l_tmpa_tl\prop_item:Nn \l_tmpa_prop {suit}.pdf} \l_tmpa_int
+        }
+    }
+    % Clear the list for the next invocation
+    \seq_clear:N \l__mahjong_tile_maps_seq
+}
+
+\cs_generate_variant:Nn \__mahjong_typeset_hand:n {x}
+\NewDocumentCommand{\mahjong}{O{\g_mahjong_default_height} m}{
+    \dim_set:Nn \l_mahjong_tile_height {#1}
+    \mahjong_typeset_hand:n {#2}
+}
+
+
+%============================ DRAWING TABLE CONDITION ===================================
+
+%\usetikzlibrary{positioning}
+%
+%\edef\restoreparindent{\parindent=\the\parindent\relax}
+%\usepackage[skip=\glueexpr \baselineskip + 0pt plus 2pt\relax]{parskip}
+%
+%% store baselineskip
+%% https://tex.stackexchange.com/questions/392269/default-baselineskip-for-corresponding-font-size
+%\newlength\stdbls % standard baselineskip
+%\AtBeginDocument{%
+%  \setlength\stdbls{\baselineskip}%
+%  \gdef\stdblsn{\strip@pt\stdbls}%
+%}
+%
+%\newfloat{rittai}{h}{ritt}
+%\floatname{rittai}{立体図}
+%
+%% adjust mahjong tile height
+%\newcommand{\mj}[1]{\raisebox{-.18\stdbls}{\mahjong{#1}}}
+%
+%\newcounter{tehaicount}
+%\renewcommand{\thetehaicount}{(\arabic{tehaicount})}
+%
+%\ExplSyntaxOn
+%\DeclareExpandableDocumentCommand{\IfNoValueOrEmptyF}{mm}
+%{
+%  \IfNoValueF {#1}
+%  {
+%    \tl_if_empty:nF {#1} {#2}
+%  }
+%}
+%
+%\NewDocumentCommand{\tehai}{mO{}O{}}{
+%  \tl_if_empty:nTF {#2} {
+%    \noindent \refstepcounter{tehaicount} \raisebox{-.35\height}{\mahjong[1.5\stdbls]{#1}} \hfill \thetehaicount \phantomsection \IfNoValueOrEmptyF{#3}{\label{mj:#3}}
+%  }{
+%    \noindent \refstepcounter{tehaicount} \minibox{#2 \\ \mahjong[1.5\stdbls]{#1}} \hfill \thetehaicount \phantomsection \IfNoValueOrEmptyF{#3}{\label{mj:#3}}
+%  }
+%}
+%
+%\cs_generate_variant:Nn \tl_remove_once:Nn { NV }
+%\cs_generate_variant:Nn \tl_remove_once:Nn { Nx }
+%
+%% define keys for rittai
+%\keys_define:nn { rittai }
+%{
+%  jicha/  seat  .tl_set:N = \l_rittai_jicha,
+%  jicha/  seat  .initial:n = 東,
+%  jicha/  hand  .tl_set:N = \l_rittai_jichahand,
+%  jicha/  hand  .value_required:n = true,
+%  jicha/  river .tl_set:N = \l_rittai_jichariver,
+%  jicha/  riverb.tl_set:N = \l_rittai_jichariverb,
+%  jicha/  point .tl_set:N = \l_rittai_jichapoint,
+%  jicha/  point .initial:n = 25000,
+%  
+%  toimen/ hand  .tl_set:N = \l_rittai_toimenhand,
+%  toimen/ hand  .initial:n = XXXXXXXXXXXXX,
+%  toimen/ river .tl_set:N = \l_rittai_toimenriver,
+%  toimen/ riverb.tl_set:N = \l_rittai_toimenriverb,
+%  toimen/ point .tl_set:N = \l_rittai_toimenpoint,
+%  toimen/ point .initial:n = 25000,
+%  
+%  kami/   hand  .tl_set:N = \l_rittai_kamihand,
+%  kami/ hand  .initial:n = XXXXXXXXXXXXX,
+%  kami/   river .tl_set:N = \l_rittai_kamiriver,
+%  kami/   riverb.tl_set:N = \l_rittai_kamiriverb,
+%  kami/   point .tl_set:N = \l_rittai_kamipoint,
+%  kami/   point .initial:n = 25000,
+%  
+%  shimo/  hand  .tl_set:N = \l_rittai_shimohand,
+%  shimo/  hand  .initial:n = XXXXXXXXXXXXX,
+%  shimo/  river .tl_set:N = \l_rittai_shimoriver,
+%  shimo/  riverb.tl_set:N = \l_rittai_shimoriverb,
+%  shimo/  point .tl_set:N = \l_rittai_shimopoint,
+%  shimo/  point .initial:n = 25000,
+%  
+%    
+%  kyoku .tl_set:N = \l_rittai_kyoku,
+%  kyoku .initial:n = 東1局,
+%  dora  .tl_set:N = \l_rittai_dora,
+%  dora  .initial:n = 0m,
+%}
+%
+%% draw rittai
+%\NewDocumentCommand{\drawrittai}{m}{
+%  \keys_set:nn { rittai } {#1}
+%  
+%  \begin{tikzpicture}
+%    %----------------------hand
+%    \node (self) at (0,-3.5) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichahand}};    
+%    \node[rotate=180] (toimen) at (0,3.5) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenhand}};
+%    \node[rotate=270] (kami) at (-3.5,0) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamihand}};
+%    \node[rotate=90] (shimo) at (3.5,0) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimohand}};
+%    
+%    %----------------------kyoku
+%    \node[draw, align=center] (center-kyoku) at (0,0) {\tl_use:N \l_rittai_kyoku\\ドラ \raisebox{-.25\height}{\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_dora}}};
+%    
+%    %----------------------seat wind
+%    \tl_new:N \l_rittai_sws
+%    \tl_new:N \l_rittai_sw
+%    \tl_set:Nn \l_rittai_sws {東南西北東南西北}
+%    
+%    \int_do_while:nn { \l_tmpa_int < 5 } {
+%      \tl_set:Nx \l_rittai_sw {\tl_head:N \l_rittai_sws}
+%      
+%      \tl_if_eq:NNT \l_rittai_sw \l_rittai_jicha {
+%        \node at (0,-1) {\tl_use:N \l_rittai_jicha~\tl_use:N \l_rittai_jichapoint};
+%        
+%        \tl_remove_once:Nx \l_rittai_sws {\tl_head:N \l_rittai_sws}
+%        \node[rotate=90] at (1,0) {\tl_head:N \l_rittai_sws~\tl_use:N \l_rittai_shimopoint};
+%        
+%        \tl_remove_once:Nx \l_rittai_sws {\tl_head:N \l_rittai_sws}
+%        \node[rotate=180] at (0,1) {\tl_head:N \l_rittai_sws~\tl_use:N \l_rittai_toimenpoint};
+%        
+%        \tl_remove_once:Nx \l_rittai_sws {\tl_head:N \l_rittai_sws}
+%        \node[rotate=270] at (-1,0) {\tl_head:N \l_rittai_sws~\tl_use:N \l_rittai_kamipoint};
+%      }
+%      
+%      \int_incr:N \l_tmpa_int
+%      \tl_remove_once:NV \l_rittai_sws \l_rittai_sw
+%    }
+%    
+%    %----------------------river
+%    \tl_if_empty:NF \l_rittai_jichariver {
+%      \tl_if_empty:NTF \l_rittai_jichariver_ {
+%        \node[anchor=north~west, align=left] (riv-self) at (-1.25,-1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichariver}};
+%      }{
+%        \node[anchor=north~west, align=left] (riv-self) at (-1.25,-1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichariver} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichariverb}};
+%      }
+%    }
+%    
+%    \tl_if_empty:NF \l_rittai_toimenriver {
+%      \tl_if_empty:NTF \l_rittai_toimenriver_ {
+%        \node[anchor=north~west, rotate=180, align=left] (riv-toimen) at (1.25,1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenriver}};
+%      }{
+%        \node[anchor=north~west, rotate=180, align=left] (riv-toimen) at (1.25,1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenriver} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenriverb}};
+%      }
+%    }
+%    
+%    \tl_if_empty:NF \l_rittai_kamiriver {
+%      \tl_if_empty:NTF \l_rittai_kamiriver_ {
+%        \node[anchor=north~west, rotate=270, align=left] (riv-kami) at (-1.25,1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamiriver}};
+%      }{
+%        \node[anchor=north~west, rotate=270, align=left] (riv-kami) at (-1.25,1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamiriver} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamiriverb}};
+%      }
+%    }
+%    
+%    \tl_if_empty:NF \l_rittai_shimoriver {
+%      \tl_if_empty:NTF \l_rittai_shimoriver_ {
+%        \node[anchor=north~west, rotate=90, align=left] (riv-shimo) at (1.25,-1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimoriver}};
+%      }{
+%        \node[anchor=north~west, rotate=90, align=left] (riv-shimo) at (1.25,-1.25) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimoriver} \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimoriverb}};
+%      }
+%    }
+%  \end{tikzpicture}
+%}
+%
+%\ExplSyntaxOff
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\endinput
+%%
+%% End of file `mahjong.sty'.
