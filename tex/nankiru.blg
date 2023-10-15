@@ -19,49 +19,50 @@ Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated wiz_functions (elt_size=4) to 12000 items from 9000.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Warning--empty publisher in rb1
+Warning--empty publisher in feng-intermediate
 Warning--can't use both author and editor fields in tetsusenryaku
 Warning--can't use both author and editor fields in tetsuoshi
 Warning--can't use both author and editor fields in horiuchi
-You've used 23 entries,
+You've used 37 entries,
             9766 wiz_defined-function locations,
-            1881 strings with 15829 characters,
-and the built_in function-call counts, 27591 in all, are:
-= -- 4593
-> -- 579
-< -- 46
-+ -- 187
-- -- 163
-* -- 1112
-:= -- 3850
-add.period$ -- 1
-call.type$ -- 23
-change.case$ -- 140
-chr.to.int$ -- 14
-cite$ -- 27
-duplicate$ -- 616
-empty$ -- 1752
-format.name$ -- 335
-if$ -- 7793
-int.to.chr$ -- 9
+            1934 strings with 17245 characters,
+and the built_in function-call counts, 43930 in all, are:
+= -- 7300
+> -- 920
+< -- 74
++ -- 296
+- -- 257
+* -- 1758
+:= -- 6106
+add.period$ -- 2
+call.type$ -- 37
+change.case$ -- 226
+chr.to.int$ -- 24
+cite$ -- 42
+duplicate$ -- 995
+empty$ -- 2811
+format.name$ -- 522
+if$ -- 12417
+int.to.chr$ -- 13
 int.to.str$ -- 0
 missing$ -- 0
-newline$ -- 94
-num.names$ -- 208
-pop$ -- 501
+newline$ -- 136
+num.names$ -- 334
+pop$ -- 811
 preamble$ -- 1
-purify$ -- 140
+purify$ -- 226
 quote$ -- 0
-skip$ -- 2540
+skip$ -- 4061
 stack$ -- 0
-substring$ -- 1649
+substring$ -- 2641
 swap$ -- 3
-text.length$ -- 94
+text.length$ -- 142
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 236
-warning$ -- 4
-while$ -- 139
+type$ -- 376
+warning$ -- 5
+while$ -- 223
 width$ -- 0
-write$ -- 343
-is.kanji.str$ -- 399
-(There were 4 warnings)
+write$ -- 538
+is.kanji.str$ -- 633
+(There were 5 warnings)
