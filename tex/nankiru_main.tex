@@ -1,0 +1,556 @@
+%==============! USE XELATEX TO COMPILE !==================%
+%==========================================================%
+% To compile:                                              %
+%     1. USE XELATEX                                       %
+%     2. USE XELATEX                                       %
+%     3. USE XELATEX                                       %
+%     4. Use \newcommand{\renderOption}{0} for fast render %
+%        (disabling most rendering of mahjong tiles)       %
+%==========================================================%
+
+\documentclass[10pt, twocolumn]{article}
+
+
+\newcommand{\renderOption}{0}
+% 0: fast render
+% 1: full render
+
+
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+\usepackage{graphicx, expl3, minibox, amsmath, stfloats, tablefootnote, tikz, float, threeparttable, xfrac, multirow, etoolbox, verbatim, diagbox, siunitx, titling, subfiles, bibentry}
+\usetikzlibrary{backgrounds}
+
+\usepackage{siunitx} % for aligning numbers within table
+\sisetup{table-format=-4,
+         table-space-text-pre={(},
+         table-space-text-post={)},
+         table-number-alignment = center,
+         table-align-comparator = false,
+         table-align-text-pre = false,
+         table-align-text-post = false,
+}
+
+\usepackage{enumitem}
+\setlist{noitemsep}
+
+\usepackage{mahjong-tsumogiri/mahjong}
+\graphicspath{{mahjong-tsumogiri/tiles/}}
+
+\usepackage[CJKspace]{xeCJK}
+\setCJKmainfont{YuMincho}
+
+\usepackage[hidelinks]{hyperref}
+
+\usepackage[japanese]{babel}
+\usepackage{natbib}
+\addto{\captionsjapanese}{\renewcommand{\refname}{参考文献}}
+
+\usepackage[nottoc,numbib]{tocbibind} % to add references into the ToC
+
+\usepackage{caption}
+\captionsetup[table]{name=表}
+\captionsetup[figure]{name=図}
+
+\usepackage{titlesec, ulem} % formatting \subsubsection* and underline
+\renewcommand{\ULthickness}{0.7pt} % default: 0.4pt
+\renewcommand{\ULdepth}{4pt} % default: 3pt ish
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{\uline}
+%\titlespacing*{command}{left}{before-sep}{after-sep}[right-sep]
+\titlespacing*{\subsubsection}{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+
+\edef\restoreparindent{\parindent=\the\parindent\relax}
+\usepackage[skip=\glueexpr \baselineskip + 0pt plus 2pt\relax]{parskip}
+
+% store baselineskip
+% https://tex.stackexchange.com/questions/392269/default-baselineskip-for-corresponding-font-size
+\newlength\stdbls % standard baselineskip
+\AtBeginDocument{%
+  \setlength\stdbls{\baselineskip}%
+  \gdef\stdblsn{\strip@pt\stdbls}%
+}
+
+\usepackage{xr}
+\externaldocument[hairi-]{section/hairi}
+\externaldocument[joban-]{section/joban}
+\externaldocument[furo-]{section/furo}
+\externaldocument[riichi-]{section/riichi}
+\externaldocument[riichicare-]{section/riichicare}
+\externaldocument[furocare-]{section/furocare}
+\externaldocument[read-]{section/read}
+
+
+%============================== New command and float ==============================
+
+\newfloat{rittai}{t}{ritt}
+\floatname{rittai}{立体図}
+
+% mj command in footnote
+\newcommand{\mjfn}[1]{\raisebox{-.135\stdbls}{\mahjong[0.75\stdbls]{#1}}}
+
+\newcounter{tehaicount}
+\renewcommand{\thetehaicount}{(\arabic{tehaicount})}
+
+\newcommand{\onlyinsubfile}[1]{#1}
+\newcommand{\notinsubfile}[1]{}
+% subfiles only see commands before begin of document in base doc
+% these are later to be redefined
+
+\newcommand{\subfilepreamble}[1]{%
+	\onlyinsubfile{\section{#1}}
+	\onlyinsubfile{\tableofcontents\vspace{5mm}}
+}
+% the preamble that is common to all subfiles
+% arg: name of standalone section
+
+
+
+%============================== ExplSyntax ==============================
+\ExplSyntaxOn
+
+\DeclareExpandableDocumentCommand{\IfNoValueOrEmptyF}{mm}
+{
+  \IfNoValueF {#1}
+  {
+    \tl_if_empty:nF {#1} {#2}
+  }
+}
+
+% adjust mahjong tile height
+\NewDocumentCommand{\mj}{m}{
+  \ifdefstring{\renderOption}{1}{
+    \raisebox{-.18\stdbls}{\mahjong{#1}}
+  }{
+    \tl_set:Nn \l_tmpa_tl {#1}
+    \tl_replace_all:Nnn \l_tmpa_tl { ^ } { / } % text mode does not allow ^
+    \tl_use:N \l_tmpa_tl
+  }
+}
+
+\NewDocumentCommand{\tehai}{smO{}O{}}{
+  % DECIDE FAST RENDER OR FULL RENDER
+  \ifdefstring{\renderOption}{1}{
+    \nankiru_drawTehai:nnnn {#1} {#2} {#3} {#4}
+  }{
+    \nankiru_drawTehaiFast:nnnn {#1} {#2} {#3} {#4}
+  }
+}
+
+\cs_new_protected:Npn \nankiru_drawTehai:nnnn #1 #2 #3 #4 {
+  \tl_if_empty:nTF {#3} {
+    \noindent \IfBooleanF {#1} {\refstepcounter{tehaicount}} \raisebox{-.35\height}{\mahjong[1.5\stdbls]{#2}} \hfill \IfBooleanF {#1} {\thetehaicount \phantomsection \IfNoValueOrEmptyF{#4}{\label{mj:#4}}}
+  }{
+    \noindent \IfBooleanF {#1} {\refstepcounter{tehaicount}} \minibox{#3 \\ \mahjong[1.5\stdbls]{#2}} \hfill \IfBooleanF {#1} { \thetehaicount \phantomsection \IfNoValueOrEmptyF{#4}{\label{mj:#4}}}
+  }
+}
+
+\cs_new_protected:Npn \nankiru_drawTehaiFast:nnnn #1 #2 #3 #4 {
+  % show plain text
+  \tl_set:Nn \l_tmpa_tl {#2}
+  \tl_replace_all:Nnn \l_tmpa_tl { ^ } { / } % text mode does not allow ^
+  \tl_if_empty:nTF {#3} {
+    \noindent \IfBooleanF {#1} {\refstepcounter{tehaicount}} \tl_use:N \l_tmpa_tl \hfill \IfBooleanF {#1} {\thetehaicount \phantomsection \IfNoValueOrEmptyF{#4}{\label{mj:#4}}}
+  }{
+    \noindent \IfBooleanF {#1} {\refstepcounter{tehaicount}} \minibox{#3 \\ \tl_use:N \l_tmpa_tl} \hfill \IfBooleanF {#1} { \thetehaicount \phantomsection \IfNoValueOrEmptyF{#4}{\label{mj:#4}}}
+  }
+}
+
+\cs_generate_variant:Nn \tl_remove_once:Nn { NV }
+\cs_generate_variant:Nn \tl_remove_once:Nn { Nx }
+
+% define keys for rittai
+\keys_define:nn { rittai }
+{
+  jicha/  seat  .tl_set:N = \l_rittai_jicha,
+  jicha/  seat  .initial:n = 東,
+  jicha/  hand  .tl_set:N = \l_rittai_jichahand,
+  jicha/  hand  .value_required:n = true,
+  jicha/  river .tl_set:N = \l_rittai_jichariver,
+  jicha/  riverb.tl_set:N = \l_rittai_jichariverb,
+  jicha/  riverc.tl_set:N = \l_rittai_jichariverc,
+  jicha/  point .tl_set:N = \l_rittai_jichapoint,
+  jicha/  point .initial:n = 25000,
+  
+  toimen/ hand  .tl_set:N = \l_rittai_toimenhand,
+  toimen/ hand  .initial:n = XXXXXXXXXXXXX,
+  toimen/ river .tl_set:N = \l_rittai_toimenriver,
+  toimen/ riverb.tl_set:N = \l_rittai_toimenriverb,
+  toimen/ riverc.tl_set:N = \l_rittai_toimenriverc,
+  toimen/ point .tl_set:N = \l_rittai_toimenpoint,
+  toimen/ point .initial:n = 25000,
+  
+  kami/   hand  .tl_set:N = \l_rittai_kamihand,
+  kami/   hand  .initial:n = XXXXXXXXXXXXX,
+  kami/   river .tl_set:N = \l_rittai_kamiriver,
+  kami/   riverb.tl_set:N = \l_rittai_kamiriverb,
+  kami/   riverc.tl_set:N = \l_rittai_kamiriverc,
+  kami/   point .tl_set:N = \l_rittai_kamipoint,
+  kami/   point .initial:n = 25000,
+  
+  shimo/  hand  .tl_set:N = \l_rittai_shimohand,
+  shimo/  hand  .initial:n = XXXXXXXXXXXXX,
+  shimo/  river .tl_set:N = \l_rittai_shimoriver,
+  shimo/  riverb.tl_set:N = \l_rittai_shimoriverb,
+  shimo/  riverc.tl_set:N = \l_rittai_shimoriverc,
+  shimo/  point .tl_set:N = \l_rittai_shimopoint,
+  shimo/  point .initial:n = 25000,
+  
+    
+  kyoku   .tl_set:N = \l_rittai_kyoku,
+  kyoku   .initial:n = 東1局,
+  honba   .tl_set:N = \l_rittai_honba,
+  honba   .initial:n = 0,
+  kyoutaku.tl_set:N = \l_rittai_kyoutaku,
+  kyoutaku.initial:n = 0,
+  dora    .tl_set:N = \l_rittai_dora,
+  dora    .initial:n = 0m,
+}
+
+\NewDocumentCommand{\drawrittai}{m}{
+  % DECIDE FAST RENDER OR FULL RENDER
+  \ifdefstring{\renderOption}{1}{
+    \nankiru_drawRittai:n {#1}
+  }{
+    \nankiru_drawRittaiFast:n {#1}
+  }
+}
+
+% draw rittai (ver 2 10/15/2023)
+\tl_new:N \l_rittai_sws
+\tl_new:N \l_rittai_sw
+  
+\cs_new_protected:Npn \nankiru_drawRittai:n #1 {
+  \keys_set:nn { rittai } {#1}
+  
+  \begin{tikzpicture}[framed]
+    
+    %----------------------hand
+    \node[anchor=south] (self) at (0,-3.1) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichahand}};
+    % ver 2: others hands are smaller
+    \node[anchor=south,rotate=180] (toimen) at (0,3.1) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenhand}};
+    \node[anchor=south,rotate=270] (kami) at (-4.2,0) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamihand}};
+    \node[anchor=south,rotate=90] (shimo) at (4.2,0) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimohand}};
+    
+    %----------------------kyoku
+    % ver 2: no rectangular box
+    \node[align=center] (center-kyoku) at (0,0) {\tl_use:N \l_rittai_kyoku\\ドラ \raisebox{-.25\height}{\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_dora}}};
+    
+    %----------------------seat wind and point
+    % ver 1: seat wind and point are at center of table
+    % ver 2: seat wind and point now appear above hand
+    %        honba and kyoutaku appear above own point
+    \tl_set:Nn \l_rittai_sws {東南西北東南西北}
+    
+    \int_do_while:nn { \l_tmpa_int < 5 } {
+      \tl_set:Nx \l_rittai_sw {\tl_head:N \l_rittai_sws}
+      
+      \tl_if_eq:NNT \l_rittai_sw \l_rittai_jicha {
+        \node[anchor=south~west,align=left] at (-3,-2.4) {\,\mahjong[0.6\stdbls]{h}~\tl_use:N \l_rittai_honba \mahjong[0.6\stdbls]{-k}~\tl_use:N \l_rittai_kyoutaku \\ \tl_use:N \l_rittai_jicha~\tl_use:N \l_rittai_jichapoint};
+        
+        \tl_remove_once:Nx \l_rittai_sws {\tl_head:N \l_rittai_sws}
+        \node[anchor=south~west,align=left,rotate=90] at (3.5,-2.3) {\tl_head:N \l_rittai_sws~\tl_use:N \l_rittai_shimopoint};
+        
+        \tl_remove_once:Nx \l_rittai_sws {\tl_head:N \l_rittai_sws}
+        \node[anchor=south~west,align=left,rotate=180] at (3,2.4) {\tl_head:N \l_rittai_sws~\tl_use:N \l_rittai_toimenpoint};
+        
+        \tl_remove_once:Nx \l_rittai_sws {\tl_head:N \l_rittai_sws}
+        \node[anchor=south~west,align=left,rotate=270] at (-3.5,2.3) {\tl_head:N \l_rittai_sws~\tl_use:N \l_rittai_kamipoint};
+      }
+      
+      \int_incr:N \l_tmpa_int
+      \tl_remove_once:NV \l_rittai_sws \l_rittai_sw
+    }
+    
+    %----------------------river
+    \tl_if_empty:NF \l_rittai_jichariver {
+      \node[anchor=north~west, align=left] (riv-self) at (-1.26,-0.5) {
+        \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichariver} \tl_if_empty:NF \l_rittai_jichariverb {
+          \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichariverb} \tl_if_empty:NF \l_rittai_jichariverc {
+            \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichariverc}
+          }
+        }
+      };
+    }
+    
+    \tl_if_empty:NF \l_rittai_toimenriver {
+      \node[anchor=north~west, rotate=180, align=left] (riv-toimen) at (1.26,0.5) {
+        \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenriver} \tl_if_empty:NF \l_rittai_toimenriverb {
+          \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenriverb} \tl_if_empty:NF \l_rittai_toimenriverc {
+            \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenriverc}
+          }
+        }
+      };
+    }
+    
+    \tl_if_empty:NF \l_rittai_kamiriver {
+      \node[anchor=north~west, rotate=270, align=left] (riv-kami) at (-1.29,1.26) {
+        \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamiriver} \tl_if_empty:NF \l_rittai_kamiriverb {
+          \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamiriverb} \tl_if_empty:NF \l_rittai_kamiriverc {
+            \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamiriverc}
+          }
+        }
+      };
+    }
+    
+    \tl_if_empty:NF \l_rittai_shimoriver {
+      \node[anchor=north~west, rotate=90, align=left] (riv-shimo) at (1.29,-1.26) {
+        \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimoriver} \tl_if_empty:NF \l_rittai_shimoriverb {
+          \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimoriverb} \tl_if_empty:NF \l_rittai_shimoriverc {
+            \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimoriverc}
+          }
+        }
+      };
+    }
+  \end{tikzpicture}
+}
+
+
+\cs_new_protected:Npn \nankiru_drawRittaiFast:n #1 {
+  \begin{tikzpicture}
+    \filldraw [fill=gray!10, draw=black] (-4, -3) rectangle (4, 3);
+    \node[draw, align=center] (center-kyoku) at (0,0) {\tl_use:N \l_rittai_kyoku\\ドラ \raisebox{-.25\height}{\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_dora}}};
+  \end{tikzpicture}
+}
+
+
+% multicitep: cite multiple references in one parenthesis
+% ex: \multicitep{adams03, p.~3; collier09, p.~5}
+\makeatletter
+\NewDocumentCommand{\multicitep}{m}
+ {
+  \NAT@open
+  \mjb_multicitep:n { #1 }
+  \NAT@close
+ }
+\makeatother
+
+\seq_new:N \l_mjb_multicite_in_seq
+\seq_new:N \l_mjb_multicite_out_seq
+\seq_new:N \l_mjb_cite_seq
+
+\cs_new_protected:Npn \mjb_multicitep:n #1
+ {
+  \seq_set_split:Nnn \l_mjb_multicite_in_seq { ; } { #1 }
+  \seq_clear:N \l_mjb_multicite_out_seq
+  \seq_map_inline:Nn \l_mjb_multicite_in_seq
+   {
+    \mjb_cite_process:n { ##1 }
+   }
+  \seq_use:Nn \l_mjb_multicite_out_seq { ;~ }
+ }
+
+\cs_new_protected:Npn \mjb_cite_process:n #1
+ {
+  \seq_set_split:Nnn \l_mjb_cite_seq { , } { #1 }
+  \int_compare:nTF { \seq_count:N \l_mjb_cite_seq == 1 }
+   {
+    \seq_put_right:Nn \l_mjb_multicite_out_seq
+     { \citeauthor{#1},~\citeyear{#1} }
+   }
+   {
+    \seq_put_right:Nx \l_mjb_multicite_out_seq
+     {
+      \exp_not:N \citeauthor{\seq_item:Nn \l_mjb_cite_seq { 1 }},~
+      \exp_not:N \citeyear{\seq_item:Nn \l_mjb_cite_seq { 1 }},~
+      \seq_item:Nn \l_mjb_cite_seq { 2 }
+     }
+   }
+ }
+
+
+\ExplSyntaxOff
+
+
+
+
+%======================= END OF PREAMBLE ==========================
+\begin{document}
+
+\renewcommand{\onlyinsubfile}[1]{}
+\renewcommand{\notinsubfile}[1]{#1}
+
+\title{spaghet boiの麻雀ノート}
+\renewcommand\maketitlehookc{\vspace{-2ex}}
+\maketitle
+
+\tableofcontents
+
+\section{牌理}
+\subfile{section/hairi}
+
+\section{序盤戦略}
+\subfile{section/joban}
+
+\section{副露判断}
+\subfile{section/furo}
+
+\section{立直判断}
+\subfile{section/riichi}
+
+\section{立直対応}
+\subfile{section/riichicare}
+
+\section{副露対応}
+\subfile{section/furocare}
+
+\section{河読み}
+\subfile{section/read}
+
+
+%=============================================================
+\clearpage
+\appendix
+
+\section{数値計算}
+
+\subsection{点数計算} \label{sec:point}
+
+立直麻雀では点数の計算は\eqref{eq:tensuu}に基づく。まず基本点を算出し、アガった方が子か親か、アガリの状況がツモかロンか、表\ref{tab:multiply}のように各自の負担額を決める。例え、子が手牌\ref{mj:a-1}で他の子をロンするとき、ロンする子の得点は1飜30符の基本点の4倍。場ゾロを2飜と仮定し、\eqref{eq:tensuu}によるとその得点は960であるが、100点未満の端数は切り上げとなり、得点が1000になる。従って、この切り上げによってロンとツモ、子と親の最終の得点が異なる。結論としての得点は表\ref{tab:fu}で表されている。40符と60符の場合は列挙されていないのは、\eqref{eq:tensuu}によると、ある飜数と40符の組み合わせの得点は、その飜数のもう1飜と20符の組み合わせの得点と同じである。例えば、子として、2飜40符の得点は3飜20符の得点と同じ、700/1300である。
+%
+\begin{align}
+  \text{基本点} = \text{符} \times 2^{\text{飜数} + \text{場ゾロ}} \label{eq:tensuu}
+\end{align}
+
+\tehai{234 666m 22 678p 45-6s}[東3局 北家 ドラ \mj{9p} ロンアガリ][a-1]
+
+\begin{table*}[!b]
+  \centering
+  \begin{tabular}{l|llll}
+    子 & 1飜 & 2飜 & 3飜 & 4飜 \\
+    \hline
+    20符 & & -- (400/700) & -- (700/1300) & -- (1300/2600) \\
+    25符 & & 1600 & 3200 & 6400 \\
+    30符 & 1000 (300/500) & 2000 & 3900 (1000/2000) & 7700 (2000/3900) \\
+    50符 & 1600 & 3200 & 6400 & 満貫 \\
+  \end{tabular}
+  
+  \vspace{\stdbls}
+  
+  \centering
+  \begin{tabular}{l|llll}
+    親 & 1飜 & 2飜 & 3飜 & 4飜 \\
+    \hline
+    20符 & & (700オール) & (1300オール) & (2600オール) \\
+    25符 & & 2400 & 4800 & 9600 \\
+    30符 & 1500 & 2900 (1000オール) & 5800 (2000オール) & 11600(3900オール) \\
+    50符 & 2400 & 4800 & 9600 & 満貫 \\
+  \end{tabular}
+  \caption{点数早見表}
+  \label{tab:fu}
+\end{table*}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+     & 親の負担額 & 子の負担額 \\
+    \hline
+    親のアガリ & -- & $\times 6$ \\
+    親のツモ & -- & $\times 2$ \\
+    子のアガリ & $\times 4$ & $\times 4$ \\
+    子のツモ & $\times 2$ & $\times 1$ \\
+  \end{tabular}
+  \caption{基本点の倍数}
+  \label{tab:multiply}
+\end{table}
+
+符の計算は手牌の構成とアガリの状況に基づき、それぞれの項目を加算し、10符単位に切り上げた結果である。要すると、符計算の公式は\eqref{eq:fu}の通りである。面子、頭、そして待ちによる符は表\ref{tab:fu2}に表示されている。
+%
+\begin{align}
+  \text{符} = \begin{cases} 20, & \text{ツモピンフ} \\ 25, & \text{チートイ} \\ 30, & \text{食いピンフ} \\ \begin{aligned} &20 + \text{面子の符} \\ &+ \text{頭の符} + \text{待ちの符} \\ &(+ \text{門前加符} + \text{ツモ符}) \end{aligned}, & \text{その他} \end{cases} \label{eq:fu}
+\end{align}
+
+門前の状態でロンでアガった場合はさらに10符ができ、それは\textbf{門前加符}という。ツモでアガった場合にさらに2符が与えられ、それは\textbf{ツモ符}といい、副露した場合にもつく。ただし、門前ピンフでツモした場合は一律20符となる。副露したピンフ、即ち\textbf{食いピンフ}は一律30符となる。
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lllll}
+    面子の種類 & 明刻 & 暗刻 & 明槓 & 暗槓 \\
+    \hline
+    中張牌 & 2符 & 4符 & 6符 & 8符 \\
+    么九牌 & 4符 & 8符 & 16符 & 32符
+  \end{tabular}
+  
+  \vspace{\stdbls}
+  
+  \centering
+  \begin{tabular}{lll}
+    頭の種類 & 自風牌、場風牌、三元牌 & 連風牌 \\
+    \hline
+     & 2符 & 4符\tablefootnote{規則により2符となる場合もある。雀魂と天鳳では4符。}
+  \end{tabular}
+  
+  \vspace{\stdbls}
+  
+  \centering
+  \begin{tabular}{lllll}
+    待ちの種類 & 嵌張、辺張、単騎 \\
+    \hline
+     & 2符
+  \end{tabular}
+  \caption{各項目の符。表に挙がられていない場合は全て0符とされている}
+  \label{tab:fu2}
+\end{table}
+
+\tehai{24m 234 789p 11z -X99sX}[東1局 東家 ドラ \mj{0m} ツモ][fu-ex1]
+
+例として、\ref{mj:fu-ex1}には、\mj{9s}の暗槓の32符と、連風牌の4符と、嵌張待ちの2符と、ツモ符2符と符底20符がついていて、合計して60符がある。
+
+\tehai{123m 123 55p 45s -12'3s}[東1局 東家 ドラ \mj{0m}][fu-ex2]
+
+手牌\ref{mj:fu-ex2}の場合はロンしてもツモしても一律30符となる。ツモすればツモ符の2符が付いていて、ロンすれば食いピンフになり30符となる。
+
+\tehai{1z -99"9m 3"33p X33Xz 777'z}[東1局 東家 ドラ \mj{0m} ツモ][fu-ex3]
+
+手牌\ref{mj:fu-ex3}には、\mj{9m}の明槓の16符と、\mj{3p}の明槓の8符と、\mj{3z}の暗槓の32符と、\mj{7z}の明刻の4符と、連風牌の4符と、単騎待ちの2符と、ツモ符2符と符底20符がついていて、合計して88符があり、切り上げで90符となる。
+
+\tehai{12388m 23467s 345p}[東1局 南家 ドラ \mj{0m}][fu-ex4]
+
+門前ピンフの手牌。立直はしないと仮定する。ツモすると20符となり、ピンフと門前ツモで2飜20符ができ、子だから得点は1500。誰かをロンすると30符となり、ピンフだけで1飜30符ができ、子だから得点は1000。
+
+
+\subsection{局収支}
+
+局収支（きょくしゅうし）とは、点棒の収支期待値のこと\citep[][p. 17]{miinin-stat}。その求め方は\eqref{eq:shuushi}の通り\citep[][p. 18]{miinin-stat}。
+%
+\begin{align}
+  \text{局収支} &= \text{和了率} \times \text{和了時得点} \nonumber \\
+  &+ \text{流局率} \times \text{流局時得点} \nonumber \\
+  &- \text{横移動率} \times \text{横移動時失点} \nonumber \\
+  &- \text{放銃率} \times \text{放銃時失点} \label{eq:shuushi}
+\end{align}
+
+例え、子の自分と子の相手が共に満貫両面聴牌でどちらか先にあがるという状況で、和了率を0.5と、ツモられる確率（横移動）を0.25、放銃率を0.25と想定し、その局収支は表~\ref{tab:kss1} の通り1500となる。
+
+\begin{table}
+  \centering
+  \begin{tabular}{llll}
+    結果 & 確率 & 得失点 & 期待値 \\
+    \hline
+    和了  & 0.5 & 8000  & 4000 \\
+    流局  & 0 & --      & 0 \\
+    横移動 & 0.25 & 2000 & -500 \\
+    放銃  & 0.25 & 8000 & -2000 \\
+    総合 & & & 1500
+  \end{tabular}
+  \caption{子の自分と子の相手が共に満貫両面聴牌という状況の局収支}
+  \label{tab:kss1}
+\end{table}
+
+基本的には、局収支の高い方の選択肢を選ぶのは正しい戦術。ですが、観測結果による数値計算に必ず誤差があって、局収支の差が100点しかないという状況で局収支の低い方を選ぶのは最善手になる可能性もある\citep[][p. 21]{miinin-stat}。具体的に局収支の差が400点よりも少ない場合は「どちらでもいい」と判断している\citep[][p.25]{miinin-stat}。
+
+
+\nocite{*}
+\bibliographystyle{jecon}
+\bibliography{refmj}
+
+
+
+
+
+
+
+
+
+
+
+
+\end{document}

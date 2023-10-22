@@ -1,0 +1,36 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  This bbl file is created by jecon.bst ver.6.5.1
+%  The latest jecon.bst is available at
+%  <http://shirotakeda.org/ja/tex-ja/jecon-ja.html>
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%% Definition of \bysame
+\ifx\undefined\bysame
+\newcommand{\bysame}{\hskip.3em \leavevmode\rule[.5ex]{2.5em}{.3pt}\hskip0.5em}
+\fi
+
+%%% Definition of \bysamejp
+\ifx\undefined\bysamejp
+\newcommand{\bysamejp}{\hskip.2em
+  \leavevmode\rule[.7ex]{2.5em}{.3pt}\hskip0.3em}
+\fi
+
+
+\makeatletter\@ifundefined{ifNAT@openbib}{\@latex@error{Package 'natbib' is not
+  loaded! Please load Package 'natbib' in your preamble.\MessageBreak
+  Additionally, if you use url field in your bib record entry, please also load
+  Package 'hyperref' or 'pxjahyper', 'url' package.}\@ehc}{}\relax\makeatother
+\begin{thebibliography}{xxx}
+
+
+\harvarditem[お知らせ]{お知らせ}{2020}{suphx}
+お知らせ (2020) 『世界最強麻雀AI Suphxの衝撃』，マイナビ出版．
+
+\harvarditem[独歩他]{独歩・かにマジン・しゅかつ}{2017}{tetsusenryaku}
+独歩・かにマジン・しゅかつ (2017) 『麻雀・序盤の鉄戦略:
+  3人の天鳳位が出す究極の結論』，マイナビ出版．
+
+\end{thebibliography}
+

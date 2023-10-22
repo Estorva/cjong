@@ -1,0 +1,108 @@
+% 副露対応
+
+\documentclass[../nankiru_main.tex]{subfiles}
+
+% override main tex render option
+\renewcommand{\renderOption}{1}
+
+\begin{document}
+
+\subfilepreamble{副露対応}
+
+（TODO: 巡目別山に残るドラ枚数）
+
+%--------------------------------------------
+\subsection{放銃形と放銃打点}
+
+\tehai{9^s5p3^8^s1p2^s9m4^p}[親の河（\mj{4z} ポン打 \mj{5p}、\mj{1z} ポン打 \mj{1p}、\mj{4z} カン打 \mj{9m}）][furo-read1]
+
+\tehai{68m 0789p 44055s 33z -9p}[Suphxの手牌　南1局　西家　9巡目　ドラ \mj{4p9s3s}][]
+
+\textbf{親がドラ1ぐらいとわかるのでSuphxは \mj{9p} で押す}\citep[][pp.~38--39]{suphx}。親の仕掛けと河\ref{mj:furo-read1}によると \mj{9p} で刺さる分にはたまにチャンタがつく。\mj{9p} は他家に既に2枚切られているので \mj{78p} の形にしか振り込まない。だとしたら親の手牌は \mj{78p} ＋ 頭 ＋ 面子。ドラ \mj{4p9s3s} は手順で頭になりにくいので、面子で1枚使っているぐらいでしょう。
+
+\tehai{2z74^s7^z3m5^s3^z0m7^5^z}[親の河（\mj{8'79m} チー打 \mj{5m}）][furo-read2]
+
+\tehai{234567m 0678p 123s -1z}[Suphxの手牌　東3局　10巡目　ドラ \mj{2p}][]
+
+生牌の \mj{1z} をツモって親の河\ref{mj:furo-read2}に対してSuphxは \mj{8p} で押した\citep[][pp.~42--43]{suphx}。対副露の場合は、相手がノーテンの可能性があり、役牌を先に切ったらポンテンを取られて手牌が押しにくくなる。ツモ \mj{147258m} で三面張の変化が来たら \mj{1z} で勝負できる。
+
+
+%--------------------------------------------
+\subsection{どうでもいい手牌}
+
+中終盤に入って、自分がまだ両向聴。価値がそこそこの上、受け入れがあまりよくない。立直はまだ来てないが、副露した他家は聴牌かノーテンか判断しずらい。このままでケイテンを取りに行くか、迂回するか、もしくはオリるか。
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 南,
+    jicha/hand = 207m 4578p 123678s -2p,
+    jicha/river = 1m 3z 87^2s 1^p,
+    jicha/riverb = 5^z 89m 5z 9^s,
+    jicha/point = 35500,
+    %
+    toimen/hand = XXXXXXXXXX -3'12p,
+    toimen/river = 2^s 4z 7m 3^3^s 6z,
+    toimen/riverb = 5z 8^17^m 5^z,
+    toimen/point = 22000,
+    %
+    kami/hand = XXXXXXXXXX -444'z,
+    kami/river = 8s 8m 8^s 4s 34^m,
+    kami/riverb = 8^m 2^9^6^s 6^m 3z,
+    kami/riverc = 7z,
+    kami/point = 11500,
+    %
+    shimo/river = 9p 1^1^s 99^m 9s,
+    shimo/riverb = 9s 3^p 1^m 3m,
+    shimo/point = 31000,
+    %
+    kyoku = 南1局,
+    dora = 2p
+  }
+  
+  \caption{中終盤の際で張らない手牌}
+  \label{rittai:furo-mid-1}
+\end{rittai}
+
+終盤に入って、2人が仕掛けていて、立体図~\ref{rittai:furo-mid-1} のような両向聴の手牌はSuphxは打 \mj{1s} でオリとした\citep[][pp.~30--31]{suphx}。ケイテンとるかノーテンで済むかどうでもいい手牌だが、対面が字牌の後に \mj{1m} を切っていたら、わざと \mj{2m} を押す価値がない。
+
+オリるなら打 \mj{2s} もいいでしょう。打 \mj{1s} のは西家の黙聴をケアしているのでしょう。
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 南,
+    jicha/hand = 668s 123778p 1178s -7m,
+    jicha/river = 71^z 9^m 6z 8m 5z,
+    jicha/riverb = 1p 2m 5p 4^s 1^m 2z,
+    jicha/point = 23500,
+    %
+    toimen/river = 343^z 6p 1^s 7^z,
+    toimen/riverb = 57z 1m 22z 9^p,
+    toimen/point = 39700,
+    %
+    kami/hand = XXXXXXXXXX -4'30p,
+    kami/river = 4z 1m 1z 2^p 8^m 9s,
+    kami/riverb = 51z 9^m 43s 3z,
+    kami/riverc = 6z,
+    kami/point = 10300,
+    %
+    shimo/hand = XXXXXXXXXX -22"2s,
+    shimo/river = 1^p 42z 9m 9s 5z,
+    shimo/riverb = 6p 2m 1^6^z 3^s 2^p,
+    shimo/riverc = 3^s,
+    shimo/point = 25500,
+    %
+    kyoku = 東1局,
+    dora = 54z
+  }
+  
+  \caption{中終盤の際で張らない手牌}
+  \label{rittai:furo-2}
+\end{rittai}
+
+立体図~\ref{rittai:furo-2} は終盤で両向聴の手牌。ドラは字牌でも相手がクイタン聴牌濃厚なのでSuphxは打 \mj{1s} で迂回とした\citep[][p.~34]{suphx}。特に親が赤ドラを晒していて、\mj{6m7p} で5800に振り込むのは珍しくはない。\mj{1s} の対子を落としてもケイテンとりはまだ十分。
+
+\end{document}

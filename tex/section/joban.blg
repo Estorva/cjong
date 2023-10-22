@@ -1,0 +1,64 @@
+This is pBibTeX, Version 0.99d-j0.34 (utf8.euc) (TeX Live 2022)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: joban.aux
+The style file: ../jecon.bst
+Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
+Reallocated global_strs (elt_size=200001) to 20 items from 10.
+Reallocated glb_str_end (elt_size=4) to 20 items from 10.
+Reallocated glb_str_ptr (elt_size=4) to 30 items from 20.
+Reallocated global_strs (elt_size=200001) to 30 items from 20.
+Reallocated glb_str_end (elt_size=4) to 30 items from 20.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
+Reallocated wiz_functions (elt_size=4) to 9000 items from 6000.
+Database file #1: ../refmj.bib
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Reallocated wiz_functions (elt_size=4) to 12000 items from 9000.
+Reallocated singl_function (elt_size=4) to 100 items from 50.
+Warning--can't use both author and editor fields in tetsusenryaku
+You've used 2 entries,
+            9766 wiz_defined-function locations,
+            1802 strings with 13420 characters,
+and the built_in function-call counts, 3063 in all, are:
+= -- 506
+> -- 75
+< -- 4
++ -- 24
+- -- 28
+* -- 136
+:= -- 466
+add.period$ -- 0
+call.type$ -- 2
+change.case$ -- 13
+chr.to.int$ -- 2
+cite$ -- 3
+duplicate$ -- 58
+empty$ -- 186
+format.name$ -- 59
+if$ -- 857
+int.to.chr$ -- 0
+int.to.str$ -- 0
+missing$ -- 0
+newline$ -- 31
+num.names$ -- 18
+pop$ -- 42
+preamble$ -- 1
+purify$ -- 13
+quote$ -- 0
+skip$ -- 255
+stack$ -- 0
+substring$ -- 142
+swap$ -- 1
+text.length$ -- 24
+text.prefix$ -- 0
+top$ -- 0
+type$ -- 12
+warning$ -- 1
+while$ -- 12
+width$ -- 0
+write$ -- 50
+is.kanji.str$ -- 42
+(There was 1 warning)

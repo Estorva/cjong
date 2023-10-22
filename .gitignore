@@ -13,6 +13,8 @@ result.txt
 sim_*
 test.json
 tex/*.aux
+tex/*.bbl
+tex/*.blg
 tex/*.log
 tex/*.out
 tex/*.sync*

@@ -1,0 +1,573 @@
+% 河読み：捨て牌など場況から他プレイヤーの手牌の構成・打点・待ちを予測すること
+
+\documentclass[../nankiru_main.tex]{subfiles}
+
+% override main tex render option
+\renewcommand{\renderOption}{1}
+
+\begin{document}
+
+\subfilepreamble{河読み}
+
+比較の基準として、切る牌の危険度（放銃率）は表~\ref{tab:dealin-rate} のように挙げられている。
+
+\begin{table}[ht]
+  \centering
+  \sisetup{table-format=2.1}
+  \begin{tabular}{l|SSS}
+        & {5}巡目 & {9}巡目 & {15}巡目 \\
+    \hline
+    無筋5   & 9.4 & 12.8 & 19.9 \\
+    無筋46  & 9.7 & 13.1 & 20.1 \\
+    無筋37  & 7.5 & 9.5 & 14.3 \\
+    無筋28  & 6.7 & 8.6 & 13.3 \\
+    無筋19  & 5.5 & 7.4 & 12.0 \\
+    片筋5   & 5.3 & 7.4 & 11.9 \\
+    片筋46A\tablefootnote{片筋Aとは \mjfn{1m} や \mjfn{9m} が現物になっている筋} & 5.1 & 7.2 & 11.8 \\
+    片筋46B\tablefootnote{片筋Bとは \mjfn{7m} や \mjfn{3m} が現物になっている筋} & 6.0 & 7.9 & 12.3 \\
+    筋37　  & 5.3 & 5.5 & 7.0 \\
+    筋28　  & 3.7 & 3.9 & 5.3 \\
+    筋19　  & 1.7 & 1.8 & 3.0 \\
+    中筋5   & 1.7 & 2.2 & 3.4 \\
+    中筋46  & 2.0 & 2.3 & 3.4 \\
+    \hline
+    生牌役牌     & 2.9 & 4.6 & 9.9 \\
+    1枚切れ役牌  & 1.2 & 1.9 & 5.2 \\
+    2枚切れ役牌  & 0.2 & 0.3 & 0.8 \\
+    生牌オタ風   & 2.8 & 4.0 & 8.4 \\
+    1枚切れオタ風 & 1.2 & 1.8 & 5.3 \\
+    2枚切れオタ風 & 0.2 & 0.2 & 0.8
+  \end{tabular}
+  \caption{巡目ごと牌種類別の放銃率\citep[][pp. 140--141]{miinin-stat}}
+  \label{tab:dealin-rate}
+\end{table}
+
+要すると立直者に対する牌の危険度は「無筋28 ＞ 無筋19 $\approx$ 片筋46 ＞ 筋2378 ＞ 筋19 $\approx$ 中筋46」。序盤〜中盤では生牌の字牌は筋37より安全だが、終盤なら筋37より危険、1枚切れの字牌も筋28に同じ危険。
+
+\subsubsection*{片筋と長筋} 
+
+\textbf{9が現物になっている場合、6は3より安全}\citep[][pp. 45--46]{miinin-choice}。3が当たるケースには辺張があるから。
+
+\subsubsection*{遠い裏筋}
+
+\textbf{無筋28でも遠い裏筋の方が危険}\citep[][pp.~175--176]{miinin-choice}。例え \mj{6s} が先に切られているのは、多分 \mj{346s} の形から。
+
+%--------------------------------------------
+\subsection{外側牌}
+
+\textbf{10〜12巡目以前では先行者の捨て牌の外側の2389は筋全体より安全だが、外側の19は巡目に関わらず筋19より危険}\citep[pp. 148--151]{miinin-stat}。例え、先行者の河に \mj{6p} がリーチ宣言牌の前に切られていて、無筋 \mj{78p} は外側に当たっていて、通常の無筋78より安全。\mj{667p} や \mj{566p} から \mj{6p} を切って早めに両面を固定するケースが多くないからだと考えられる。\footnote{麻雀一番街でよくあるのは \mjfn{112p} から \mjfn{2p} を切って \mjfn{11p} の双碰でリーチするパターン。\mjfn{1p} がドラならもっとよくある。}
+
+\subsubsection*{筋との比較} 
+
+表~\ref{tab:dealin-rate-sotogawa} によると安全度は序盤では「筋19 ＞ 外側123789 ＞ 筋28」、中盤では「筋19 ＞ 外側1289 ＞ 筋28 ＞ 外側37」、終盤で「筋28 ＞ 外側19 ＞ 筋37」。つまり、序盤では外側が筋28より安全だが、終盤では外側が筋28より危険。
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{l|lll}
+        & 5巡目 & 9巡目 & 15巡目 \\
+    \hline
+    筋37　 & 5.3 & 5.5 & 7.0 \\
+    筋28　 & 3.7 & 3.9 & 5.3 \\
+    筋19　 & 1.7 & 1.8 & 3.0 \\
+    \hline
+    外側37 & 2.9 & 4.2 & 8.1 \\
+    外側28 & 2.1 & 3.6 & 8.0 \\
+    外側19 & 2.0 & 3.0 & 6.1 \\
+  \end{tabular}
+  \caption{巡目ごと筋と外側牌の比較}
+  \label{tab:dealin-rate-sotogawa}
+\end{table}
+
+%--------------------------------------------
+\subsection{モロ引っ掛け} \label{sec:moro}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=.48\textwidth]{moro3}
+  \caption{筋37がモロ引っ掛けになる確率\citep[][p. 152]{miinin-stat}}
+  \label{fig:moro3}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=.48\textwidth]{moro2}
+  \caption{筋28がモロ引っ掛けになる確率\citep[][p. 153]{miinin-stat}}
+  \label{fig:moro2}
+\end{figure}
+
+\begin{figure}[ht]
+  \centering
+  \includegraphics[width=.48\textwidth]{moro1}
+  \caption{筋19がモロ引っ掛けになる確率\citep[][p. 155]{miinin-stat}}
+  \label{fig:moro1}
+\end{figure}
+
+2378のモロ引っ掛けが通常より危険になるのはリャンカンの形があるからと推測ができる。例え、手牌\ref{mj:4-moro-1}から \mj{5m} を切って立直することのより \mj{2m} がモロ引っ掛けになる。図~\ref{fig:moro3} と図~\ref{fig:moro2} によると宣言牌の筋の危険度は無筋に近ついている。
+
+\tehai{135m 667788p 34599s}[][4-moro-1]
+
+リャンカンに19の受けがないため図~\ref{fig:moro1} のように宣言牌の筋だとしてもかなり安全。
+
+%--------------------------------------------
+\subsection{宣言牌のそば}
+
+\begin{table}[ht]
+  \centering
+  \sisetup{table-format=2.1}
+  \begin{tabular}{l|Slll}
+    \diagbox{\footnotesize 当たり牌}{\footnotesize 放銃率(\%)}{\footnotesize 宣言牌} & \mj{1m} & \mj{2m} & \mj{3m} & 通常 \\
+    \hline
+    無筋 \mj{1m} & & \color{red}9.6 & {\color{red}8.4} & 7.4 \\
+    　筋 \mj{1m} & & \color{red}5.5 & {\color{red}3.3} & 1.8 \\
+    無筋 \mj{2m} & \color{red}10.5 & & 6.5 & 8.6 \\
+    　筋 \mj{2m} & \color{red}7.2 & & 2.9 & 3.9 \\
+  \end{tabular}
+  \caption{宣言牌のそばが通常より危険な場合（9巡目）\citep[][p. 158]{miinin-stat}}
+  \label{tab:soba}
+\end{table}
+
+表~\ref{tab:soba} によると、宣言牌のそばが危険になる場合は \mj{1m} 切り立直の \mj{2m} と \mj{23m} 切り立直の \mj{1m}。例え、手牌の中に \mj{113m} の形があって、\mj{1m} 切れば \mj{2m} 待ちになり、\mj{3m} 切れば \mj{1m} 待ちになる。
+
+\subsubsection*{双碰なら字牌も危険}
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 北,
+    jicha/hand = 123344m 307789s 4z -7z,
+    jicha/river = 1p 2z 1s 6p 6p 2p,
+    jicha/riverb = 6m 6z 4p 6m 55z,
+    jicha/point = 42900,
+    %
+    toimen/river = 6s 4m 6^z 9m 5p 5s,
+    toimen/riverb = 3p 8m 1p 1s 8m 1z,
+    toimen/riverc = 8s,
+    toimen/point = 20500,
+    %
+    kami/river = 1z 2s 3z 8m 9m 8s,
+    kami/riverb = 8p 9s 3p 5z 1'm 3^s,
+    kami/riverc = 2^m,
+    kami/point = 11700,
+    %
+    shimo/river = 3z 1m 9p 1s 7s 2m,
+    shimo/riverb = 2p 7m 5m 9m 9m 8s,
+    shimo/riverc = 5'm,
+    shimo/point = 21900,
+    %
+    kyoku = 南2局,
+    dora = 4z
+  }
+  
+  \caption{Mリーグ2020 11/16 第2回戦 南2局 2本場（ツモ切り暗転なし）\citep[][p.~45]{muhai}}
+  \label{rittai:20201116}
+\end{rittai}
+
+立体図 \ref{rittai:20201116} を見て、13巡目で \mj{7z} を引いて、1枚しか見えないのドラ \mj{4z} は切れるかのを考えよう。対面の捨て牌は真ん中からだが、\mj{6z} はツモ切りだった。もし対面が \mj{44z} のオタ風対子が持っているなら、\mj{6z} を使いたいし、ピンフに行くなら序盤で \mj{6s} や \mj{4m} を切るのは非常に不自然である。下家の河端から切っているは典型的なピンフの捨て牌。
+
+問題なのは上家。2枚切れの西は \mj{2s} のあとで出て、普通の切り順の逆である。早めに \mj{2s8s} を切るのは、もしソウズの真ん中に1ブロックある。\mj{89m} も早めに切るのは、真ん中や下\footnote{数字が小さい方が下である。}にブロックがある。ピンズが他人の手牌に沢山いそうだと考えると、\mj{1m} を切って立直するのは、おそらく \mj{2m} や \mj{3m} と字牌の双碰待ち。
+
+\tehai{068m 123p 245s 3477z -9m}[上家　2巡目][4-1-1]
+
+\tehai{067m 123p 456s 4477 -7z}[上家のアガリ形][]
+
+結果下家が \mj{7z} で放銃した。上家は \ref{mj:4-1-1} のように \mj{47z} の双碰待ちでした。早めに2や8を切っているのは、字牌の対子があって七対子・チャンタ・国士無双に向かうなら孤立の2や8が使いにくいのである。ただ、これは他の河読みの技術と同じ、あくまで割合の話であり、実際の読みは他のことも含めてトータルの情報を基に行おう。
+
+%--------------------------------------------
+\subsection{河の5}
+
+\begin{table}[ht]
+  \centering
+  \sisetup{table-format=2.1}
+  \begin{tabular}{l|SSS}
+    \diagbox{\footnotesize 当たり牌}{\footnotesize 放銃率(\%)}{\footnotesize 宣言牌} & \mj{5m} & \mj{0m} & 通常 \\
+    \hline
+    無筋 \mj{46m}   & 11.0 & 8.6 & 13.1 \\
+    無筋 \mj{37m}   & 8.2  & 4.6 & 9.5 \\
+    無筋 \mj{19m}   & 7.6  & 10.0 & 7.4 \\
+    片筋 \mj{46m} A & 5.1 & 0.8 & 7.2 \\
+    片筋 \mj{46m} B & 7.7 & 9.9 & 7.9 \\
+    　筋 \mj{37m}   & 3.9 & 5.0 & 5.5 \\
+    　筋 \mj{28m}   & 6.2 & 5.0 & 3.9 \\
+    　筋 \mj{19m}   & 1.8 & 1.8 & 1.8 \\
+    両筋 \mj{46m}   & 1.3 & 1.1 & 1.6
+  \end{tabular}
+  \caption{5切り立直に関する同じ色の牌の危険度（9巡目）\citep[][p. 162]{miinin-stat}}
+  \label{tab:5rii}
+\end{table}
+
+\begin{table}[ht]
+  \centering
+  \sisetup{table-format=2.1}
+  \begin{tabular}{l|SSS}
+    \diagbox{\footnotesize 当たり牌}{\footnotesize 放銃率(\%)}{\footnotesize 先切り} & \mj{1m} & \mj{0m} & 通常 \\
+    \hline
+    無筋 \mj{46m}   & 11.5 & 8.8 & 13.1 \\
+    無筋 \mj{37m}   & 5.5 & 3.1 & 9.5 \\
+    無筋 \mj{19m}   & 10.4 & 11.0 & 7.4 \\
+    片筋 \mj{46m} A & 2.9 & 0.2 & 7.2 \\
+    片筋 \mj{46m} B & 9.8 & 8.6 & 7.9 \\
+    　筋 \mj{37m}   & 3.7 & 4.4 & 5.5 \\
+    　筋 \mj{28m}   & 3.1 & 2.6 & 3.9 \\
+    　筋 \mj{19m}   & 2.1 & 2.3 & 1.8 \\
+    両筋 \mj{46m}   & 0.9 & 0.3 & 1.6
+  \end{tabular}
+  \caption{5先切りに関する同じ色の牌の危険度（9巡目）\citep[][p. 162]{miinin-stat}}
+  \label{tab:5saki}
+\end{table}
+
+先行者の河にある \mj{5m} から得られる情報は下記のように挙げられる：
+
+\begin{itemize}
+\item \mj{0m} 立直の片筋A \mj{46m} は安全
+\item \mj{0m} 立直の無筋 \mj{37m} は通常より安全
+\item \mj{0m} 立直の片筋B \mj{46m} は危険
+\item \mj{5m0m} 立直の筋 \mj{28m} は通常より危険（モロ引っ掛け）
+\item \mj{5m0m} 立直・先切りの無筋 \mj{19m} は危険
+\item \mj{50m} 先切りの無筋 \mj{37m} は通常より安全
+\end{itemize}
+
+\mj{5m} と \mj{1m} がともに切られている場合、筋 \mj{23m} は安全\citep[][p. 165]{miinin-stat}。\mj{12m}、\mj{22m}、\mj{13m}、\mj{33m}、\mj{24m} などの形を持っているなら \mj{15m} は切られにくいでしょう。
+
+%--------------------------------------------
+\subsection{暗刻筋と暗刻落とし}
+
+\textbf{暗刻筋は通常より危険}\citep[][pp. 166--167]{miinin-stat}。自分が \mj{4m} の暗刻が持っているなら相手は手牌の中の \mj{23m} や \mj{56m} がそのままで立直する可能性が高いから。暗刻筋の放銃率は通常より1.5\%〜2\%より高くて、局収支に換算すると200点もないので、ベタオリの場合ではないなら暗刻筋は押し引きの判断に入れられなくてもいい。
+
+自分が \mj{1m} の暗刻を持っていても無筋 \mj{1m} の放銃率は通常とほぼ同じ。暗刻 \mj{2m} 持ちで無筋 \mj{2m} の放銃率は1\%しか増えていないので、\mj{2m} の暗刻落としも有効と考えられる\citep[][p. 168]{miinin-stat}。
+
+%--------------------------------------------
+\subsection{ワンチャンス・ツーチャンス}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{l|l}
+    種類 & 放銃率(\%) \\
+    \hline
+    ダブルワンチャンス片筋456 & 2.7--3.0 \\
+    ワンチャンス片筋456\tablefootnote{ワンチャンス片筋456とは、筋の一方が通っていて、他の一方の1個隣．2個隣が3枚見える。例え、\mjfn{9m} が現物になっていて、\mj{5m} が3枚見えて、\mj{6m} がワンチャンス片筋になる。} & 4.1--4.7 \\
+    自力ワンチャンス無筋19\tablefootnote{自力ワンチャンスとは、自分の手牌のなかに何かの牌が3枚持っていること。} & 4.3 \\
+    ダブルツーチャンス\tablefootnote{ダブルツーチャンス片筋456とは、筋の一方が通っていて、他の一方の1個隣も2個隣も3枚見える。例え、\mjfn{9m} が現物になっていて、\mj{45m} が6枚見えて、\mj{6m} がダブルツーチャンス片筋になる。}片筋456 & 5.2--6.0 \\
+    筋37 & 5.5 \\
+    他力ワンチャンス無筋19\tablefootnote{他力ワンチャンスとは、自分と立直者以外の2人によって3枚切られていること。} & 6.6 \\
+    ワンチャンス37 & 6.7 \\
+    無筋19 & 7.4
+  \end{tabular}
+  \caption{ワンチャンス・ツーチャンスと通常の無筋の放銃率の比較（9巡目）\citep[][p. 171]{miinin-stat}}
+\end{table}
+
+\subsubsection*{自力と他力のワンチャンス} 
+
+\textbf{自力と他力で差が出ているのは無筋19だけ}\citep[][p. 173]{miinin-stat}。他の場合では自力と他力で差があまり出ていない。\citet[pp. 200--201]{rb1}は牌の種類を区別しないが、他力によるワンチャンスは無筋に近いという意見は一致。
+
+\subsubsection*{ツーチャンス} 
+
+ツーチャンス、しかもダブルツーチャンス、の場合で\textbf{信用できるのはダブルツーチャンス片筋456だけ}\citep[][p. 174]{miinin-stat}。無筋123のダブルツーチャンスは通常より安全だが無筋19（7.4\%）か片筋5（7.4\%）より危険。その他の場合は通常より大きな差がない。
+
+%--------------------------------------------
+\subsection{切り順}
+
+\citet[p. 176]{miinin-stat}によると：
+%
+\begin{enumerate}
+\item 内$\to$外の捨て牌の無筋19は危険（11.3\%）
+\item 内$\to$外の捨て牌の筋19（〜4.6\%）は筋28（通常3.9\%）と筋37（通常5.5\%）の間
+\item $4 \to 2$ の捨て牌の片筋5は危険（10.3\%）
+\item $45 \to 2$ の無筋3（3.9\%〜4.0\%）は筋28並び安全
+\item 外$\to$内の捨て牌の無筋19は安全（2.3〜4.1\%）
+\item 外$\to$内の捨て牌の片筋46B（2.3\%〜3.8\%）は筋19（通常1.8\%）と筋28（通常3.9\%）の間
+\end{enumerate}
+
+「内」は456、「外」は23のこと。「外」は自分の切る牌に寄る。例え、「内$\to$外の捨て牌の無筋19」の場合は \mj{5m} $\to$ \mj{23m} なら \mj{1m} は危険だが \mj{9m} は通常と扱ってもいい。
+
+例として\footnote{これは筆者が雀魂での実戦から。}、河\ref{mj:4-order-1}は \mj{5s} $\to$ \mj{2s} の切り順。手牌\ref{mj:4-order-2}を見ると、これは \mj{2235s} の形から \mj{5s} から切るパータン。よって、後で \mj{47p} 引いたら \mj{14s} が当たり牌になる。
+
+\tehai{26473^z1p952's}[][4-order-1]
+
+\tehai{123456m 588p 2235s -6p}[東1局　北家　9巡目][4-order-2]
+
+これまでの話は同じ色にしているが、\textbf{5 $\to$ 2で逆色の25が危険の場合は三色絡み}\citep[][pp.~108--109]{takizawa-yomi}。河\ref{mj:4-order-3-river}に \mj{5s} $\to$ \mj{2s} のような逆の切り順があって、まず考えるのはソバテンの \mj{14s}。けれど河に \mj{1s} があるのでそれはありえない。これは手牌\ref{mj:4-order-3-hand}のように234や345の両天秤を作るため \mj{23455s} の形から \mj{5s} を切り、ツモ \mj{5m} なら345の三色にして \mj{2s} 切り立直する。
+
+\tehai{42z 1s 9p 9m 7z 5s 2^z 2's}[捨て牌][4-order-3-river]
+
+\tehai{34m 23344p 88p 2345 -5s}[手牌][4-order-3-hand]
+
+\subsubsection*{嵌張落としのソバテン} 
+
+\textbf{$4\to2$と$6\to8$の切り順は1や9の双碰待ちが多い}\citep[][pp.~95--96]{takizawa-yomi}。なぜなら、\mj{1124s} や \mj{6899s} から \mj{4s} や \mj{6s} を切ると受け入れが一番広いからである。よって、19は通常より危険、筋でも。例え河\ref{mj:4-order-4-river}に \mj{6s} $\to$ \mj{8s} が切れているが、実際に手牌\ref{mj:4-order-4-hand}を見ると筋 \mj{9s} が当たり牌となるのがわかる。
+
+\tehai{42z 18m 7^z 1s 6s 2^z 8s}[捨て牌][4-order-4-river]
+
+\tehai{4567m 23499p 6899s -8m}[手牌][4-order-4-hand]
+
+
+%--------------------------------------------
+\subsection{ドラ牌の放銃期待値}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{l|l}
+    種類 & 期待値 \\
+    \hline
+    無筋ドラ28 & 770 \\
+    無筋非ドラ5 & 740 \\
+    生牌役牌ドラ & 500 \\
+    無筋28非ドラ & 460 \\
+    片筋5非ドラ & 440 \\
+    筋28ドラ & 440 \\
+    両筋5ドラ & 360 \\
+    生牌役牌非ドラ & 300 \\
+    1枚切れ役牌ドラ & 280 \\
+    筋28非ドラ & 210 \\
+    両筋5非ドラ & 130 \\
+    1枚切れ役牌非ドラ & 120 \\
+    2枚切れ役牌非ドラ & 100 \\
+    \end{tabular}
+  \caption{ドラと非ドラの放銃の期待値の比較\citep[][p. 181]{miinin-stat}}
+  \label{tab:cut-dora}
+\end{table}
+
+表~\ref{tab:cut-dora} によると切る牌の期待値は下記にように、
+
+\begin{itemize}
+\item 無筋ドラ28 $\approx$ 無筋非ドラ5
+\item 無筋28非ドラ $\approx$ 片筋5非ドラ $\approx$ 筋28ドラ
+\item 両筋5ドラ $\approx$ 役牌生牌非ドラ
+\item 役牌1枚切れドラ $\approx$ 役牌生牌非ドラ
+\item 役牌2枚切れドラ $\approx$ 役牌1枚切れドラ
+\end{itemize}
+
+ドラの生牌役牌を切る放銃期待値は非ドラの無筋28より高い。ドラの両筋の5を切る放銃期待値は非ドラの生牌役牌より高い。よって、ベタオリ時現物にならない限りドラは切らないと考えてもいい\citep[][p. 182]{miinin-stat}。
+
+%--------------------------------------------
+\subsection{一点読み}
+
+一点読みとは、他家のただ一つの切る牌で手牌の構成や役や待ちを読むことである\citep[][p. 42]{takizawa-yomi}。
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 東,
+    jicha/hand = 234m 23457p 33578s -7s,
+    jicha/river = 9m 1z 3z 4z 2^m 5^z,
+    jicha/riverb = 7^z 1^m 7^z 1m,
+    jicha/point = 28000,
+    %
+    toimen/river = 4z 1m 3z 4^z 1s 1^s,
+    toimen/riverb = 79m 7z 2p 9^p,
+    toimen/point = 22000,
+    %
+    kami/river = 3z 1z 5z 6z 4^z 1p,
+    kami/riverb = 9^p 9^m 6p 7^z 8s,
+    kami/point = 34000,
+    %
+    shimo/hand = XXXXXXXXXX -7'68m,
+    shimo/river = 1m 6z 8s 1^z 5^z 4s,
+    shimo/riverb = 9p 2m 6p 6^z 3p,
+    shimo/point = 36000,
+    %
+    kyoku = 東3局,
+    dora = 2s
+  }
+  
+  \caption{下家の \mj{3p} はカン \mj{7m} をチーするあとの手出し}
+  \label{rittai:ittenyomi}
+\end{rittai}
+
+立体図 \ref{rittai:ittenyomi} によると、下家が終盤で \mj{7m} をチーして、タンヤオの聴牌だと仮定して、\mj{3p} が出るパータンは以下になる、
+
+\begin{enumerate}
+  \item \mj{334p}
+  \item \mj{335p}
+  \item \mj{355p}
+  \item \mj{344p}
+  \item \mj{357p}
+  \item \mj{233p}
+  \item \mj{356778p}
+  \item \mj{223p}
+\end{enumerate}
+
+まず下家が直前に \mj{6p} を捨てているので \mj{335p} と \mj{355p} の形は否定された。\mj{357p} のリャンカンなら \mj{6p} は切らない。\mj{356778p} の形なら \mj{6p} も切らない、仮に \mj{6p} を打っていなかったとしてもこの形で \mj{3p} を切れば3枚しかないの \mj{6p} 待ちになるので、\mj{4p} が枯れていないなら普通にはカン \mj{4p} にするでしょう。\mj{344p} の形から \mj{3p} を切るのは両面を放棄して双碰にしないと頭の固定でしょう。\mj{223p} の形なら前巡西家が \mj{2p} を切ったときはもう \mj{2p} をポンするでしょう。
+
+これらの仮定の形を情報により消去すると \mj{334p} から \mj{3p} を切って \mj{25p} 待ちの可能性が高い。ただし、一枚も出てないの \mj{4p} を怖がって \mj{3p} を切って \mj{4p} と何かの双碰にするとお手上げである。
+
+%--------------------------------------------
+\subsection{ポンテン・トイトイ}
+
+\tehai{334m 22p 78p 123s -6'66z}[][4-0-1]
+
+\tehai{334m 22p 77p 123s -6'66z}[][4-0-2]
+
+前に触れたチーテンは一点読みが成立しやすいが、ポンテンはソバテン成立しにくい\citep[][p.~67]{takizawa-yomi}。たとえ、手牌が\ref{mj:4-0-1}のように一つの対子と対子・両面の複合形があり、\mj{2p} ポンしたら頭がないので \mj{4m} を切って\mj{69p}待ちになる。その場合、切る牌の \mj{4m} と待ちの \mj{69p} は関係が全くない。ポンテンにソバテンがある場合は\ref{mj:4-0-2}のように対子が三つ見える場合。\mj{7p} ポンしたら \mj{3m} を切ってそばの \mj{25m} 待ちになる。
+
+対子が増えるほどソバテンが高まり、トイトイがつく可能性も高まる\citep[][p.~68]{takizawa-yomi}。ただし手牌のポン材はよほど良くないなら、トイトイに無理やり狙いづらいので、対子のそばにフォロー牌を残すケースも多い。だとしたら、トイトイの場合は仕掛けた後の手出しのソバテンは要注意。
+
+%--------------------------------------------
+\subsection{混一色・清一色}
+
+序盤から二色の牌をいっぱい切る、字牌やあと一色の牌をいっぱい（副露も含んで）持っていそうなら、そちらは高い確率で混一色を狙っている\citep[][pp.~47--50]{takizawa-yomi}。混一色狙い対するには一般的な進行具合は捨て牌に少し読める。それは
+
+\begin{itemize}
+  \item 場に出ている字牌＝一向聴以上
+  \item 生牌の字牌＝聴牌か一向聴か
+  \item 集めている色の牌＝聴牌
+\end{itemize}
+
+\tehai{1489^p 7^9m 2z 9^p 7^z 3s 1^s -5'55z}[対面の河と副露][4-2-1]
+
+従って、河\ref{mj:4-2-1}によると対面は中盤からソウズを切り始め、おそらくもうソウズ染めの聴牌であろう。混一色狙い者の上家なら、その色の牌を切るには要注意。対面や下家ならその色の真ん中から切る。あとは場に全然出ない端牌も鳴かせないようにしよう。
+
+\tehai{7m 148p 3346799s 67z}[対面の手牌(1)][4-2-2]
+
+\tehai{67m 46p 123346799s}[対面の手牌(2)][4-2-3]
+
+\tehai{18p 67z 4^z 64p 6m}[対面の河][4-2-4]
+
+清一色の場合は、手牌の横引きがよくて、孤立の字牌と他の色の搭子を落とした後で成立するケースが多い\citep[][pp.~55--57]{takizawa-yomi}。たとえ、対面の配牌が\ref{mj:4-2-2}のように、ツモ次第で\ref{mj:4-2-3}に移行して、その捨て牌は\ref{mj:4-2-4}になる。
+
+%--------------------------------------------
+\subsection{タンヤオ以外の役}
+
+相手がタンヤオの面子を仕掛ける場合はほとんど食いタンだが、以下のように挙げられるケースにはタンヤオの面子が仕掛けられても端牌や役牌が要注意\citep[][pp.~58--63]{takizawa-yomi}。
+
+\begin{enumerate}
+  \item 捨て牌にタンヤオ牌が多く捨てられている場合
+  \item ドラがタンヤオ牌ではない場合。特にドラが役牌の場合
+  \item 仕掛けた後数巡経過してから端牌が手出しされた場合
+\end{enumerate}
+
+\tehai{1p 5s 2z 8m 1^m 5m -7'56m}[対面の河と副露　ドラ\mj{9p}][4-4-1]
+
+たとえ対面の捨て牌と副露が\ref{mj:4-4-1}の場合。対面が6巡目に両面をチーして、一気にタンヤオに見えそうだが、2巡目に切ったこの \mj{5s} はやはり怪しい。早めに真ん中の \mj{5s} を切るいくつかのパターンには、可能性がもっとも高いのは \mj{235s} や \mj{578s} からの \mj{5s} 切り。特に、\mj{5s} 切りの後に \mj{2z} が手出しされたことで、\mj{14s} や \mj{69s} の危険度はより高まる。
+
+%--------------------------------------------
+\subsection{ポンしなかった牌}
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 北,
+    jicha/hand = 22266m 345789p 35s -6p,
+    jicha/river = 32z 91m 98^s,
+    jicha/riverb = 9^s 1^m 2p,
+    jicha/point = 28000,
+    %
+    toimen/river = 1p 1z 9p 2^z 7m 9^p,
+    toimen/riverb = 5^6z 1s 2p 7z,
+    toimen/point = 22000,
+    %
+    kami/river = 3z 1s 2z 1^m 2^p 8m,
+    kami/riverb = 1z 5z 2s 7p 1^m,
+    kami/point = 34000,
+    %
+    shimo/hand = XXXXXXXXXX -6'66z,
+    shimo/river = 1p 1s 2z 8m 1^5m,
+    shimo/riverb = 4s 2^p 7^z 1^z 7p,
+    shimo/point = 36000,
+    %
+    kyoku = 南2局,
+    dora = 6z
+  }
+  
+  \caption{親がドラ \mj{6z} をポンして打 \mj{4s}。3巡ツモ切りの後 \mj{7p} が出てきた\citep[][p.~70]{takizawa-yomi}}
+  \label{rittai:nopon}
+\end{rittai}
+
+立体図 \ref{rittai:nopon} によると、下家がドラ \mj{6z} を仕掛けて最後の手出しの \mj{7p} のそばは怖く見えるが、実はそんなに怖がる必要がない。同巡、上家が \mj{7p} を切っており、もし手牌の中に \mj{677p} や \mj{778p} があったら既にポンしたはずである。\mj{9p} が3枚見えるので \mj{799p} の形も否定された。\mj{788p} の形なら普通に \mj{8p} を切って両面をとる。こう見ると、\mj{9p} と \mj{8p} は下家に対してかなり安全。\mj{9p} が当たる場合は、下家が \mj{4s} を切るときは既に \mj{6789p} のノベタン聴牌であるが、\mj{7p} をツモった時意地悪にあえて手出しした。
+
+%--------------------------------------------
+\subsection{チーしなかった牌}
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 西,
+    jicha/hand = 678m 112589p 1356s -5s,
+    jicha/river = 327z 1m 98^s,
+    jicha/riverb = 9^m 6^z,
+    jicha/point = 28000,
+    %
+    toimen/river = 31z 9s 79^m 6^z,
+    toimen/riverb = 4^z 4^p,
+    toimen/point = 22000,
+    %
+    kami/hand = XXXXXXXXXX -5'55z,
+    kami/river = 327z 1^m 8s 8m,
+    kami/riverb = 2s 1^4^z,
+    kami/point = 34000,
+    %
+    shimo/river = 1p 1s 2z 8m 1^m 8s,
+    shimo/riverb = 1^m 3^z,
+    shimo/point = 36000,
+    %
+    kyoku = 南2局,
+    dora = 5z
+  }
+  
+  \caption{6巡目に上家がドラ \mj{5z} をポンして打 \mj{8m} \citep[][p.~72]{takizawa-yomi}}
+  \label{rittai:nochi}
+\end{rittai}
+
+立体図~\ref{rittai:nochi} によると、上家は対面が切った \mj{4p} をチーしなくて、\mj{4z} をツモ切りした。もし上家の手牌の中に \mj{23p} や \mj{35p} や \mj{56p} の搭子があればもうチーするまたはロンするつもりである。しかも \mj{1p} が3枚見えるので、\mj{1p} の双碰に当たらない上、上家が手出ししない限り \mj{14p} はかなり安全と推論できる。（ただし \mj{7p} は \mj{89p}の辺張に当たる可能性がまだある。）
+
+\tehai{222m 1234p 223s -5'55z}[][4-5-1]
+
+もし上家の手牌が\ref{mj:4-5-1}のようにノベタンがあり、ツモ \mj{1s} で \mj{2s} の手出しをして、チーしなかった \mj{4p} は当たり牌になる\footnote{立体図~\ref{rittai:nochi} によるとノベタン聴牌は \mjfn{2s} 切りの後なので対面が \mjfn{4p} を捨てる時は既にロンするはず。ですので、ノベタンに要注意の時点は手出しの後。つまり、上家の \mjfn{2s} が対面の \mjfn{4p} の後で出ると \mjfn{1234p} のノベタンに警戒しよう。}。
+
+%--------------------------------------------
+\subsection{チャンタ・純チャン}
+
+チャンタ・純チャンは123789の数牌と字牌しか使うことできない役で、頭と暗刻は么九牌出なければならないので、聴牌打牌が2や8の場合ソバテンはほぼない\citep[][p.~74]{takizawa-yomi}。なぜなら、たとえ \mj{122s} の搭子があり、\mj{2s} が重なって暗刻になると全然嬉しくないので、\mj{2s} が出る場合は孤立牌を切るときまたはまた聴牌しないとき。もちろん、他の役牌をポンしており、手牌の中に対子が二つあり、\mj{122s} から \mj{2s} を切ってチャンタを狙うケースもあり、純チャンの場合なら \mj{2s} を先きる傾向が強くなる。
+
+
+%--------------------------------------------
+\subsection{ツモ切り立直読み}
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 南,
+    jicha/hand = 466678m 45p 678s 33z -3m,
+    jicha/river = 1s 1p 4z 482p,
+    jicha/riverb = 2m,
+    jicha/point = 17000,
+    %
+    toimen/river = 431p 1m 26p,
+    toimen/riverb = 1m,
+    toimen/point = 25300,
+    %
+    kami/river = 1m 99^s 9^8^p 2^m,
+    kami/riverb = 7^s 2vs,
+    kami/point = 46500,
+    %
+    shimo/river = 575p 24s 8p,
+    shimo/riverb = 8m,
+    shimo/point = 10200,
+    %
+    kyoku = 南1局,
+    dora = 4s
+  }
+  
+  \caption{Mリーグ2020 2/5 第2回戦 南1局 1本場（ツモ切り暗転は上家だけ）\citep[][p.~111]{muhai}}
+  \label{rittai:20200205}
+\end{rittai}
+
+立体図 \ref{rittai:20200205} によると、上家が3巡目からずっとツモ切りして、8巡目でツモ切り立直する。そのツモ切り立直の直前で、自分が切った \mj{2m} と対面が切った \mj{1m} は上家の捨て牌なので、あまり関係がない。よって、下家が切った \mj{8m} こそこのツモ切り立直を誘発する捨て牌である。ツモ切り立直の原因はいくつがある、
+
+\begin{enumerate}
+  \item 手変わりする牌が切られた
+  \item 黙聴で拾えると思った
+  \item 押さえつけ
+\end{enumerate}
+
+\tehai{57789m 406777p 44s}[上家　2巡目][4-3-1]
+
+そして今回は上家の手牌が\ref{mj:4-3-1}のように、\mj{57m} の嵌張を \mj{78m} の両面に変える機会が減ったせいで、ツモ切り立直に至った。
+
+
+
+\end{document}

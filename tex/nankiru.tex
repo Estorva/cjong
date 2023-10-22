@@ -1044,7 +1044,7 @@ JECONの文法：
 
 
 %--------------------------------------------
-\subsection{134の1がドラであるとき}
+\subsection{134の1がドラ}
 
 \tehai{?67m 134p 11?67s -7'77z}[東1局　西家　ドラ\mj{1p}][134]
 
@@ -1064,7 +1064,7 @@ JECONの文法：
 表~\ref{tab:134} の通り、赤ドラがないとき、\mj{2p} の嵌張待ちは \mj{25p} の両面待ちより打点上昇の程度は大きくないため、\mj{1p} 切りはおすすめである。しかし、赤ドラまたは他のドラが1枚以上あれば、\mj{1p} を残し、\mj{1s} ポンで \mj{1p} 単騎に移行することや \mj{1p} を引いて双碰待ちことによる大きい打点上昇は期待できるので\textbf{序盤}では \mj{4p} を切る方がいい\citep{yuusee-134}。
 
 %--------------------------------------------
-\subsection{578の5が赤ドラであるとき}
+\subsection{578の5が赤ドラ}
 
 \begin{table}[ht]
   \centering
@@ -2061,9 +2061,9 @@ JECONの文法：
 
 \subsubsection*{中張牌ドラと生牌字牌}
 
-中張牌ドラ七対子の局収支は1400\citep[][p.~110]{miinin-choice}。表~\ref{tab:ev-chitoi} によると非ドラ生牌字牌（1700）より低いので生牌字牌にする\footnote{作者が実戦で出会ったケース。}。
+中張牌ドラ七対子の局収支は1400\citep[][p.~110]{miinin-choice}。表~\ref{tab:ev-chitoi} によると非ドラ生牌字牌（1700）より低いので生牌字牌にする\footnote{中張牌ではないドラと生牌字牌の比較なら？これは作者が実戦で出会ったケース}。よって、手牌\ref{mj:rch-chitoi-5}は \mj{7s} を切って立直する\footnote{これも作者が実戦で出会ったケース。}。
 
-\tehai{1105m 11p 11557s 334z}[東1局　南家　7巡目　ドラ \mj{7s}][]
+\tehai{1105m 11p 11557s 334z}[東1局　南家　7巡目　ドラ \mj{7s}][rch-chitoi-5]
 
 \subsubsection*{筋と字牌の選択}
 
@@ -2526,19 +2526,93 @@ JECONの文法：
 
 ここの最大な不確定要素は北家。\mj{0p} チー後で打 \mj{2p} のは食い替えたばかり、速度はわかりにくいところ。よって、ここは一旦 \mj{2p} を切って一向聴を維持しつつ、次の引く牌や北家の動向次第で行動する。ちなみにこの直後Suphxは \mj{1p} チー打 \mj{6m} とした。
 
+\subsubsection*{手牌維持}
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 東,
+    jicha/hand = 340799m 78s 55z -4p -5'05s,
+    jicha/river = 3z 9p 1z 2s 1^2^p,
+    jicha/riverb = 9^6p,
+    jicha/point = 18400,
+    %
+    toimen/river = 9m 4^6z 2s 7z 3^s,
+    toimen/riverb = 9s 1^p,
+    toimen/point = 36400,
+    %
+    kami/river = 4z 8^m 3z 2^3^m 4^z,
+    kami/riverb = 2'z,
+    kami/point = 36300,
+    %
+    shimo/river = 1^p 9s 6z 2s 1^m 3s,
+    shimo/riverb = 3^s 1^z,
+    shimo/point = 7900,
+    %
+    kyoku = 南2局,
+    kyoutaku = 1,
+    dora = 2p
+  }
+  
+  \caption{親一向聴だが立直がくる場面}
+  \label{rittai:oya-maintain}
+\end{rittai}
+
+立直対して親のSuphxは外側の \mj{9m} を切った\citep[][pp.~52--53]{suphx}。親番が終われば残り2局、そして一位との点差が大きいのでこの点棒状況ならオリによるだろう、もしラス目の下家を飛ばせてくれば何卒。けれどここは5800の一向聴、アガればライス回避はほぼ確実。
+
+アガりに向かうけれどSuphxはド無筋の \mj{7m} や \mj{4p} でゼンツはしない。やや安全そうな \mj{9m} で押し、一向聴を維持する。聴牌なら押し、安牌が増えたらオリ、頭ができないならオリる。とはいえ、手牌がもっと悪い場合ちゃんと \mj{3m} でオリよう。
+
+\subsubsection*{吸収性能}
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 南,
+    jicha/hand = 340557m 456p 367s 777z,
+    jicha/river = 9p 1s 1p 6z 9^p 2p,
+    jicha/riverb = 2z 5p,
+    jicha/point = 26000,
+    %
+    toimen/river = 23^74z 9m 7p,
+    toimen/riverb = 8p 1m,
+    toimen/point = 24500,
+    %
+    kami/river = 2z 9p 51z 13m,
+    kami/riverb = 6m 5'p 6m,
+    kami/point = 19600,
+    %
+    shimo/river = 2z 9m 1^z 9p 6z 9s,
+    shimo/riverb = 5z 1m,
+    shimo/point = 28900,
+    %
+    kyoku = 東3局,
+    kyoutaku = 1,
+    dora = 4p
+  }
+  
+  \caption{親の立直を受けている場面}
+  \label{rittai:absorb}
+\end{rittai}
+
+\textbf{同じ無筋でもSuphxは打 \mj{7m}}\citep[][pp.~54--55]{suphx}。立直者の河に切られている色に偏りがある際、その逆色は特に危険。今回立体図~\ref{rittai:absorb} の場合、\mj{7m} は立直の前に固定された \mj{67m} にしか刺さらないのに対し、\mj{3s} は両面・辺張・嵌張・双碰いずれも否定されていない。ここで打 \mj{7m} としたらソーズを引いたら \mj{34m} を払ってまだ聴牌の可能性が残る。
+
 
 %--------------------------------------------
 \subsection{両向聴以上}
 
 \subsubsection*{壁か暗刻落としか}
 
-\tehai{67m 40p 224468s 444z -1p}[東1局　東家　ドラ \mj{6p}　\mj{2p}が4枚見えている]
+\tehai{67m 40p 224468s 444z -1p}[東1局　東家　ドラ \mj{6p}　\mj{2p} が4枚見えている]
 
-8巡目で下家が立直してきて、\mj{2p}が4枚見えているので \mj{1p} がかなり安全だが\textbf{Suphxは \mj{4z} の暗刻を落とした}\citep[][pp.~44--45]{suphx}。現物は \mj{4z} のみ。\mj{1p} で押すとしたら無筋 \mj{2468s} が出ていく可能性が高いので、暗刻落としによって \mj{2468s} を浮かせてよりいい聴牌を目指す。暗刻落としのうちに安牌が増えてきて \mj{1p} すら最後まで切らないことも可能。
+8巡目で下家が立直してきて、\mj{2p} が4枚見えているので \mj{1p} がかなり安全だが\textbf{Suphxは \mj{4z} の暗刻を落とした}\citep[][pp.~44--45]{suphx}。現物は \mj{4z} のみ。\mj{1p} で押すとしたら無筋 \mj{2468s} が出ていく可能性が高いので、暗刻落としによって \mj{2468s} を浮かせてよりいい聴牌を目指す。暗刻落としのうちに安牌が増えてきて \mj{1p} すら最後まで切らないことも可能。
 
 
 %=============================================================
 \section{副露対応}
+
+（TODO: 巡目別山に残るドラ枚数）
 
 %--------------------------------------------
 \subsection{放銃形と放銃打点}
