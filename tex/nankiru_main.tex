@@ -98,6 +98,8 @@
 \newcommand{\subfilepreamble}[1]{%
 	\onlyinsubfile{\section{#1}}
 	\onlyinsubfile{\tableofcontents\vspace{5mm}}
+	\onlyinsubfile{\bibliographystyle{../jecon}}
+  \onlyinsubfile{\nobibliography{../refmj}}
 }
 % the preamble that is common to all subfiles
 % arg: name of standalone section

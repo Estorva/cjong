@@ -1,6 +1,5 @@
 .cli
-.DS_Store
-*/.DS_STore
+*.DS_STore
 build
 cjong
 debug
@@ -12,10 +11,10 @@ ratio.png
 result.txt
 sim_*
 test.json
-tex/*.aux
-tex/*.bbl
-tex/*.blg
-tex/*.log
-tex/*.out
-tex/*.sync*
-tex/*.toc
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.sync*
+*.toc

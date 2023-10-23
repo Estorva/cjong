@@ -1,9 +1,0 @@
-\babel@toc {japanese}{}\relax 
-\contentsline {section}{\numberline {1}序盤戦略}{1}{section.1}%
-\contentsline {subsection}{\numberline {1.1}バラバラの配牌の打点上昇}{1}{subsection.1.1}%
-\contentsline {subsection}{\numberline {1.2}高くてバラバラの配牌}{1}{subsection.1.2}%
-\contentsline {subsection}{\numberline {1.3}辺張外し}{1}{subsection.1.3}%
-\contentsline {subsection}{\numberline {1.4}嵌張外し}{2}{subsection.1.4}%
-\contentsline {subsection}{\numberline {1.5}両面聴牌外し}{2}{subsection.1.5}%
-\contentsline {subsection}{\numberline {1.6}対子外し}{2}{subsection.1.6}%
-\contentsline {subsection}{\numberline {1.7}アガリトップ}{2}{subsection.1.7}%
