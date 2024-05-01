@@ -11,13 +11,13 @@
 \documentclass[10pt, twocolumn]{article}
 
 
-\newcommand{\renderOption}{0}
+\newcommand{\renderOption}{1}
 % 0: fast render
 % 1: full render
 
 
 \usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
-\usepackage{graphicx, expl3, minibox, amsmath, stfloats, tablefootnote, tikz, float, threeparttable, xfrac, multirow, etoolbox, verbatim, diagbox, siunitx, titling, subfiles, bibentry}
+\usepackage{graphicx, expl3, minibox, amsmath, stfloats, tablefootnote, tikz, float, threeparttable, xfrac, multirow, etoolbox, verbatim, diagbox, titling, subfiles, bibentry, amssymb}
 \usetikzlibrary{backgrounds}
 
 \usepackage{siunitx} % for aligning numbers within table
@@ -308,7 +308,7 @@
 
 \cs_new_protected:Npn \nankiru_drawRittaiFast:n #1 {
   \begin{tikzpicture}
-    \filldraw [fill=gray!10, draw=black] (-4, -3) rectangle (4, 3);
+    \filldraw [fill=gray!10, draw=black] (-4, -2.8) rectangle (4, 2.8);
     \node[draw, align=center] (center-kyoku) at (0,0) {\tl_use:N \l_rittai_kyoku\\ドラ \raisebox{-.25\height}{\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_dora}}};
   \end{tikzpicture}
 }
@@ -376,30 +376,27 @@
 
 \tableofcontents
 
-\section{牌理}
-\subfile{section/hairi}
-
-\section{序盤戦略}
-\subfile{section/joban}
-
-\section{副露判断}
-\subfile{section/furo}
-
-\section{立直判断}
-\subfile{section/riichi}
-
-\section{立直対応}
-\subfile{section/riichicare}
-
-\section{副露対応}
-\subfile{section/furocare}
-
-\section{河読み}
-\subfile{section/read}
+%\section{牌理}
+%\subfile{section/hairi}
+%
+%\section{副露判断}
+%\subfile{section/furo}
+%
+%\section{立直判断}
+%\subfile{section/riichi}
+%
+%\section{立直対応}
+%\subfile{section/riichicare}
+%
+%\section{副露対応}
+%\subfile{section/furocare}
+%
+%\section{河読み}
+%\subfile{section/read}
 
 
 %=============================================================
-\clearpage
+%\clearpage
 \appendix
 
 \section{数値計算}
@@ -508,7 +505,7 @@
 
 門前ピンフの手牌。立直はしないと仮定する。ツモすると20符となり、ピンフと門前ツモで2飜20符ができ、子だから得点は1500。誰かをロンすると30符となり、ピンフだけで1飜30符ができ、子だから得点は1000。
 
-
+%--------------------------------------------
 \subsection{局収支}
 
 局収支（きょくしゅうし）とは、点棒の収支期待値のこと\citep[][p. 17]{miinin-stat}。その求め方は\eqref{eq:shuushi}の通り\citep[][p. 18]{miinin-stat}。
@@ -538,6 +535,232 @@
 \end{table}
 
 基本的には、局収支の高い方の選択肢を選ぶのは正しい戦術。ですが、観測結果による数値計算に必ず誤差があって、局収支の差が100点しかないという状況で局収支の低い方を選ぶのは最善手になる可能性もある\citep[][p. 21]{miinin-stat}。具体的に局収支の差が400点よりも少ない場合は「どちらでもいい」と判断している\citep[][p.25]{miinin-stat}。
+
+%--------------------------------------------
+\subsection{ドラ切れ枚数による判断調整}
+
+表~\ref{tab:ev-ryanmen-riichi} などの数値は下記の要素しか考えない：
+
+\begin{itemize}
+\item 自分が親か子か
+\item 自分の打点
+\item 巡目
+\item 良形か愚形か
+\item 切る牌の危険度（立直に対して押すの場合）
+\end{itemize}
+
+つまり場況による考慮は欠如。色の高さ・ドラ切れ枚数を加味する押しひきは未だ戦略書にならないが、ここで既存の数値で推測してみよう。
+
+\begin{table*}[t]
+  \centering
+  \begin{tabular}{l|lllllll|l}
+        & 19牌 & 28牌 & 37牌 & 456牌 & 三元牌 & 風牌 & オタ風 & 平均値 \\
+    \hline
+    0枚 & 7639 & 8100 & 8544 & 8633 & 7977 & 7967 & 6791 & 7950 \\
+    1枚 & 5489 & 6056 & 6220 & 6402 & 6509 & 6499 & 5323 & 6071 \\
+    2枚 & 3956 & 4523 & 4687 & 4869 & 5462 & 5452 & 4342 & 4756 \\
+    3枚 & 3425 & 3688 & 3764 & 3848 & 4758 & 4749 & 3657 & 3984 \\
+    4枚 & 3077 & 3340 & 3416 & 3500 & 4282 & 4273 & 3181 & 3581 \\
+    5枚 & 3840 & 3102 & 3178 & 3263 & 3957 & 3948 & 2856 & 3306 \\
+    6枚 & 3681 & 2944 & 3020 & 3104 & 3740 & 3731 & 2639 & 3123 \\
+    7枚 & 3578 & 2777 & 2853 & 2937 & 3512 & 2502 & 2505 & 2943
+  \end{tabular}
+  \caption{切る牌の種類・ドラ切れ枚数別の放銃期待値\citep{ktrpry}}
+  \label{tab:ev-dora-cut}
+\end{table*}
+
+\citet{ktrpry}によると、表~\ref{tab:ev-dora-cut} の通り、ドラが見えて見えるほど放銃の期待値が低下する。タンヤオ・三色などの役との絡みやすさと待ちの組み合わせ数で456の方が19より痛いのは既知。注目したいのは下記の3つ：
+
+\begin{enumerate}
+\item ドラが1枚も見えてない場合で放銃すれば満貫に振り込むに近い
+\item ドラが1枚切れとなると期待値が0枚の方よりおよそ2000点低い（オタ風の場合を除け）
+\item ドラが2枚以上見えていると三元牌・風牌の方が痛い
+\end{enumerate}
+
+\begin{table*}[t]
+  \centering
+  \begin{tabular}{l|llllllll|l}
+          & 0枚 & 1枚 & 2枚 & 3枚 & 4枚 & 5枚 & 6枚 & 7枚 & 平均値 \\
+    \hline
+    5巡目 & 5370 & 4396 & 3825 & 3507 & 3287 & 3136 & 3040 & 2980 & 3609 \\
+    8巡目 & 5907 & 4723 & 3993 & 3604 & 3346 & 3170 & 3057 & 2986 & 3748 \\
+    12巡目 & 6627 & 5193 & 4259 & 3732 & 3426 & 3216 & 3078 & 2995 & 3941 \\
+  \end{tabular}
+  \caption{巡目・ドラ切れ枚数別の放銃期待値\citep{ktrpry}}
+  \label{tab:ev-dora-turn}
+\end{table*}
+
+そして表~\ref{tab:ev-dora-turn} の通り巡目が深くなるほど放銃の期待値が高まる。これらの数値があると表~\ref{tab:ev-ryanmen-riichi} などの数値をドラ見え枚数で調整できる。先制立直しても他家が必ず降りてくれるわけもないため、追いかけリーチに放銃することが期待値を左右する。自分が親か否かによる得点・失点の期待値も変動するが、ここで便宜上省略する。
+
+まずは自分の手牌のアガリ率と流局率。\citet{sinkagaku}の数値が表~\ref{tab:agari-prob} と表~\ref{tab:exhaust-prob} に載せている。放銃率とツモられる（横移動の）確率は、先制立直と追いかけ立直の関係はジャンケンボンのような完全にランダム的なので巡目とは関わらない。実際\citet{sinkagaku}の数値もほぼその通り、10\%にすぎない。
+
+\begin{table}
+  \centering
+  \begin{tabular}{lll}
+    巡目 & 両面立直 & 愚形立直 \\
+    \hline
+    5巡目 & 70\% & 55\% \\
+    8巡目 & 60\% & 45\% \\
+    12巡目 & 40\% & 33\% \\
+  \end{tabular}
+  \caption{巡目ごと先制立直のアガリ率}
+  \label{tab:agari-prob}
+\end{table}
+
+\begin{table}
+  \centering
+  \begin{tabular}{lll}
+    巡目 & 両面立直 & 愚形立直 \\
+    \hline
+    5巡目 & 10\% & 15\% \\
+    8巡目 & 18\% & 22\% \\
+    12巡目 & 30\% & 38\% \\
+  \end{tabular}
+  \caption{巡目ごと先制立直の流局率}
+  \label{tab:exhaust-prob}
+\end{table}
+
+これらの数値を\eqref{eq:shuushi}に加えると、両面先制立直の局収支の数式が\eqref{eq:shuushi-2}のように：
+%
+\begin{align}
+  \text{局収支} &= 0.4 \times \text{和了時得点} \nonumber \\
+  &+ 0.3 \times \text{流局時得点} \nonumber \\
+  &- 0.1 \times \text{横移動時失点} \nonumber \\
+  &- 0.1 \times \text{放銃時失点} \label{eq:shuushi-2}
+\end{align}
+%
+横移動失点を放銃時失点と同じ「失点」と扱って、流局の得点を1000点と仮定して、数式\eqref{eq:shuushi-2}はさらに簡略されて\eqref{eq:shuushi-ryanmen-turn12}になる：
+%
+\begin{align}
+  \text{局収支} &= 0.4 \times \text{得点} - 0.2 \times \text{失点} + 300 \label{eq:shuushi-ryanmen-turn12}
+\end{align}
+%
+この「失点」が場況によって変動する。表~\ref{tab:ev-ryanmen-riichi} にある12巡目の3飜30符先制両面立直の期待値（＝2600）が表~\ref{tab:ev-dora-turn} の平均値（＝3914）から計算すると仮定すると、ドラ切れ枚数ごと先制立直の期待値も計算できる。表~\ref{tab:kss-00} の通り、最悪（ドラが全く見えない）の場合局収支が平均から550点低い。12巡目の愚形先制立直の横移動率と放銃率もほぼ同じ10\%なので、この550の点差は愚形の場合にも適用できる。
+
+\begin{table}
+  \centering
+  \begin{tabular}{lll}
+        & 失点 & 局収支 \\
+    \hline
+    平均 & 3914 & 2600 \\
+    0枚 & 6627 & 2057 \\
+    1枚 & 5193 & 2344 \\
+    2枚 & 4259 & 2531 \\
+    3枚 & 3732 & 2637 \\
+    4枚 & 3426 & 2702 \\
+    5枚 & 3216 & 2739 \\
+    6枚 & 3078 & 2767 \\
+    7枚 & 2995 & 2783
+  \end{tabular}
+  \caption{12巡目でドラ切れ枚数ごとの3飜30符先制両面立直の期待値}
+  \label{tab:kss-00}
+\end{table}
+
+\textbf{ダマしても局収支の視点から結果は良くならない}。\citet{sinkagaku}によるとダマにより横移動率・放銃率が12\%台になる。アガリ率が増えるが、立直より得点が低い上、点棒を失う確率が増えるので、立直すべき手は立直しよう。
+
+
+%%=============================================================
+%
+%\section{麻雀は運ゲー}
+%
+%「麻雀は運ゲー」という命題は明らかに偽。だとしても麻雀には運の要素があるのは事実であり、検討すべきのは
+%
+%\begin{itemize}
+%\item 実力で運の要素をどれほど最小限にできる
+%\item 短期の出来事と長期の傾向
+%\item 方法論と結果論
+%\item 行動の準則
+%\end{itemize}
+%
+%麻雀の運要素について\href{https://note.com/yamashita_eee/n/n9c5d79c049a2#lT3jt}{\color{blue}こちら}、\href{https://note.com/nemata3939/n/n1e147f257ad0?magazine_key=m8ef8de61a47c}{\color{blue}こちら}、そして\href{https://note.com/nemata3939/n/n1efd77b9bf25?magazine_key=m8ef8de61a47c}{\color{blue}こちら}も言及する。作者のうわごとを読む前にそれらの文章を読んでみよう。
+%
+%\subsection{猿でも天和できる}
+%
+%「無限の猿理論」によると、猿が十分に長い時間をかけて鍵盤を叩き続けると打ち出されるのはほぼ確実に「ハムレット」とかの作品を含む。その確率は極めて小さいが、決して0（不可能）ではない。麻雀については同じように天和（親が14枚の配牌の時に既に4面子1雀頭が揃えていること）の確率は極めて小さくても決して不可能ではない。つまり、猿でも天和ということによってプロに勝つことができる\footnote{理牌さえできればね。}。
+%
+%麻雀は配牌だけのゲームではないため、「配牌で勝負を決める」のは確実に偽。「配牌の向聴数で順位をつける」こともない。配牌から牌をツモって牌を切って、4面子1雀頭を揃うことには意志の入力が必要。意志によって、まず猿やツモ切りボットのレベルを脱する。
+%
+%「麻雀は運7割・実力3割」はよく言われる。配牌の向聴数はただの運\footnote{イカサマ・牌操作を除くね。}、ツモった牌もただの運。どんな強いプロやAIも6向聴のクソ配牌で無駄ヅモを続けて和了ることはないだろう。形聴すら取れられば最善。たが、その「形聴」という最善の結果に導くのは実力。手牌の受け入れを最大限にして、守備力の前提で適度に副露して、リーチが来ても無理矢理押さないで、流局の時聴牌を維持することは実力を問う。クソ配牌を和了ることはほぼないが、実力がないと17巡後の形聴をとることもないだろう。
+%
+%\subsection{好調と惡調}
+%
+%麻雀は一局で済むゲームではない。東風戦には四局、半荘には八局（飛び・南入・西入がないと仮定して）。つまり、複数の局にランダムの要素があり、その一戦の順位にもランダムの要素がある。複数の対局の結果にもある。ランダムの要素があるなら、どんなありえないパターンも可能。ある時間の間に負け続けることは「惡調」と呼ばれている。その反対は「好調」。
+%
+%「こんなことはありえんだろ、次は必ず勝つッ」というのはギャンブラーの誤謬（ごびょう）。たとえ公正なコインを投げることにより、「裏が連続20回出る」ことは「不可能」とは言えない。そんなありえないと思われることがあっても、次で裏が出る確率も50\%と変わらない。毎回のコイントスは独立の事件だから。
+%
+%麻雀の対局を公正に仮定すれば、毎回の対局も独立なので、「5回ラス目を食らったら次絶対勝つッ」ことはないだろう。独立ではいないのはまさに人の感情。運の結果に動揺して自分の実力を証明したいという衝動による鬼打ちはやめようね。ラス目があったらラーメン食うに行こう。
+%
+%\subsection{後の祭り}
+%
+%ある行動に導く思考とその行動の結果は全く別のもの。最善の選択をしても必ずしも勝つわけではない。ありえなさそう選択をしてもひょっと和了ってしまうこともある。それこそ麻雀の運要素。
+%
+%「だとしたら何の選択をしても意味がない」という結論はもちろん間違っている。その間違っている結論に辿り着く思考はまさに「行動のある特定の結果だけによって行動を評価する」こと。たとえ東1局で三面張を立直しても四暗刻地獄単騎に放銃した後「あぁどうでもいいや立直しても負けりゃあ全部ダマにすりゃあいいやろっ」という極端の思考は結果論。
+%
+%麻雀では行動と結果に関係性があるものの因果性がない。運要素があるから。たとえ立直する後放銃することは決して全部が立直のせいではない。重要なのは配牌から立直までの何回の打牌は正しいかのこと。
+%
+%\subsection{「期待値」は望むものではない}
+%
+%「最善の選択をしても必ずしも勝つわけではない」の話の続き。麻雀は「配牌の向聴数が一番少ない人が勝つ」ゲームではない。「聴牌の時待ちの枚数が一番多い人が勝つ」ゲームでもない。勝利の条件は牌をツモった時4面子1雀頭を揃えること、それだけ。
+%
+%「でもこっちの立直の期待値が明らかにその追いかけ立直の期待値から高いのでは」と思うならまさに「期待値」の本質を捉えない証拠。「期待値」とか「上がり率」とかどっちにせよ、それらは多くの対局を分析して得た「全体的な数値」。長期のトレンドを示すが、1局だけの結果との因果性が全くない。それこそ運。運というランダム要素が無ければそもそも「期待値」という概念もない。
+%
+%期待値は全ての可能性とその得失点を計算して求めた数値。「自分の体感や経験に勝手に数字にして期待値と呼ぶ」のは詐欺に間違いない。「この選択の期待値はプラスから正しい」とか「その選択の期待値はマイナスからしない方がいい」の話はただ自分の憶測を正当化する口実。
+%
+%\subsection{アンドロイドは九蓮宝燈の夢を見るか}
+%
+%機械や動物を人間と同じ扱うのはまさに人間らしい思考。機械でも動物でも人間ではないので到底人間のように考えるのは不可能。麻雀のAIも人間らしく思考しない。MortalでもSuphxでもNagaでも「場況がこうならこのブロックが待ちになると不利になるのでこっちの搭子を落としたい」という考えは全くしない。ただ経験（何万局のトレーニングから得たニューラルネットのウェート）により全ての行動にある数値をつけて、数値が一番高い行動を「最善手」と称して選ぶ、それだけ。
+%
+%AIが従うのは準則ではない、経験である。つまり、AIは直感で打牌する。決して「こうならこうする」という準則で行動するではない。人間は手前の場況を数万局の行動と結果を加えて念入りに検討することができないので、その数万局を帰納して準則を従うことになる。それはAIと人間の最も大きな差。
+%
+%従って、AIの行動について検討すべきのは「こうすると得は何、損は何」ということ。AIの行動の「理由」にこだわるのは賽の河原の石積み。AIの行動も必ずしも100\%最善手ではない。
+%
+%\subsubsection*{Mortalの仕組み}
+%
+%\begin{figure*}
+%  \centering
+%  \includegraphics[width=\textwidth]{mortal}
+%  \caption{A diagram of how Mortal AI makes its decision.}
+%  \label{fig:mortal}
+%\end{figure*}
+%
+%Mortal is an AI engine trained with Q learning algorithm \citep{mortal}. With each episode equal to one round (\textit{kyoku}), the reward function is thus $\Phi_{k+1} - \Phi_k$ where $\Phi_k$ is the expected value of points at the end of round $k$. \eqref{eq:pt-ev} shows how $\Phi_k$ of player $n$ is calculated from $P_k^n \in \mathbb{R}^4$, the possibilities of placements of player $n$ when game ends estimated at the start of round $k$, and $w \in \mathbb{R}^4$, a vector of point distributions (\textit{uma}). In other words, Mortal is trained to maximize the expected value of points.
+%%
+%\begin{align}
+%  \Phi_k = P_k^n \cdot w \label{eq:pt-ev}
+%\end{align}
+%%
+%The possibility of placements $P_k^n$ is calculated by a neural network referred to as GRP in Mortal codebase which takes round number and player scores into consideration. $P_k^n$ and the tiles in Mortal's hand are then fed into another neural network called DQN to produce the Q values of actions and states. In an environment where Mortal is asked to react (i.e. to pick an action based on Q values), the action chosen is $a^\ast$ which maximizes the Q value given a certain state. An agari-guard makes sure that Mortal does not choose an action that confirms its last place even if such action has the highest Q value. The decision making process is illustrated in Figure \ref{fig:mortal}.
+%
+%Since Q learning algorithm does not use policy to update its Q values and Mortal greedily chooses an action when asked to do so, there is no function as that is equivalent to the policy function $\pi(a|s)$ in Mortal's engine. The $\pi_\tau(a|s)$ that is presented to users is merely a result of Softmax normalization of Q values as shown in \eqref{eq:softmax}. The parameter $\tau$ is referred to as ``temperature.''
+%%
+%\begin{align}
+%  \pi_\tau(a|s) = \frac{\exp(Q(s, a) / \tau)}{\sum_i \exp(Q(s, a_i) / \tau)} \label{eq:softmax}
+%\end{align}
+%
+%
+%\subsection{嘘、大嘘、そして統計}
+%
+%令和3年分日本人の平均給与は443万円\citep{jpnta}。「443万円なんてもらってねぇわ」ともう方々がいるだろう。そもそも「443万」という数値から何の情報も得られない。それはただの七桁の大きく聞こえる数字。東京の住民の平均給与はどれほど「443万円」から離れているか、IT業界の平均給与はそこからどれほど離れているか、男性の平均給与とか、それぞれの「条件」を加えたら得た数値からその条件が当たる団体の状況がわかる。
+%
+%麻雀も同じ、「ピンフドラ1立直の平均局収支はダマより高い」というのは「自分の手牌がピンフドラ1」という条件が当たる何千局何万局の得失点を合計した結果。その結果は他の場面を示さない。親のドラポンが見えるとどうなるか、もう両軒立直が入ったらどうなるか、トップ目ならどうなるか、残ったツモ巡目は1巡だけならどうなるか、全然わかない。
+%
+%そういっても、全ての条件を重ねてただ一人の給与を得ることは統計ではない。その数値から何もわからない。あるおっさんの今年の給与は1000万円だとしてもおっさんの住み区域の平均給与が推測できない。麻雀も同じ。有限の情報からとりあえず期待値を引き出してもその数値は他の場面には適用できない。同じ場面は二度と出ないから。多くの場面に適用できる行動の準則を作るためある程度の帰納が必要。
+%
+%初心者が麻雀を把握することに必要なのは「大雑把の準則」、中級者が上達することに必要なのは「高精度の判断」。
+%
+%\subsection{どうすれば麻雀は楽しめるか}
+%
+%これらの話を聞いたら「麻雀プレイヤーの末路が冷たいAIになることかぁ」と思うかもしれない。運がいい時は喜ばないで、運がない時は怒らないで、頭の中には「期待値」と「受け入れ」のばかり。うん、まさに機械。
+%
+%「麻雀をどう楽しむ」という問題は作者も悩んでいた。これらの話を書いた後ようやく結論に辿り着いた。今作者が麻雀をプレイするのは可愛い女の子の叫び声を聞くためだけ。手牌にドラが集まっていてキラキラするのが大変満足（アガれるかは別の話）。立直した後はスマホをいじるながらスタンプを相手に放つ。
+%
+%\begin{figure}[h]
+%  \centering
+%  \includegraphics[width=.3\textwidth]{tenkamusou}
+%  \caption{天下無双にゃ}
+%\end{figure}
+
+
 
 
 \nocite{*}

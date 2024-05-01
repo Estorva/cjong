@@ -138,6 +138,14 @@
 
 
 %--------------------------------------------
+\subsection{一色手}
+
+（混一色・清一色の副露判断）
+
+
+
+
+%--------------------------------------------
 \subsection{トイトイ}
 
 \tehai{1167m 2244p 788s 77z}[東1局　西家　4巡目　ドラ \mj{8p}][2-8-1]
@@ -164,19 +172,200 @@
 手牌\ref{mj:naki-11}と\ref{mj:naki-12}はバラバラの牌姿。聴牌までまた遠いの階段、両副露になる可能性が高い上、リーチが来て2000点の愚形で押し返すのは難しい。\textbf{「和了より押し引きの精度が要求されるルール」であればスルー}\citep[][p.~124]{hirasawa-naki}。しかも\ref{mj:naki-12}が両面二つあるので門前で聴牌する確率がより高い。\textbf{アガリトップなら鳴く}\citep[][p.~123]{hirasawa-naki}。
 
 %--------------------------------------------
-\subsection{タンヤオへの移行}
+\subsection{タンヤオ}
 
-\textbf{3900点があるなら向聴数が変わらなくても速度が上がるため鳴く}\citep[][pp.~127--128]{hirasawa-naki}。2000点なら場況（相手の速度・待ちの状況・ドラが使えるかなど）で判断する。
+\textbf{3900点（タンヤオ・ドラドラ）があるなら向聴数が変わらなくても速度が上がるため鳴く}\citep[][pp.~127--128]{hirasawa-naki}。2000点なら場況（相手の速度・待ちの状況・ドラが使えるかなど）で判断する。
 
 \tehai{367m 234499p 3377s}[東1局　西家　ドラ \mj{3z}　5巡目][naki-13]
 
 \tehai{367m 234499p 3377s}[東1局　西家　ドラ \mj{3s}　5巡目][naki-14]
 
-\tehai{367m 234499p 3377s}[東1局　西家　ドラ \mj{7z}　5巡目][naki-15]
+\tehai{367m 340599p 3377s}[東1局　西家　ドラ \mj{7z}　5巡目][naki-15]
 
 \tehai{367m 234499p 3377s}[東1局　西家　ドラ \mj{3m}　5巡目][naki-16]
 
 手牌\ref{mj:naki-13}で相手が切った \mj{7s} をポンしたら僅かなタンヤオのみので、スルーの方がいい。逆に\ref{mj:naki-14}は3900点あるので鳴く。手牌\ref{mj:naki-15}は鳴いたら2000点だけで、アガリトップでなければ立直に寄る。手牌\ref{mj:naki-16}も2000点ですが、門前で行けば \mj{3m} が不要になる可能性が高い\footnote{特に \mjfn{9p37s} が暗刻になる場合}のでタンヤオ・ドラ1の方がいい。
+
+\tehai{123345m 35678p 22s}[][naki-tanyao-1]
+
+手牌\ref{mj:naki-tanyao-1}はカン \mj{4p} 待ち、ドラなしオーラスで二着目と点差が少なくて立直しづらい場面。けれど、チー \mj{4m} でタンヤオがついてロンできる\citep{hirasawa-kuinobashi}。これは \mj{1m} を省略して \mj{23345m} を \mj{234m}＋\mj{35m} と見直して \mj{35m} からチー \mj{4m} のこと。\mj{23m} からチーすると喰い替え禁止のルールでは打 \mj{1m} はチョンボなので要注意。
+
+\tehai{123456m 35678p 22s}[][naki-tanyao-2]
+
+手牌\ref{mj:naki-tanyao-2}のようにマンズの部分が \mj{123456m} になると \mj{56m} から \mj{47m} が鳴ける。同じく、\mj{23m} から \mj{4m} を鳴けば打 \mj{1m} はチョンボ。
+
+\tehai{35m 067789p 34678s}[ドラ \mj{4z}][naki-tanyao-3]
+
+\textbf{面子を壊しそうに見えても愚形立直を避けられるなら鳴く}\citep{nemata-133}。手牌\ref{mj:naki-tanyao-3}は \mj{25s} 引いたら単騎になるので、\mj{4m} を鳴いて打 \mj{9p} によるタンヤオ一向聴の方がいい。
+
+\tehai{2344588m 68p 0789s}[ドラ \mj{6p}][naki-tanyao-4]
+
+手牌\ref{mj:naki-tanyao-4}も真っ直ぐに立直に向かうと \mj{0s} が出ていってドラ1愚形立直になりやすいので \mj{7p6s} が出たら積極的に鳴いてタンヤオドラ2の方がいい。
+
+\tehai{2234077m 0p 11157s}[ドラ \mj{5p}][naki-tanyao-5]
+
+そして手牌\ref{mj:naki-tanyao-5}も同じドラ1愚形立直になるので \mj{27m6s} が出たら全て鳴く。\mj{1s} の暗刻落としによる向聴戻しに抵抗感があるかもしれないが、\mj{0p} にくっつくとタンヤオドラ3になるのでその方がいい\citep{nemata-133}。
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 東,
+    jicha/hand = 688m 120677p 456s 1z,
+    jicha/river = 9s 9m,
+    jicha/point = 24200,
+    %
+    toimen/river = 2z 5z,
+    toimen/point = 3400,
+    %
+    kami/river = 6z 6p,
+    kami/point = 21300,
+    %
+    shimo/river = 1z 9^p,
+    shimo/point = 51100,
+    %
+    dora = 4z
+  }
+  
+  \caption{上家がたった2巡目で中張牌の \mj{6p} を切る場合}
+  \label{rittai:early-mid}
+\end{rittai}
+
+\textbf{上家が変則な捨て牌をするなら通常より積極的に鳴く}\citep{hououlab-1}。立体~\ref{rittai:early-mid} のようなたった2巡目で上家から \mj{6p} が来たら、手牌の中に辺張の \mj{12p} があるにもかかわらず、\mj{0677p}（＝\mj{07p}＋\mj{67p}）から鳴く。
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 東,
+    jicha/hand = 688m 267p 456s 1z -6'07p,
+    jicha/river = 9s 9m 1p,
+    jicha/point = 24200,
+    %
+    toimen/river = 2z 5z 9s,
+    toimen/point = 3400,
+    %
+    kami/river = 6z 3^s,
+    kami/point = 21300,
+    %
+    shimo/river = 1z 9^p 7z,
+    shimo/point = 51100,
+    %
+    dora = 4z
+  }
+  
+  \caption{次巡で上家が \mj{3s} を切る場合}
+  \label{rittai:early-mid-2}
+\end{rittai}
+
+立体~\ref{rittai:early-mid-2} は立体~\ref{rittai:early-mid} の次巡。ASAPINは \mj{456s} の面子をわざと壊して \mj{3s} をチーした。この鳴きは向聴数を戻すに見えるけど、次の巡目搭子を作る浮き牌は \mj{6m6s} になる。
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 北,
+    jicha/hand = 267m 3058p 4406 88s,
+    jicha/river = 9^m 1p,
+    jicha/point = 15900,
+    %
+    toimen/river = 1p 1^z 1^m,
+    toimen/point = 60700,
+    %
+    kami/river = 9p 85s,
+    kami/point = 25600,
+    %
+    shimo/river = 271^s,
+    shimo/point = 17800,
+    %
+    dora = 7z
+  }
+  
+  \caption{上家が3巡目で中張牌の \mj{5s} を切る場合}
+  \label{rittai:early-mid-3}
+\end{rittai}
+
+立体~\ref{rittai:early-mid-3} も同じ上家が早めの巡目で中張牌を切り始める場面。そしてASAPINも亜両面から鳴く。しかもこの手牌はすでにドラドラなので、スルーするわけもない\citep{hououlab-1}。
+
+%--------------------------------------------
+\subsection{食い伸ばし}
+
+食い伸ばしとは、既存の形よりチーとポンにより受け入れを増やせる技術、またはもう一つの搭子を作り出す技術。\mj{3456m} のような四連形という形は \mj{2457m} でもう一つの搭子を作れるの周知だが、\mj{4456m} のような亜両面はチー \mj{5m} によって \mj{45m} の両面ができるというのはおそらくそんなに広く知られていない。
+
+\tehai{35678m 22678p -7'77z}[][kinbs-1]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{ll}
+    鳴き & 最終形 \\
+    \hline
+    ポン \mj{2p} & \mj{5678m} \\
+    チー \mj{7m} & \mj{78m} \\
+    チー \mj{69m} & \mj{56m}
+  \end{tabular}
+  \caption{手牌\ref{mj:kinbs-1}を鳴きによる伸ばす形}
+  \label{tab:kinbs-1}
+\end{table}
+
+例え\ref{mj:kinbs-1}の牌姿は既にカン \mj{4m} 聴牌だが、表~\ref{tab:kinbs-1} の通り、ポン \mj{2p} やチー \mj{679m} により聴牌枚数が増える。それぞれの形と食い伸ばしできる牌は表~\ref{tab:kinbs-2} に載っている。
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{ll}
+    形 & 鳴ける牌 \\
+    \hline
+    \mj{13456m 22p} & \mj{457m2p} \\
+    \mj{13567m 22p} & \mj{4m} \\
+    \mj{13345m 22p} & \mj{34m2p} \\
+    \mj{22345m 22p} & \mj{1346m} \\
+    \mj{22456m 22p} & \mj{3m} \\
+    \mj{12234m 22p} & \mj{22p} \\
+    \mj{22233m 22p} & \mj{1234m2p} \\
+    \mj{222345m 5677p} & \mj{1346m6p} \\
+    \mj{222456m 678p ?} & \mj{347m}, 打 \mj{?}
+  \end{tabular}
+  \caption{形と鳴ける牌（載っていない牌はできた面子と想定）}
+  \label{tab:kinbs-2}
+\end{table}
+
+ちなみに \mj{3455m} という亜両面はチー \mj{4m} で両面を残すだけではなく、チー \mj{5m} で他家の打ち合わせを狙うことができる。特に上家がリーチしている状態で。たとえば、立体図~\ref{rittai:asapin-5p} でチー \mj{5p} によって手牌が一歩進んで、降りている他家が切る最後の一枚の \mj{5p} が狙われる\citep{hououlab-2}。
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 南,
+    jicha/hand = 3405p 788p 22s 1z -0'34s,
+    jicha/river = 341z 1s 1^p 9m,
+    jicha/riverb = 8m 5s 7^z 1^p,
+    jicha/point = 25000,
+    %
+    toimen/river = 1p 4z 9p 2z 11^m,
+    toimen/riverb = 22p 9m 1z,
+    toimen/point = 25000,
+    %
+    kami/river = 1'p 7^s 9^p 6^m 7^z 2^p,
+    kami/riverb = 4^s 6^z 1^s 5^p,
+    kami/point = 24000,
+    %
+    shimo/river = 326z 7s 13^m,
+    shimo/riverb = 571s 6^z,
+    shimo/point = 25000,
+    %
+    dora = 5s,
+    kyoutaku = 1
+  }
+  
+  \caption{ASAPINが上家の \mj{5p} を鳴いた}
+  \label{rittai:asapin-5p}
+\end{rittai}
+
+%--------------------------------------------
+\subsection{食い替え}
+
+\tehai{345678m 40p 05s -88'8p}[ドラ \mj{2m}][kike]
+
+先に触れられた食い替えは一つの面子に限られる。\mj{345678m} のような二つの順子がつながるなら話が違う。手牌~\ref{mj:kike} は既に3900の聴牌だが、上家がドラ \mj{2m} や赤ドラ \mj{0m} を切ってくれたら実はそれを拾って手牌を7700にする方法がある。\mj{34m} から \mj{2m} をチーしたら元に \mj{345m} の面子にある \mj{5m} は切るべきではないが、隣の面子の \mj{8m} を切っても \mj{567m} が残るので聴牌がまた維持されている。\mj{0m} の場合も同じ、\mj{34m} からチーして \mj{8m} を切ったらチョンボにはならない。
 
 %--------------------------------------------
 \subsection{一発消しと海底ずらし}
@@ -215,6 +404,46 @@
 \textbf{海底ずらしは常にすべき}\citep[][p.~190]{hirasawa-naki}。特に自分の手に和了なさそうな場面。ただし局収支の差は僅かな100点\citep[][p. 188]{miinin-choice}。立体~\ref{rittai:haitei} では現物が足りているが、\mj{1m} を切ると \mj{3m} がチーできなくなって、\mj{27s} 切ると同じ上家が切った現物をチーできないので、ここは4枚見えていてポンできない \mj{2m} を切る。
 
 %--------------------------------------------
+\subsection{邪魔ポン}
+
+邪魔ポンとは、対面が切る牌をポンして、自分の手牌を犠牲し、上家のチーできる機会やツモ番を飛ばす行為。守備力を下げて、アガリ放棄に近い意味なので、実戦で出る頻度は低いけど、上家が鳴いていると割りに効いている\citep{usagi}。
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 北,
+    jicha/hand = 567m 226788p 3338s,
+    jicha/river = 31z 9p 746z,
+    jicha/riverb = 1p 3m 5z,
+    jicha/point = 43700,
+    %
+    toimen/hand = XXXXXXX -6'57p 222'm,
+    toimen/river = 9^s 1m 7z 1s 13p,
+    toimen/riverb = 3^z 5m 2^z 3s,
+    toimen/point = 8100,
+    %
+    kami/hand = XXXXXXXXXX -1'11z,
+    kami/river = 11^p 89m 4p 6^m,
+    kami/riverb = 6^z 2^9^p,
+    kami/point = 35500,
+    %
+    shimo/river = 9p 235z 9^s 7z,
+    shimo/riverb = 6z 83m,
+    shimo/point = 12700,
+    %
+    kyoku = 東3局,
+    dora = 6m
+  }
+  
+  \caption{邪魔ポンをする場面}
+  \label{rittai:jamapon}
+\end{rittai}
+
+たとえ立体図~\ref{rittai:jamapon} の場面。上家の捨て牌は混一色濃厚。そしてここで対面が \mj{3s} を切った。ソーズの \mj{3s} は混一色に行く上家にとって非常に大事な牌だが、ここでポンしたら上家がチーできなくてツモの機会も一回減る。
+
+
+%--------------------------------------------
 \subsection{赤ドラを晒すと晒さない場面}
 
 \tehai{4056m 2245p 3s 3z -5'55z}[東1局　西家　ドラ \mj{5m}　5巡目][naki-17]
@@ -224,5 +453,39 @@
 \tehai{4056m 246p 1136s 55z}[東1局　西家　ドラ \mj{5m}　5巡目][naki-18]
 
 逆に\ref{mj:naki-18}のようなバラバラの手で、どうせ仕掛けが確定しているなら赤ドラを晒して相手の手を妨げるのが有効\footnote{ブラフは読みができて、または相手の副露に気をついている相手に有効。相手は読みができない、または何があっても気にせず全ツッパしているならブラフは効かない。}\citep[][pp.~196--197]{hirasawa-naki}。
+
+%--------------------------------------------
+\subsection{立直がくる場面}
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 西,
+    jicha/hand = 34067m 344p 34077s,
+    jicha/river = 4z 1s 5z 86p 8s,
+    jicha/riverb = 8s,
+    %
+    toimen/river = 7z 2m 3z 5p 78's,
+    toimen/riverb = 7^p 3^m,
+    %
+    kami/river = 1p 516^z 3s 4z,
+    kami/riverb = 4z 2p,
+    %
+    shimo/river = 2z 1p 2s 13m 1z,
+    shimo/riverb = 1z,
+    %
+    kyoutaku = 1,
+    dora = 3z
+  }
+  
+  \caption{立直が入っている場面、安めの3900、チーするか}
+  \label{rittai:yasume-chi}
+\end{rittai}
+
+\textbf{先制されたら一歩聴牌を取る方がいい}。立体図~\ref{rittai:yasume-chi}のような平場の東1局で、自分の手牌は超勝負手なので立直したいのはわかるが、先制立直を受けている後手も事実。聴牌を取らないとあと聴牌まで無筋危険牌を何回掴むのがわからないけれど、この3900で \mj{4p} で勝負できるのでチーして聴牌を取る方がいい\citep[][pp.~114--117]{doi}。
+
+
+
 
 \end{document}
