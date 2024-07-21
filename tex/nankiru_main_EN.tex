@@ -1,0 +1,1772 @@
+%==============! USE XELATEX TO COMPILE !==================%
+%==========================================================%
+% To compile:                                              %
+%     1. USE XELATEX                                       %
+%     2. USE XELATEX                                       %
+%     3. USE XELATEX                                       %
+%     4. Use \newcommand{\renderOption}{0} for fast render %
+%        (disabling most rendering of mahjong tiles)       %
+%==========================================================%
+
+\documentclass[12pt]{article}
+
+
+\newcommand{\renderOption}{1}
+% 0: fast render
+% 1: full render
+
+
+\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+\usepackage{graphicx, expl3, minibox, amsmath, stfloats, tablefootnote, tikz, float, threeparttable, xfrac, multirow, etoolbox, verbatim, diagbox, titling, subfiles, bibentry, amssymb}
+\usetikzlibrary{backgrounds}
+
+\usepackage{siunitx} % for aligning numbers within table
+\sisetup{table-format=-4,
+         table-space-text-pre={(},
+         table-space-text-post={)},
+         table-number-alignment = center,
+         table-align-comparator = false,
+         table-align-text-pre = false,
+         table-align-text-post = false,
+}
+
+\usepackage{enumitem}
+\setlist{noitemsep}
+
+\usepackage{mahjong-tsumogiri/mahjong}
+\graphicspath{{mahjong-tsumogiri/tiles/}}
+
+\usepackage[CJKspace]{xeCJK}
+\setCJKmainfont{YuMincho}
+
+\usepackage[hidelinks]{hyperref}
+
+\usepackage{babel}
+\usepackage{natbib}
+%\addto{\captionsjapanese}{\renewcommand{\refname}{参考文献}}
+
+\usepackage[nottoc,numbib]{tocbibind} % to add references into the ToC
+
+\usepackage{caption}
+%\captionsetup[table]{name=表}
+%\captionsetup[figure]{name=図}
+
+\usepackage[explicit]{titlesec} % formatting \subsubsection* and underline
+\usepackage{ulem}
+\renewcommand{\ULthickness}{0.7pt} % default: 0.4pt
+\renewcommand{\ULdepth}{4pt} % default: 3pt ish
+% format only numberless subsubsections
+\titleformat{name=\subsubsection,numberless}{\normalfont\normalsize\bfseries}{}{1em}{\hspace{-2ex}\uline{#1}}
+%\titlespacing*{command}{left}{before-sep}{after-sep}[right-sep]
+\titlespacing*{\subsubsection}{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
+
+\edef\restoreparindent{\parindent=\the\parindent\relax}
+\usepackage[skip=\glueexpr \baselineskip + 0pt plus 2pt\relax]{parskip}
+
+% store baselineskip
+% https://tex.stackexchange.com/questions/392269/default-baselineskip-for-corresponding-font-size
+\newlength\stdbls % standard baselineskip
+\AtBeginDocument{%
+  \setlength\stdbls{\baselineskip}%
+  \gdef\stdblsn{\strip@pt\stdbls}%
+}
+
+%\usepackage{xr}
+%\externaldocument[hairi-]{section/hairi}
+%\externaldocument[joban-]{section/joban}
+%\externaldocument[furo-]{section/furo}
+%\externaldocument[riichi-]{section/riichi}
+%\externaldocument[riichicare-]{section/riichicare}
+%\externaldocument[furocare-]{section/furocare}
+%\externaldocument[read-]{section/read}
+
+
+%============================== New command and float ==============================
+
+\newfloat{rittai}{t}{ritt}
+\floatname{rittai}{Situation}
+
+% mj command in footnote
+\newcommand{\mjfn}[1]{\raisebox{-.135\stdbls}{\mahjong[0.75\stdbls]{#1}}}
+
+\newcounter{tehaicount}
+\renewcommand{\thetehaicount}{(\arabic{tehaicount})}
+
+\newcommand{\onlyinsubfile}[1]{#1}
+\newcommand{\notinsubfile}[1]{}
+% subfiles only see commands before begin of document in base doc
+% these are later to be redefined
+
+\newcommand{\subfilepreamble}[1]{%
+	\onlyinsubfile{\section{#1}}
+	\onlyinsubfile{\tableofcontents\vspace{5mm}}
+	\onlyinsubfile{\bibliographystyle{../jecon}}
+  \onlyinsubfile{\nobibliography{../refmj}}
+}
+% the preamble that is common to all subfiles
+% arg: name of standalone section
+
+
+
+%============================== ExplSyntax ==============================
+\ExplSyntaxOn
+
+\DeclareExpandableDocumentCommand{\IfNoValueOrEmptyF}{mm}
+{
+  \IfNoValueF {#1}
+  {
+    \tl_if_empty:nF {#1} {#2}
+  }
+}
+
+% adjust mahjong tile height
+\NewDocumentCommand{\mj}{m}{
+  \ifdefstring{\renderOption}{1}{
+    \raisebox{-.18\stdbls}{\mahjong{#1}}
+  }{
+    \tl_set:Nn \l_tmpa_tl {#1}
+    \tl_replace_all:Nnn \l_tmpa_tl { ^ } { / } % text mode does not allow ^
+    \tl_use:N \l_tmpa_tl
+  }
+}
+
+\NewDocumentCommand{\tehai}{smO{}O{}}{
+  % DECIDE FAST RENDER OR FULL RENDER
+  \ifdefstring{\renderOption}{1}{
+    \nankiru_drawTehai:nnnn {#1} {#2} {#3} {#4}
+  }{
+    \nankiru_drawTehaiFast:nnnn {#1} {#2} {#3} {#4}
+  }
+}
+
+\cs_new_protected:Npn \nankiru_drawTehai:nnnn #1 #2 #3 #4 {
+  \tl_if_empty:nTF {#3} {
+    \noindent \IfBooleanF {#1} {\refstepcounter{tehaicount} \thetehaicount \hspace{1em} \phantomsection \IfNoValueOrEmptyF{#4}{\label{mj:#4}}} \raisebox{-.35\height}{\mahjong[1.5\stdbls]{#2}} 
+  }{
+    \noindent \IfBooleanF {#1} {\refstepcounter{tehaicount} \thetehaicount \hspace{1em} \phantomsection \IfNoValueOrEmptyF{#4}{\label{mj:#4}}} \minibox{#3 \\ \mahjong[1.5\stdbls]{#2}} 
+  }
+}
+
+\cs_new_protected:Npn \nankiru_drawTehaiFast:nnnn #1 #2 #3 #4 {
+  % show plain text
+  \tl_set:Nn \l_tmpa_tl {#2}
+  \tl_replace_all:Nnn \l_tmpa_tl { ^ } { / } % text mode does not allow ^
+  \tl_if_empty:nTF {#3} {
+    \noindent \IfBooleanF {#1} {\refstepcounter{tehaicount} \thetehaicount \hspace{1em} \phantomsection \IfNoValueOrEmptyF{#4}{\label{mj:#4}}} \tl_use:N \l_tmpa_tl
+  }{
+    \noindent \IfBooleanF {#1} {\refstepcounter{tehaicount} \thetehaicount \hspace{1em} \phantomsection \IfNoValueOrEmptyF{#4}{\label{mj:#4}}} \minibox{#3 \\ \tl_use:N \l_tmpa_tl}
+  }
+}
+
+\cs_generate_variant:Nn \tl_remove_once:Nn { NV }
+\cs_generate_variant:Nn \tl_remove_once:Nn { Nx }
+
+% define keys for rittai
+\keys_define:nn { rittai }
+{
+  jicha/  seat  .tl_set:N = \l_rittai_jicha,
+  jicha/  seat  .initial:n = E,
+  jicha/  hand  .tl_set:N = \l_rittai_jichahand,
+  jicha/  hand  .value_required:n = true,
+  jicha/  river .tl_set:N = \l_rittai_jichariver,
+  jicha/  riverb.tl_set:N = \l_rittai_jichariverb,
+  jicha/  riverc.tl_set:N = \l_rittai_jichariverc,
+  jicha/  point .tl_set:N = \l_rittai_jichapoint,
+  jicha/  point .initial:n = 25000,
+  
+  toimen/ hand  .tl_set:N = \l_rittai_toimenhand,
+  toimen/ hand  .initial:n = XXXXXXXXXXXXX,
+  toimen/ river .tl_set:N = \l_rittai_toimenriver,
+  toimen/ riverb.tl_set:N = \l_rittai_toimenriverb,
+  toimen/ riverc.tl_set:N = \l_rittai_toimenriverc,
+  toimen/ point .tl_set:N = \l_rittai_toimenpoint,
+  toimen/ point .initial:n = 25000,
+  
+  kami/   hand  .tl_set:N = \l_rittai_kamihand,
+  kami/   hand  .initial:n = XXXXXXXXXXXXX,
+  kami/   river .tl_set:N = \l_rittai_kamiriver,
+  kami/   riverb.tl_set:N = \l_rittai_kamiriverb,
+  kami/   riverc.tl_set:N = \l_rittai_kamiriverc,
+  kami/   point .tl_set:N = \l_rittai_kamipoint,
+  kami/   point .initial:n = 25000,
+  
+  shimo/  hand  .tl_set:N = \l_rittai_shimohand,
+  shimo/  hand  .initial:n = XXXXXXXXXXXXX,
+  shimo/  river .tl_set:N = \l_rittai_shimoriver,
+  shimo/  riverb.tl_set:N = \l_rittai_shimoriverb,
+  shimo/  riverc.tl_set:N = \l_rittai_shimoriverc,
+  shimo/  point .tl_set:N = \l_rittai_shimopoint,
+  shimo/  point .initial:n = 25000,
+  
+    
+  kyoku   .tl_set:N = \l_rittai_kyoku,
+  kyoku   .initial:n = E1,
+  honba   .tl_set:N = \l_rittai_honba,
+  honba   .initial:n = 0,
+  kyoutaku.tl_set:N = \l_rittai_kyoutaku,
+  kyoutaku.initial:n = 0,
+  dora    .tl_set:N = \l_rittai_dora,
+  dora    .initial:n = 0m,
+}
+
+\NewDocumentCommand{\drawrittai}{m}{
+  % DECIDE FAST RENDER OR FULL RENDER
+  \ifdefstring{\renderOption}{1}{
+    \nankiru_drawRittai:n {#1}
+  }{
+    \nankiru_drawRittaiFast:n {#1}
+  }
+}
+
+% draw rittai (ver 2 10/15/2023)
+\tl_new:N \l_rittai_sws
+\tl_new:N \l_rittai_sw
+  
+\cs_new_protected:Npn \nankiru_drawRittai:n #1 {
+  \keys_set:nn { rittai } {#1}
+  
+  \begin{tikzpicture}[framed]
+    
+    %----------------------hand
+    \node[anchor=south] (self) at (0,-3.1) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichahand}};
+    % ver 2: others hands are smaller
+    \node[anchor=south,rotate=180] (toimen) at (0,3.1) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenhand}};
+    \node[anchor=south,rotate=270] (kami) at (-4.2,0) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamihand}};
+    \node[anchor=south,rotate=90] (shimo) at (4.2,0) {\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimohand}};
+    
+    %----------------------kyoku
+    % ver 2: no rectangular box
+    \node[align=center] (center-kyoku) at (0,0) {\tl_use:N \l_rittai_kyoku\\ドラ \raisebox{-.25\height}{\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_dora}}};
+    
+    %----------------------seat wind and point
+    % ver 1: seat wind and point are at center of table
+    % ver 2: seat wind and point now appear above hand
+    %        honba and kyoutaku appear above own point
+    \tl_set:Nn \l_rittai_sws {ESWNESWN}
+    
+    \int_do_while:nn { \l_tmpa_int < 5 } {
+      \tl_set:Nx \l_rittai_sw {\tl_head:N \l_rittai_sws}
+      
+      \tl_if_eq:NNT \l_rittai_sw \l_rittai_jicha {
+        \node[anchor=south~west,align=left] at (-3,-2.4) {\,\mahjong[0.6\stdbls]{h}~\tl_use:N \l_rittai_honba \mahjong[0.6\stdbls]{-k}~\tl_use:N \l_rittai_kyoutaku \\ \tl_use:N \l_rittai_jicha~\tl_use:N \l_rittai_jichapoint};
+        
+        \tl_remove_once:Nx \l_rittai_sws {\tl_head:N \l_rittai_sws}
+        \node[anchor=south~west,align=left,rotate=90] at (3.5,-2.3) {\tl_head:N \l_rittai_sws~\tl_use:N \l_rittai_shimopoint};
+        
+        \tl_remove_once:Nx \l_rittai_sws {\tl_head:N \l_rittai_sws}
+        \node[anchor=south~west,align=left,rotate=180] at (3,2.4) {\tl_head:N \l_rittai_sws~\tl_use:N \l_rittai_toimenpoint};
+        
+        \tl_remove_once:Nx \l_rittai_sws {\tl_head:N \l_rittai_sws}
+        \node[anchor=south~west,align=left,rotate=270] at (-3.5,2.3) {\tl_head:N \l_rittai_sws~\tl_use:N \l_rittai_kamipoint};
+      }
+      
+      \int_incr:N \l_tmpa_int
+      \tl_remove_once:NV \l_rittai_sws \l_rittai_sw
+    }
+    
+    %----------------------river
+    \tl_if_empty:NF \l_rittai_jichariver {
+      \node[anchor=north~west, align=left] (riv-self) at (-1.26,-0.5) {
+        \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichariver} \tl_if_empty:NF \l_rittai_jichariverb {
+          \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichariverb} \tl_if_empty:NF \l_rittai_jichariverc {
+            \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_jichariverc}
+          }
+        }
+      };
+    }
+    
+    \tl_if_empty:NF \l_rittai_toimenriver {
+      \node[anchor=north~west, rotate=180, align=left] (riv-toimen) at (1.26,0.5) {
+        \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenriver} \tl_if_empty:NF \l_rittai_toimenriverb {
+          \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenriverb} \tl_if_empty:NF \l_rittai_toimenriverc {
+            \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_toimenriverc}
+          }
+        }
+      };
+    }
+    
+    \tl_if_empty:NF \l_rittai_kamiriver {
+      \node[anchor=north~west, rotate=270, align=left] (riv-kami) at (-1.29,1.26) {
+        \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamiriver} \tl_if_empty:NF \l_rittai_kamiriverb {
+          \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamiriverb} \tl_if_empty:NF \l_rittai_kamiriverc {
+            \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_kamiriverc}
+          }
+        }
+      };
+    }
+    
+    \tl_if_empty:NF \l_rittai_shimoriver {
+      \node[anchor=north~west, rotate=90, align=left] (riv-shimo) at (1.29,-1.26) {
+        \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimoriver} \tl_if_empty:NF \l_rittai_shimoriverb {
+          \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimoriverb} \tl_if_empty:NF \l_rittai_shimoriverc {
+            \\ \mahjong[1.2\stdbls]{\tl_use:N \l_rittai_shimoriverc}
+          }
+        }
+      };
+    }
+  \end{tikzpicture}
+}
+
+
+\cs_new_protected:Npn \nankiru_drawRittaiFast:n #1 {
+  \begin{tikzpicture}
+    \filldraw [fill=gray!10, draw=black] (-4, -2.8) rectangle (4, 2.8);
+    \node[draw, align=center] (center-kyoku) at (0,0) {\tl_use:N \l_rittai_kyoku\\ドラ \raisebox{-.25\height}{\mahjong[1.2\stdbls]{\tl_use:N \l_rittai_dora}}};
+  \end{tikzpicture}
+}
+
+
+% multicitep: cite multiple references in one parenthesis
+% ex: \multicitep{adams03, p.~3; collier09, p.~5}
+\makeatletter
+\NewDocumentCommand{\multicitep}{m}
+ {
+  \NAT@open
+  \mjb_multicitep:n { #1 }
+  \NAT@close
+ }
+\makeatother
+
+\seq_new:N \l_mjb_multicite_in_seq
+\seq_new:N \l_mjb_multicite_out_seq
+\seq_new:N \l_mjb_cite_seq
+
+\cs_new_protected:Npn \mjb_multicitep:n #1
+ {
+  \seq_set_split:Nnn \l_mjb_multicite_in_seq { ; } { #1 }
+  \seq_clear:N \l_mjb_multicite_out_seq
+  \seq_map_inline:Nn \l_mjb_multicite_in_seq
+   {
+    \mjb_cite_process:n { ##1 }
+   }
+  \seq_use:Nn \l_mjb_multicite_out_seq { ;~ }
+ }
+
+\cs_new_protected:Npn \mjb_cite_process:n #1
+ {
+  \seq_set_split:Nnn \l_mjb_cite_seq { , } { #1 }
+  \int_compare:nTF { \seq_count:N \l_mjb_cite_seq == 1 }
+   {
+    \seq_put_right:Nn \l_mjb_multicite_out_seq
+     { \citeauthor{#1},~\citeyear{#1} }
+   }
+   {
+    \seq_put_right:Nx \l_mjb_multicite_out_seq
+     {
+      \exp_not:N \citeauthor{\seq_item:Nn \l_mjb_cite_seq { 1 }},~
+      \exp_not:N \citeyear{\seq_item:Nn \l_mjb_cite_seq { 1 }},~
+      \seq_item:Nn \l_mjb_cite_seq { 2 }
+     }
+   }
+ }
+
+
+\ExplSyntaxOff
+
+
+
+
+%======================= END OF PREAMBLE ==========================
+\begin{document}
+
+\renewcommand{\onlyinsubfile}[1]{}
+\renewcommand{\notinsubfile}[1]{#1}
+
+\title{spaghet boi's jong note (part of)}
+\renewcommand\maketitlehookc{\vspace{-2ex}}
+\maketitle
+
+\tableofcontents
+
+%\section{牌理}
+%\subfile{section/hairi}
+%
+%\section{副露判断}
+%\subfile{section/furo}
+%
+%\section{立直判断}
+%\subfile{section/riichi}
+%
+%\section{立直対応}
+%\subfile{section/riichicare}
+%
+%\section{副露対応}
+%\subfile{section/furocare}
+%
+%\section{河読み}
+%\subfile{section/read}
+
+\section{Tile Efficiency}
+
+Tile efficiency is a set of policies and techniques that allows us to reach an optimal point when taking speed, value, win rate, and many other factors into consideration. There is also the concept of \textit{pure} tile efficiency which concerns of only the speed of reaching \textit{tenpai}, one tile away from completing our hand. As we will see later, focusing solely on pure tile efficiency will lead us to adverse situations. 
+
+The following text assumes that the reader has a basic understanding of mahjong rules such as suits, tiles, win conditions, call mechanisms, and riichi. There are, however, many terms that I cannot find a proper translation in English, so I will use Japanese terms as is. They are listed in Table~\ref{tab:term} along with some mahjong jargons. Many other terms such as \textit{ryanmenkanchan} and \textit{atosuji} will be introduced later in the text.
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{ll}
+    Term & Definition \\
+    \hline
+    Ryanmen & The shape consisting of two neighboring number tiles such as \mj{23p} (23p) \\
+    Kanchan & The shape consisting of tiles whose numbers have difference of 2 such as \mj{24p} (24p) \\
+    Penchan & The shape consisting of number tiles of 1 or 9 and a neighboring tile such as \mj{12p} (12p) \\
+    Toitsu & The shape consisting of two identical copies such as \mj{11p} (11p) \\
+    Taatsu & The set of ryanmen, kanchan, and penchan \\
+    Shuntsu & The shape consisting of three consecutive number tiles such as \mj{123p} (123p) \\
+    Koutsu & The shape consisting of three identical copies such as \mj{111p} (111p) \\
+    Minkou & A koutsu resulting from pon call and thus open to all players \\
+    Ankou & A koutsu in our hand invisible to other players \\
+    Mentsu & The set of koutsu and shuntsu, completed shapes \\
+    Tenpai & One tile away from completing our hand \\
+    1-away & One tile away from tenpai \\
+    2-away & Two tiles away from tenpai \\
+    Shanpon & A wait pattern where we have two pairs in our hand
+  \end{tabular}
+  \caption{Terminology}
+  \label{tab:term}
+\end{table}
+
+The following text is an excerpt of my mahjong notes translated into English. This is the part of my notes that, based on my experience, that makes huge difference for players that have basic understanding of tile efficiency but get confused when encountered with complex shapes. I organized this part into three subparts: complex taatsu, taatsus involving mentsus, and 6 block theory. This is by no means all of tile efficiency; there are more complex shapes, more difficult table situations, more specialized topics out there. Mahjong is a long journey.
+
+There is also this notation \sfrac{3}{12} which is my shorthand for ``3 kinds 12 tiles.'' It will be used in tables comparing the acceptance or improvement of drops and it will be followed by such tiles.
+
+
+\subsection{Complex Taatsu}
+
+Complex taatsus are shapes involving simple taatsus (penchans, kanchans, and ryanmens) and an additional tile. Table~\ref{tab:fkgtt-1} lists complex taatsus that uses three tiles.
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Name & Shape & Acceptance \\
+    \hline
+    Penchan-toitsu & \mj{112m} & \mj{13m} 6 tiles \\
+    Kanchan-toitsu & \mj{113m} & \mj{12m} 6 tiles \\
+    Ryankanchan & \mj{135m} & \mj{24m} 8 tiles \\
+    Ryanmen-toitsu & \mj{223m} & \mj{124m} 10 tiles
+  \end{tabular}
+  \caption{Types of complex taatsus using three tiles}
+  \label{tab:fkgtt-1}
+\end{table}
+
+Since complex taatsus except for ryankanchan contain a pair, they must serve as head when there is no other head candidate in our hand. On the other hand, when we have more than two complex taatsus containing pairs, the pairs will impair our acceptance, so in most cases we opt to break those pairs and fix them as single taatsus. In order to increase the probability of reaching good waits, as a rule of thumb, we drop one tile from the strongest complex taatsu \citep{gendai-complex1, gendai-complex2}. Table~\ref{tab:fkgtt-2} lists our actions based on the number of pairs, complex taatsus (excluding ryankanchans), and ryanmen-toitsus in our hand。
+
+\begin{table*}[ht]
+  \centering
+  \begin{tabular}{llll}
+    Pair & Complex taatsu & Ryanmen-toitsu & Action \\
+    \hline
+    2 & 2 &   & Fix the weakest complex taatsu into a pair \\
+    3 & 2 & 0 & Break the pair in the inner kanchan-toitsu \\
+      &   &   & Fix outer penchan-toitsu into a pair \\
+    3 & 2 & 1 & Fix the ryanmen-toitsu into a ryanmen \\
+    3 & 3 & 0 & Fix the weakest complex taatsu into a pair \\
+    3 & 3 & 1 & Fix the ryanmen-toitsu into a ryanmen \\
+    3 & 3 & 2 & Fix the weakest complex taatsu into pair
+  \end{tabular}
+  \caption{Action based on the number of pairs, complex taatsus, and ryanmen-toitsus.}
+  \label{tab:fkgtt-2}
+\end{table*}
+
+
+\subsubsection*{Two Pairs}
+
+We must drop a tile from either \mj{233p} or \mj{466s} from \ref{mj:fkgtt-1} since we will not be touching completed groups and simple ryanmens. To keep two pairs within our hand, our choices narrow down to \mj{2p} and \mj{4s}. Their acceptances are listed in Table~\ref{tab:fkgtt-3}, which suggests that dropping \mj{4s} has 4 more tiles than dropping \mj{2p} in terms of acceptance. This is a case of fixing the weaker complex taatsu into a pair and keeping the stronger complex taatsu.
+
+\tehai{12334578m 233p 466s}[][fkgtt-1]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Drop & \mj{4s} & \mj{2p} \\
+    \hline
+    Acceptance & \sfrac{6}{20}: \mj{69m 134p 6s} & \sfrac{5}{16}: \mj{69m 3p 56s} \\
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:fkgtt-1}.}
+  \label{tab:fkgtt-3}
+\end{table}
+
+\ref{mj:fkgtt-1a} has \mj{112345p} which makes dropping \mj{1p} and fixing \mj{45p} ryanmen attractive. But by doing so, we lost flexibility in manzu shape and we must make either \mj{66m} or \mj{77m} our head, thus reducing our acceptance. If we see \ref{mj:fkgtt-1a} as choosing between \mj{667m}\footnote{Strictly speaking, \mjfn{666778m} can be treated as either \mjfn{666m} + \mjfn{778m} or \mjfn{667m} + \mjfn{678m}, depending on which mentsu we extract from it. Either way, manzu shape is made of a ryanmen-toitsu and a mentsu; it does not change the fact that we are comparing between a ryanmen-toitsu and a penchan-toitsu.} and \mj{112p}, it becomes clear that dropping \mj{2p} here gives us the wide acceptance. Now, dropping \mj{5p} also gives the same acceptance as \mj{2p}, but considering the case when we draw \mj{47s} and wait on \mj{69m1p}, dropping \mj{2p} here makes the outside tile \mj{1p} more likely to come out. Hence drop \mj{2p} \citep{shibukawa-twopairs}. Table~\ref{tab:fkgtt-1a} lists our acceptance.
+
+\tehai{666778m 112345p 06s}[East-1, East seat, turn 6, dora \mj{4m}][fkgtt-1a]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Drop & \mj{1p} & \mj{2p} \\
+    \hline
+    Acceptance & \sfrac{4}{15}: \mj{36p47s} & \sfrac{8}{24}: \mj{56789m1p47s} \\
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:fkgtt-1a}.}
+  \label{tab:fkgtt-1a}
+\end{table}
+
+If our choices are between two ryanmen-toitsus, fix the inner one into a pair to make sure that when we reach tenpai our waits are outer, which has higher win rate. Therefore, between \mj{4m} and \mj{5s} from~\ref{mj:fkgtt-1-1}, we cut \mj{5s} \citep[][pp.~208--209]{suphx}.
+
+\tehai{334789m 34p 111566s}[][fkgtt-1-1]
+
+\ref{mj:two-ryanmentoitsu} also has two ryanmen-toitsus \mj{778m} and \mj{556s}, and one is connected to a completed mentsu \mj{345s}. Upon seeing this complex shape, one may be reluctant to touch complex souzu shape and tempted to drop \mj{7m} to fix \mj{78m} ryanmen or drop \mj{8m}. The \mj{7m} drop forces us to treat \mj{55s} as our head and renders \mj{36s} surplus, thus having less acceptance than \mj{8m} drop, while \mj{8m} drop leads us to final wait on either \mj{47p} or \mj{47s}. Our previous conclusion applies here as well: drop \mj{6s} since we have \mj{556s} which is inside \citep{shibukawa-twopairs}. Table~\ref{tab:two-ryanmentoitsu} lists our acceptance.
+
+\tehai{778m 12356p 345556s}[East-1, East seat, turn 6, dora \mj{6p}][two-ryanmentoitsu]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{llll}
+    Drop & \mj{7m} & \mj{8m} & \mj{6s} \\
+    \hline
+    Acceptance & \sfrac{4}{16}: \mj{69m47p} & \sfrac{7}{22}: \mj{7m47p2457s} & \sfrac{7}{23}: \mj{679m47p25s}
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:two-ryanmentoitsu}.}
+  \label{tab:two-ryanmentoitsu}
+\end{table}
+
+It should be noted that in all cases with only two pairs, fixing complex taatsus into simple taatsus will not lead to maximal acceptance. When we have two pairs in our hand, we can accept tiles of the same kind as these pairs; any tiles that follows these pairs also increases acceptance. If we only have one pair, say \mj{23p466s}, then the tile that follows the pair becomes useless, since drawing \mj{5s} destroys the pair and produces a mentsu, which renders our hand headless and unready. This means that sometimes we have to counterintuitively destroy ryanmens.
+
+
+\subsubsection*{Three Pairs, Two Complex Taatsus}
+
+Since we have more than two pairs in \ref{mj:fkgtt-2}, we opt to break one, either from \mj{233p} or \mj{466s}\footnote{Note that we do not drop \mjfn{8m} here since that is equal to dropping entire block and increasing our shanten number.}. Breaking the pair in both complex taatsus will give us the same number of acceptance, but the numbers of draws that lead to ryanmen tenpai are different and listed in Table~\ref{tab:fkgtt-4a}. This is a case of fixing stronger complex taatsu into a simple taatsu \citep{gendai-complex1}.
+
+\tehai{12334588m 233p 466s}[][fkgtt-2]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Drop & \mj{3p} & \mj{6s} \\
+    \hline
+    Acceptance & \sfrac{5}{16}: \mj{8m14p56s} & \sfrac{5}{16}: \mj{8m134p5s} \\
+    Ryanmen-tenpai draws & \sfrac{3}{8}: \mj{8m 56s} & \sfrac{1}{4}: \mj{5s} \\
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:fkgtt-2}.}
+  \label{tab:fkgtt-4a}
+\end{table}
+
+If our choices are between complex taatsus without ryanmens, there is no difference in direct acceptance and ryanmen-tenpai draws. If our complex taatsus contains kanchans, there is a chance for those to upgrade into ryanmens. It is therefore optimal to break the pair from inner kanchan-toitsus, since they have 8 tiles of ryanmen improvement as opposed to 4 tiles for outside kanchans. This means dropping \mj{6s} from \mj{466s} in \ref{mj:fkgtt-3}. Drawing \mj{37s} improves our \mj{46s} kanchan into ryanmen, but only \mj{4p} can produce a ryanmen taatsu out of \mj{13p} \citep{gendai-complex1}.
+
+\tehai{12334588m 133p 466s}[][fkgtt-3]
+
+For complex taatsus with few ryanmen-improvement draws, if the remaining pair is on the inner part, we can expect its ryanmen improvement. We need to fix a complex taatsu into a pair for that outcome, and it then becomes optimal to fix the weakest complex taatsu into a pair. \ref{mj:fkgtt-4} has \mj{899s} that, when turned into a penchan (simple taatsu), has no ryanmen improvement, compared to \mj{113p} which produces a ryanmen when we draw \mj{4p}, so we drop \mj{8s} and make it a pair \citep{gendai-complex1}.
+
+\tehai{123345m 11366p 899s}[][fkgtt-4]
+
+\ref{mj:fkgtt-4-1} has a more complex shape \mj{11333445p} that can be treated as either \mj{11p} + \mj{345p} + \mj{334p} or \mj{11p} + \mj{333p} + \mj{445p}, which leads to its wide acceptance of \mj{123456p}. We will lose some of its acceptance if we drop any tile from this shape, so instead we fix \mj{778s} into a ryanmen, since technically we still have three pairs in our hand. Table~\ref{tab:fkgtt-4-1} lists the acceptance after different drops. This leads to the rule of thumb that we keep the more complex shape with more acceptance intact \citep[][p.~24]{uzaku-nankiru}.
+
+\tehai{234m11333445p778s}[East-1, North seat, turn 7, dora \mj{3p}][fkgtt-4-1]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{llll}
+    Drop & \mj{7s} & \mj{4p} & \mj{3p} \\
+    \hline
+    Acceptance & \sfrac{8}{24}: \mj{123456p69s} & \sfrac{7}{21}: \mj{1236p679s} & \sfrac{6}{19}: \mj{125p679s}
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:fkgtt-4-1}.}
+  \label{tab:fkgtt-4-1}
+\end{table}
+
+\ref{mj:fkgtt-4-2} is also choosing between two ryanmen-taatsus \mj{556m} and \mj{566s}, and fixing either into a ryanmen does not make any difference in terms of acceptance. However, if we keep \mj{345566s} and draw another dora \mj{3s}, we can drop \mj{22z} and go for tanyao. In that regard, it is best that we drop \mj{5m} here \citep[][p.~24]{uzaku-nankiru}.
+
+\tehai{556m 678p 345566s 22z}[East-1, East seat, turn 6, dora \mj{3s}][fkgtt-4-2]
+
+
+\subsubsection*{Three Pairs, Three Complex Taatsus, No Ryanmen-Toitsus}
+
+If there are three complex taatsus, all of which contain no ryanmen, then it is optimal to fix the one with least ryanmen improvement into a pair, so that when the remaining complex taatsus becomes a mentsu, there will be no surplus tiles. \ref{mj:fkgtt-5-1} is the hand derived from \ref{mj:fkgtt-5} by dropping \mj{8s} and completing \mj{668p}. \ref{mj:fkgtt-5-2} is derived from \ref{mj:fkgtt-5} by dropping \mj{9s} instead and completing \mj{668p}. We can see, in Table~\ref{tab:fkgtt-4}, that dropping \mj{8s} loses \mj{7s} acceptance and we have 2 tiles of acceptance less than dropping \mj{9s}, but once \mj{668p} becomes a mentsu, \ref{mj:fkgtt-5-1} has 4 tiles of acceptance more than \ref{mj:fkgtt-5-2}. We therefore prioritize the width of 1-away acceptance and sacrifice a little bit at 2-away. Drop \mj{8s} \citep{gendai-complex1}.
+
+\tehai{12378m 113668p 899s}[][fkgtt-5]
+
+\tehai{12378m 113678p 99s}[][fkgtt-5-1]
+
+\tehai{12378m 113678p 89s}[][fkgtt-5-2]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Drop & \mj{8s} & \mj{9s} \\
+    \hline
+    Acceptance & \sfrac{7}{22}: \mj{69m1267p9s} & \sfrac{7}{24}: \mj{69m1267p7s} \\
+    Hand after completing \mj{668p} & \ref{mj:fkgtt-5-1} & \ref{mj:fkgtt-5-2} \\
+    Acceptance after completing \mj{668p} & \sfrac{5}{16}: \mj{69m12p9s} & \sfrac{3}{12}: \mj{69m7s}
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:fkgtt-5}, \ref{mj:fkgtt-5-1}, and \ref{mj:fkgtt-5-2}}
+  \label{tab:fkgtt-4}
+\end{table}
+
+
+\subsubsection*{Three Pairs, Three Complex Taatsus, One Ryanmen-Toitsu}
+
+If there is one ryanmen-toitsu among all three complex taatsus, it is optimal to fix the ryanmen-toitsu into a ryanmen. There will be no difference in immediate acceptance between the drop candidates \mj{26p9s} from \ref{mj:fkgtt-6}, but there will be huge differences when we draw any of the acceptances, as shown in Table~\ref{tab:fkgtt-6}. If we drop \mj{6p}, completing the remaining two complex taatsus \mj{223p} and \mj{899s} will leave us only 3 kinds 12 tiles of acceptance. Likewise for \mj{9s} drop. On the other hand, if we drop \mj{2p}, all effective draws will guarantee us 4 kinds 20 tiles of acceptance. One may be tempted by the \mj{7p} draw after dropping \mj{6p} which gives us complete iishanten, but also keep in mind that it is more likely to draw ourselves into 3 kinds 12 tiles of acceptance.
+
+\tehai{12378m 223668p 899s}[][fkgtt-6]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Drop & Next draw & Max acceptance \\
+    \hline
+    \mj{2p} & \mj{69m14p} & drop \mj{8p} $\to$ \sfrac{5}{16}: \mj{146p79s} \\
+            &         & drop \mj{8s} $\to$ \sfrac{5}{16}: \mj{1467p9s} \\
+            & \mj{6p} & drop \mj{8p8s} $\to$ \sfrac{4}{16}: \mj{69m14p} \\
+            & \mj{7p} & drop \mj{6p8s} $\to$ \sfrac{4}{16}: \mj{69m14p} \\
+            & \mj{7s} & drop \mj{8p9s} $\to$ \sfrac{4}{16}: \mj{69m14p} \\
+            & \mj{9s} & drop \mj{8p8s} $\to$ \sfrac{4}{16}: \mj{69m14p} \\
+    \hline
+    \mj{6p} & \mj{69m} & drop \mj{8s} $\to$ \sfrac{5}{16}: \mj{1247p9s} \\
+            & \mj{14p} & drop \mj{2p8s} $\to$ \sfrac{3}{12}: \mj{69m7p} \\
+            & \mj{2p} & drop \mj{3p8s} $\to$ \sfrac{3}{12}: \mj{69m7p} \\
+            & \mj{7p} & drop \mj{8s} $\to$ \sfrac{6}{20}: \mj{69m124p9s} \\
+            & \mj{7s} & drop \mj{3p9s} $\to$ \sfrac{3}{12}: \mj{69m7p} \\
+            & \mj{9s} & drop \mj{3p8s} $\to$ \sfrac{3}{12}: \mj{69m7p}
+  \end{tabular}
+  \caption{Differences between cutting \mj{2p} and \mj{6p} from \ref{mj:fkgtt-6}}
+  \label{tab:fkgtt-6}
+\end{table}
+
+Since it is difficult to calculate all the acceptance of all possible effective draws after dropping each possible tiles, we can just follow the principle to reduce the strongest complex taatsu to a ryanmen.
+
+\subsubsection*{Three Pairs, Three Complex Taatsus, Two Ryanmen-Toitsus}
+
+If there are two ryanmen-toitsus, then we fix the remaining complex taatsu into a pair. After that, since we have three pairs in our hand, we will have 2 tiles of acceptance less than fixing the other taatsus into a ryanmen. Considering the acceptance when we reach 1-away, however, it becomes clear that this sacrifice of 2 tiles at 2-away is worth. If we choose to fix any ryanmen in \ref{mj:fkgtt-7}, completing any complex taatsus leaves us 1 surplus tile. On the contrary, by fixing the weakest complex taatsu as our head, we are guaranteed complete iishanten no matter what we draw. Drop \mj{8s}, even though it may be a little bit counterintuitive because we have been hearing that three pairs are the weakest.
+
+\tehai{12378m223677p899s}[][fkgtt-7]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Drop & Next draw & Max acceptance \\
+    \hline
+    \mj{2p} & \mj{69m14p} & drop \mj{8s} $\to$ \sfrac{6}{20}: \mj{14578p9s} \\  
+            & \mj{58p} & drop \mj{7p8s} $\to$ \sfrac{4}{16}: \mj{69m14p} \\
+            & \mj{7p9s} & drop \mj{6p8s} $\to$ \sfrac{4}{16}: \mj{69m14p} \\
+            & \mj{7s} & drop \mj{6p9s} $\to$ \sfrac{4}{16}: \mj{69m14p} \\
+    \hline
+    \mj{8s} & \mj{69m} & drop \mj{2p} $\to$ \sfrac{6}{20}: \mj{14578p9s} \\
+            &          & drop \mj{7p} $\to$ \sfrac{6}{20}: \mj{12458p9s} \\
+            & \mj{14p} & drop \mj{2p} $\to$ \sfrac{6}{20}: \mj{69m578p9s} \\
+            & \mj{2p} & drop \mj{3p} $\to$ \sfrac{6}{20}: \mj{69m578p9s} \\
+            & \mj{58p} & drop \mj{7p} $\to$ \sfrac{6}{20}: \mj{69m124p9s} \\
+            & \mj{7p} & drop \mj{6p} $\to$ \sfrac{6}{20}: \mj{69m124p9s} \\
+            & \mj{9s} & drop \mj{3p} $\to$ \sfrac{6}{20}: \mj{69m2578p} \\
+            &         & drop \mj{6p} $\to$ \sfrac{6}{20}: \mj{69m1247p}
+  \end{tabular}
+  \caption{Differences between cutting \mj{2p} and \mj{8s} from \ref{mj:fkgtt-7}}
+  \label{tab:fkgtt-7}
+\end{table}
+
+
+%--------------------------------------------
+\subsubsection{Ryankanchan and Its Derived Shapes}
+
+The shape \mj{246p} is called \textit{ryankanchan} in Japanese, sometimes \textit{ryankan} for short. The shape contains two kanchans \mj{24p} and \mj{46p}, and \textit{ryan} in Japanese means ``two'', hence the name. It takes up the space of 3 tiles and accepts at most 8 tiles, and we are left to chose any of its two kanchans when other parts of our hands get filled up, so ryankanchan is weaker than ryanmen in terms of space efficiency and final waits.
+
+\subsubsection*{Comparison between Ryankanchans}
+
+Even between different kinds of ryankanchans, there are differences other than the tiles used. Table~\ref{tab:ryankanchan} lists three kinds of ryankanchan \mj{135p}, \mj{246p}, and \mj{357p}. Note that we omit \mj{468p} and \mj{579p} because they are identical to \mj{246p} and \mj{135p} due to symmetry of mahjong tiles. We can see that \mj{357p} has the most improvement draws, and dropping \mj{5p} from \mj{135p} makes our suji \mj{2p} wait better than non-suji \mj{2p} kanchan wait. \mj{246p} and the ryanmen \mj{67p} developed from it are all tanyao tiles, so it is a shape we would like to keep for tanyao. However, dropping a tile from two ryankanchans will largely depend on the actual table situation.
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Shape & Ryanmen draw & Comment \\
+    \hline
+    \mj{135p} & \mj{6p} & Dropping \mj{5p} makes \mj{2p} wait suji \\
+    \mj{246p} & \mj{7p} & Dropping \mj{2p} still keeps the acceptance of \mj{0p} \\
+    \mj{357p} & \mj{28p} & 
+  \end{tabular}
+  \caption{Comparison between ryankanchans}
+  \label{tab:ryankanchan}
+\end{table}
+
+
+\subsubsection*{Dropping Ryankanchan}
+
+\ref{mj:rk-1} has a ryankanchan and an ankou. If we drop \mj{8s} and make \mj{88s} our head, we will have only 4 kinds 16 tiles of acceptance at 1-away, as opposed to 7 kinds 24 tiles if we drop \mj{26m} while still maintaining 1-away, as shown in Table~\ref{tab:rk-1}. Besides the number of acceptance, when we keep \mj{456888s}, any draw of \mj{367s} develops our souzu shape, and any draw of manzu that gives us head leaves us ryanmen tenpai. The problem becomes which of \mj{26m} to drop. Considering the acceptance of \mj{0m} and the improvement draw \mj{7m}, drop \mj{2m} \citep[][p. 84]{uzaku-haikouritsu}.
+
+\tehai{246m 23467p 456888s}[][rk-1]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{llll}
+    Drop & \mj{2m} & \mj{6m} & \mj{8m} \\
+    \hline
+    Acceptance & \sfrac{7}{24}: \mj{456m5678p} & \sfrac{7}{24}: \mj{234m5678p} & \sfrac{4}{16}: \mj{35m58p}
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:rk-1}.}
+  \label{tab:rk-1}
+\end{table}
+
+Since \ref{mj:rk-7} has two ryanmens with overlapping acceptance, dropping ryanmens and dropping any of \mj{268s} from \mj{24668s} will not lead to any difference in terms of the number of acceptance. However, considering the shape of our final wait, we exclude ryanmens from our drop candidates. We must keep \mj{6s} pair in case we draw any of \mj{469m} which produces ryanmen. We also cannot overlook the possibility of 678 sanshoku, so we are incentivized to \mj{8s} keep. In this regard, \mj{2s} becomes the most unwanted tile. Drop \mj{2s} \citep[][p.~14]{uzaku-nankiru}.
+
+\tehai{55678m 3467p 24668s}[East-1, East seat, turn 5, dora \mj{7p}][rk-7]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{llll}
+    Drop & \mj{2s} & \mj{6s} & \mj{8s} \\
+    \hline
+    Acceptance & \sfrac{7}{24}: \mj{5m258p567s} & \sfrac{6}{24}: \mj{258p357s} & \sfrac{7}{24}: \mj{5m258p356s}
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:rk-7}.}
+  \label{tab:rk-7}
+\end{table}
+
+
+\subsubsection*{When the 5 of 135 Ryankanchan is Akadora}
+
+The draws that are related to the akadora of \mj{130p} ryankanchan are \mj{4567p}, which makes \mj{1p} seemingly useless. That said, when we draw \mj{2p}, \mj{0p} becomes floating and \mj{34567p} draws makes \mj{0p} useful. Besides, when we draw another \mj{1p}, it produces a head and a kanchan; drawing \mj{6p} further develops it into a ryanmen. Therefore, we would like to keep it intact, unless we have enough blocks to aim for tenpai \citep{yuusee-13r5}.
+
+For example, in \ref{mj:rk-9} since we only have \mj{345m} + \mj{688m} + \mj{130p} + \mj{1335s} four blocks, we must drop \mj{1z} and aim for draws that give us another block. If we draw \mj{2p}, as in \ref{mj:rk-9a}, then we can drop \mj{1s} and expect blocks around floating \mj{0p} and \mj{5s}.
+
+\tehai{345688m 130p 1335s 1z}[East-1, turn 1, dora \mj{5z}][rk-9]
+
+\tehai{345688m 1230p 1335s}[East-1, turn 2, dora \mj{5z}][rk-9a]
+
+\ref{mj:rk-10} is a similar hand, but since we already have 5 blocks, we can drop \mj{1p} and go for tanyao.
+
+\tehai{23445688m 130p 335s}[East-1, turn 2, dora \mj{5z}][rk-10]
+
+The \mj{10m} shape in \ref{mj:rk-11} is the predecessor of \mj{130m} ryankanchan, so it will be a loss if we drop \mj{1m} over otakaze \mj{2z}. However, this possibility will not make \mj{1m} stronger than seat wind or yakuhai \mj{46z}. So we drop \mj{2z} for now, and drop \mj{1m} later on.
+
+\tehai{10m 1389p 3666s 246z}[East-2, North seat, dora \mj{4m}][rk-11]
+
+
+\subsubsection*{Vertically Developed Ryankanchans such as 2246 and 2466}
+
+When we have \mj{1135p} and draw another copy of \mj{5p}, the result shape \mj{11355p} is a strong shape that accepts \mj{1245p} 4 kinds 12 tiles. Likewise for \mj{2246p} and drawing \mj{6p}, and \mj{1355p} and drawing \mj{1p}. If we draw both \mj{46p}, we end up the shape \mj{134556p}, which is called \textit{ryanmenkanchan}\footnote{See Section~\ref{subsec:rmkc} for more details on ryanmenkanchan.} \citep{chirno-kanchan}. Despite all these improvements, we still have to consider the cases where we have more stronger taatsus and must drop one from \mj{1135p} or \mj{2246p}.
+
+We can drop either \mj{4p} or \mj{8p} from \ref{mj:rk-2}, which will lead to the same number of 16 tiles of acceptance, as shown in Table~\ref{tab:rk-2}. Keeping two pairs \mj{99m44p} in our head does not give us more ryanmen improvement draws than keeping \mj{468p} shape (both having only \mj{3p}), and drawing any of these pairs into an ankou leaves rii-nomi. In that regard, it is slightly more advantageous to keep \mj{468p} shape and hope for pinfu. Drop \mj{4p} \citep[][p. 86]{uzaku-haikouritsu}.
+
+\tehai{12399m 4468p 34789s}[][rk-2]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Drop & \mj{4p} & \mj{8p} \\
+    \hline
+    Acceptance & \sfrac{4}{16}: \mj{57p25s} & \sfrac{5}{16}: \mj{9m45p25s} \\
+    Pinfu draws & \sfrac{2}{8}: \mj{57p} & \sfrac{1}{4}: \mj{5p}
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:rk-2}.}
+  \label{tab:rk-2}
+\end{table}
+
+\ref{mj:rk-3} has \mj{77m} instead of \mj{99m} compared to \ref{mj:rk-2}, which increases the draws that give us complete iishanten from \mj{3p} to \mj{68m3p}. In that regard, it is more advantageous to keep two pairs rather than keeping ryankanchan. Drop \mj{8p} \citep[][p. 88]{uzaku-haikouritsu}.
+
+\tehai{12377m 4468p 34789s}[][rk-3]
+
+Dropping \mj{3s} and \mj{7s} from \ref{mj:3577-1} leaves us the same number of acceptance. However, if we drop \mj{3s} and have \mj{99m077s}, drawing \mj{9m7s} means that \mj{0s} is very likely to become unusable and we are likely to end up rii-nomi waiting on kanchan wait. Even the ryanmen improvement \mj{8s} means that we have to give up \mj{0s}. In this regard, keeping \mj{307s} shape has more value and makes our kanchan wait more worth. Drop \mj{7s} \citep[][p.~26]{uzaku-nankiru}.
+
+\tehai{99m 23468p 3077s 444z}[East-1, East seat, turn 7, dora \mj{2p}][3577-1]
+
+Since we have a \mj{77z} in \ref{mj:3577-2}, when we call pon on \mj{7z} we must have a pair elsewhere. In that regard, we must keep \mj{77s} pair and drop \mj{3s}. It is likely that \mj{0s} becomes useless, but do keep in mind that open hands are meant to be fast while sacrificing hand value.
+
+\tehai{666789m 34p 3077s 77z}[East-1, West seat, turn 6, dora \mj{2m}][3577-2]
+
+
+\subsubsection*{Bulging Ryankanchans such as 1335 and 2446}
+
+To handle shapes like \mj{1335p} and \mj{2446p}:
+
+\begin{itemize}
+  \item 2-away
+  \begin{itemize}
+    \item Drop outer tile, aim for ryanmen improvement
+  \end{itemize}
+  \item 1-away
+  \begin{itemize}
+    \item If pinfu is within sight, cut the bulging part
+    \item If pinfu is infeasible, cut the inner tile
+  \end{itemize}
+\end{itemize}
+
+Suppose that a part of our hand is \mj{77m1335p} and the rest of our hand being completed blocks and a ryanmen. Table~\ref{tab:rk-1335} lists the pinfu draws, ryanmen improvement draws, and final waits (when the ryanmen is completed) of different drops from \mj{1335p}. When we reduce \mj{1335p} to a regular ryankanchan, it has the most draws that give us pinfu; if we cannot draw \mj{24p} in time, we can still cut \mj{5p} and riichi and make our \mj{2p} wait a suji. When pinfu is not feasible, we should cut \mj{5p} in advance to make our suji wait \mj{2p} more likely to come out\footnote{The argument that the suji of a tile cut in advance is more likely to come out than the suji of a riichi declaration tile is based on the deal-in rate difference of sujis. Sujis of riichi declaration tiles have higher deal-in rates than other kinds of sujis \citep[][pp.~152--153]{miinin-stat}. If a player's policy is to cut the suji with lower deal-in rate, they will tend not to cut riichi declaration tile suji.}. When our hand is callable, the \mj{3p} pair becomes more valuable.
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{llll}
+    Drop & \mj{1p} & \mj{3p} & \mj{5p} \\
+    \hline
+    Result shape & \mj{335p} & \mj{135p} & \mj{133p} \\
+    Pinfu draws & \sfrac{1}{4}: \mj{4p} & \sfrac{2}{8}: \mj{24p} & \sfrac{1}{4}: \mj{2p} \\
+    Ryanmen improvement draws & \sfrac{3}{12}：\mj{68m6p} & None & \sfrac{2}{8}: \mj{68m} \\
+    Final waits & \mj{7m3p} shanpon & \mj{2p} kanchan & \minibox{\mj{2p} kanchan\\\mj{7m3p} shanpon}
+  \end{tabular}
+  \caption{Comparing drops from the shape \mj{77m1335p}.}
+  \label{tab:rk-1335}
+\end{table}
+
+\ref{mj:rk-1335a} gains pinfu if we drop \mj{3p} and draw \mj{24p}. Meanwhile, \ref{mj:rk-1335b} cannot have pinfu no matter what we drop; in this case, drop \mj{5p} and make \mj{2p} more likely to come out. \ref{mj:rk-1335c} has no pinfu either, and it has \mj{555z} ankou, which means that, after dropping \mj{5p}, calling pon on both \mj{7m3p} will give us tenpai \citep{yuusee-1335}.
+
+\tehai{12377m 1335p 45789s}[East-1, East seat, turn 5, dora \mj{9s}][rk-1335a]
+
+\tehai{77m 1335p 45789s 333z}[East-1, East seat, turn 5, dora \mj{9s}][rk-1335b]
+
+\tehai{77m 1335p 45789s 555z}[East-1, East seat, turn 5, dora \mj{9s}][rk-1335c]
+
+\textbf{At 1-away, we should prioritize final waits and hand value.} Some may argue to drop \mj{1p} and expect \mj{6p} draw to give us ryanmen, but we cannot afford to wait for ryanmen improvement at 1-away; it is more likely to reach tenpai than improve our shapes at 1-away.
+
+
+\subsubsection*{Horizontally Developed Ryankanchans such as 2357}
+
+\textbf{Drop the kanchan part; generally, drop 5 first; when we have no head, drop 7.}\citep{yuusee-2357} Even if tanyao is within reach, keeping ryankanchan takes up the space which we could use for safe tiles instead. It is also possible that our ryankanchan ends up a kanchan bad wait, which leaves us no reason to not destroy it when we have a ryanmen.
+
+When we add \mj{4p} to \mj{2357p}, since \mj{23p} also accepts \mj{4p}, we actually end up with a mentsu and a kanchan. Compared to other inside kanchans\footnote{Inside kanchans are kanchans with 8 tiles of ryanmen improvement draws. For pinzu suit, for example, that would be \mjfn{35p}, \mjfn{46p}, and \mjfn{57p}.}, this \mj{57p} kanchan is inferior. In this regard, drop \mj{57m} and keep \mj{46p} in \ref{mj:rk-2357a}.
+
+\tehai{2357m 46p 22256788s}[East-1, turn 3, dora \mj{4z}][rk-2357a]
+
+In addition to ryanmen improvement draws, considering final waits, the kanchan part of \mj{2357p} is inferior to outside kanchans\footnote{Outside kanchans are kanchans with 4 tiles of ryanmen improvement draws. For pinzu suit, for example, that would be \mjfn{13p}, \mjfn{24p}, \mjfn{68p} and \mjfn{79p}.}. In this regard, drop \mj{57m} and keep \mj{79s} in \ref{mj:rk-2357b}.
+
+\tehai{2357m 2225699p 79s}[East-1, turn 3, dora \mj{4z}][rk-2357b]
+
+When we drop \mj{7p} from \mj{2357p}, the \mj{235p} shape produces a head if we draw \mj{25p}. Drawing \mj{4p} gives us a yonrenkei shape, which also produces a head easily. Since \ref{mj:rk-2357c} has no head, drop \mj{7m}.
+
+\tehai{2357m 234678p 3456s}[East-1, turn 3, dora \mj{4z}][rk-2357c]
+
+
+\subsubsection*{Ryankanchans with Following Ryanmens such as 34468}
+
+The \mj{34468p} shape produces a mentsu if we draw any of \mj{2457p}, as shown in Table~\ref{tab:rk-34468}, and therefore is a strong shape \citep{clearrain-34468, yuusee-34468}.
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Draw & Result shape & Composition \\
+    \hline
+    \mj{2p} & \mj{234468p} & Shuntsu \mj{234p} + ryankanchan \mj{468p} \\
+    \mj{4p} & \mj{344468p} & Ankou \mj{444p} + kanchan \mj{68p} \\
+            &              & or ryanmen-toitsu \mj{344p} + ryankanchan \mj{468p} \\
+    \mj{5p} & \mj{344568p} & Ryanmenkanchan (see \ref{subsec:rmkc}) \\
+    \mj{7p} & \mj{344678p} & Ryanmen-toitsu \mj{344p} + shuntsu \mj{678p}
+  \end{tabular}
+  \caption{Draws that produce a mentsu out of \mj{34468p} shape.}
+  \label{tab:rk-34468}
+\end{table}
+
+Since dropping any tile from \mj{34468p} annihilates the benefits mentioned earlier, when compared to yonrenkei or nakabukure, we tend to keep \mj{34468p} and fix other 4-tile shapes into a mentsu. As shown in Table~\ref{tab:rk-34468a}, dropping either of \mj{36p} also gives us far more acceptance than dropping any tile from \mj{34468m}. Therefore, drop \mj{3p} from \ref{mj:rk-34468a}.
+
+\tehai{34468m 3456p 11789s}[][rk-34468a]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{llll}
+    Drop & \mj{4m} & \mj{8m} & \mj{3p} \\
+    \hline
+    Acceptance & \sfrac{3}{12}: \mj{257m} & \sfrac{2}{8}: \mj{25m} & \sfrac{5}{16}: \mj{2457m1s}
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:rk-34468a}.}
+  \label{tab:rk-34468a}
+\end{table}
+
+When we have 6 blocks, we still tend to keep \mj{34468p} shape. When there are only ryanmens in the rest of our hand, drop \mj{8p}. In this regard, since there is a weaker \mj{79s} kanchan in \ref{mj:rk-34468b}, we drop \mj{79s}; since there is no weaker taatsu in \ref{mj:rk-34468c}, drop \mj{8m}.
+
+\tehai{34468m 45789p 2279s}[][rk-34468b]
+
+\tehai{34468m 45789p 2399s}[][rk-34468c]
+
+When we have 5 blocks, we still tend to keep \mj{34468p} shape. When there is no head in our hand, how we handle \mj{34468p} shape will largely depend on table situation and turn number. When we are still early in the game, we can drop \mj{8p} and focus on \mj{34p} ryanmen. When we are late and there is no room for improvement, make \mj{44p} our head and drop \mj{3p}. Therefore, even for the same hand such as \ref{mj:rk-34468d}, our decision changes depending on other information.
+
+\tehai{34468m 123789p 357s}[][rk-34468d]
+
+\textbf{Dropping \mj{5m} from \mj{13556m} in advance at 1-away is not recommended} \citep{yuusee-13556}. When we drop \mj{5m} from \ref{mj:rk-34468e}, our ryanmen-tenpai draw reduces to only \mj{2m}, opposed to \mj{24m} if we keep it, while both options have the same number of bad-wait draws, as shown in Table~\ref{tab:rk-34468e}. Keeping a safe tile here worsens our wait quality too much.
+
+\tehai{13556m 33789p 123s 4z}[East-1, West seat, turn 6, dora \mj{8p}][rk-34468e]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Drop & \mj{5m} & \mj{4z} \\
+    \hline
+    Result shape & \mj{1356m33p4z} & \mj{13556m33p} \\
+    Ryanmen-tenpai draws & \sfrac{1}{4}: \mj{2m} & \sfrac{2}{8}: \mj{24m} \\
+    Bad-wait draws & \sfrac{2}{8}: \mj{47m} & \sfrac{3}{8}: \mj{57m3p}
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:rk-34468e}.}
+  \label{tab:rk-34468e}
+\end{table}
+
+That said, we can drop the ryankanchan part when we draw \mj{6m}. Even though the shape \mj{5566m} has overlapping acceptance \mj{47m}, our bad-wait draws reduce to \mj{56m3p} 3 kinds 6 tiles, 2 tiles less than keeping \mj{13556m}, as shown in Table~\ref{tab:rk-34468f}. We also gain space for safe tiles. Therefore, drop \mj{3m} and then \mj{1m} from \ref{mj:rk-34468f}.
+
+\tehai{135566m 33789p 123s}[East-1, West seat, turn 6, dora \mj{8p}][rk-34468f]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Drop & \mj{3m} & \mj{6m} \\
+    \hline
+    Result shape & \mj{15566m33p} & \mj{13556m33p} \\
+    Ryanmen-tenpai draw & \sfrac{2}{8}: \mj{47m} & \sfrac{2}{8}: \mj{24m} \\
+    Bad-wait draw & \sfrac{3}{6}: \mj{56m3p} & \sfrac{3}{8}: \mj{57m3p}
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:rk-34468f}.}
+  \label{tab:rk-34468f}
+\end{table}
+
+The same principle applies to inner \mj{34468s} shape \citep{yuusee-34468}. Drop \mj{6s} from \ref{mj:rk-34468fa} and \ref{mj:rk-34468fb}.
+
+\tehai{444m 33p 678p 334468s}[East-1, West seat, turn 4, dora \mj{9p}][rk-34468fa]
+
+\tehai{11 789p 334468s 444z}[East-1, West seat, turn 4, dora \mj{9p}][rk-34468fb]
+
+Another case where we destroy \mj{13556m} shape at 1-away is when we have a 3--7 pair elsewhere and we draw \mj{1m}. When we draw \mj{1m} and drop \mj{5m}, we end up a kanchan-toitsu, a ryanmen, and a pair. This gives us the same number of acceptance, but the number of ryanmen-improvement draws increases, as shown in Table~\ref{tab:rk-34468g}. Therefore, drop \mj{5m} from \ref{mj:rk-34468g}.
+
+\tehai{113556m 33789p 123s}[East-1, West seat, turn 6, dora \mj{8p}][rk-34468g]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Drop & \mj{5m} & \mj{1m} \\
+    \hline
+    Result shape & \mj{11356m33p} & \mj{13556m33p} \\
+    Ryanmen-tenpai draws & \sfrac{2}{8}: \mj{12m3p} & \sfrac{2}{8}: \mj{24m} \\
+    Bad-wait draws & \sfrac{2}{8}: \mj{47m} & \sfrac{2}{8}: \mj{47m} \\
+    Ryanmen-improvement draws & \sfrac{2}{8}: \mj{24p} & \sfrac{1}{3}: \mj{6m}
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:rk-34468g}.}
+  \label{tab:rk-34468g}
+\end{table}
+
+When we have yakuhai ankou, we can still drop \mj{5m} and keep \mj{113m} to make our pon calls more likely. Drop \mj{5m} from \ref{mj:rk-34468h}.
+
+\tehai{113556m 11789p 555z}[East-1, West seat, turn 6, dora \mj{8p}][rk-34468h]
+
+
+\subsubsection*{Detached Ryankanchan such as 245679}
+
+The \mj{245679p} shape in \ref{mj:rk-4} is dubbed ``detached ryankanchan'' since it accepts \mj{38p} far apart. If we draw \mj{56p}, we can further improve it into a ryanmenkanchan. On the other hand, dropping either \mj{29p} will leave us a mentsu and kanchan; which to drop largely depends on the rest of our hand.
+
+In \ref{mj:rk-4}, dropping either of \mj{29p} from detached ryankanchan or dropping \mj{6m} from \mj{566m} will leave us the same number of acceptance at 1-away. However, considering the draws that will give us pinfu and the sanshoku chance, fixing \mj{56m} ryanmen here is more advantageous, as shown in Table~\ref{tab:rk-4} \citep[][p. 89]{uzaku-haikouritsu}.
+
+\tehai{566m 245679p 45699s}[][rk-4]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{llll}
+    Drop & \mj{6m} & \mj{2p} & \mj{9p} \\
+    \hline
+    Acceptance & \sfrac{4}{16}: \mj{47m38p} & \sfrac{5}{16}: \mj{467m8p9s} & \sfrac{5}{16}: \mj{467m3p9s} \\
+    Pinfu draws & \mj{38p} & \mj{8p} & \mj{3p} \\
+    Sanshoku-chance draws & \mj{4m8p} & \mj{4m8p} & None
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:rk-4}.}
+  \label{tab:rk-4}
+\end{table}
+
+
+\subsubsection*{Two ryankanchans}
+
+\ref{mj:rk-5} has two ryankanchans, one bulging and one vertically developed on one end. Since there is no pair in the rest of our hand, we will focus on how we can make tiles following \mj{55p} and \mj{66s} pair function. Dropping \mj{2s} makes \mj{4s} useless since completing \mj{466s} shape leaves us no pair and taatsu combination. Dropping either of \mj{357p} will make full use of all tiles while giving us the same number of acceptance. Taking ryanmen improvement into consideration, \mj{5p} drop becomes optimal, as shown in Table~\ref{tab:rk-5}.
+
+\tehai{123789m 3557p 2466s}[][rk-5]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{llll}
+    Drop & \mj{3p} & \mj{5p} & \mj{2s} \\
+    \hline
+    Acceptance & \sfrac{4}{12}: \mj{56p36s} & \sfrac{3}{12}: \mj{46p3s} & \sfrac{2}{8}: \mj{46p} \\
+    Ryanmen-improvement draws & \sfrac{2}{8}: \mj{8p5s} & \sfrac{3}{12}: \mj{28p5s} & \sfrac{2}{8}: \mj{28p}
+  \end{tabular}
+  \caption{Acceptance and improvement of \ref{mj:rk-5}.}
+  \label{tab:rk-5}
+\end{table}
+
+When we must choose between two simple ryankanchans, drop the tile that will make our wait better \citep[][p.~26]{feng-intermediate} Thus, we drop \mj{5p} from \ref{mj:rk-6} and make our wait suji.
+
+\tehai{246999m 33567s 579p}[][rk-6]
+
+% NEED SOURCE
+%\subsubsection*{リャンカンのそばに暗刻}
+%
+%Dropping \mj{1s} from \ref{mj:rk-8} seems to leave us a ryankanchan \mj{307s} and \mj{77s} head that makes full use of \mj{0s}. However, drawing \mj{3s} renders \mj{0s} useless and ends up rii-nomi. Drop \mj{68p}?
+%
+%\tehai{23468p 130777s 444z}[東1局　東家　7巡目][rk-8]
+%
+%\begin{table}[ht]
+%  \centering
+%  \begin{tabular}{ll}
+%    切る牌 & 受け入れ \\
+%    \hline
+%    \mj{1s} & \sfrac{7}{24}：\mj{678p3456s} \\
+%    \mj{8p} & \sfrac{6}{21}：\mj{6p12456s}
+%  \end{tabular}
+%  \caption{手牌\ref{mj:rk-8}の受け入れ}
+%  \label{tab:rk-8}
+%\end{table}
+
+%--------------------------------------------
+\subsubsection{134 Shape}
+
+It is a common pitfall to only see the ryanmen part of a \mj{134p} shape and drop \mj{1p} early. However, the possibilities of \mj{134p} can help us tremendously especially when we are early and our hand lacks shapes \citep{yoteru-134}. In short,
+
+\begin{itemize}
+\item Makes our hand \textit{kuttsuki}\footnote{\textit{Kuttsuki} is a Japanese term whose literal meaning is ``sticky,'' In mahjong context, it refers to a state where tiles next to or 1 tile away from floating tiles becomes acceptable.}
+\item Easy to produce a pair
+\end{itemize}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{llp{12cm}}
+    Draw & Shape & Comment \\
+    \hline
+    \mj{1m} & \mj{1134m} & A pair and a ryanmen. \\
+    \mj{2m} & \mj{1234m} & A yonrenkei, which produces a pair easily or functions as nobetan when we reach tenpai. \\
+    \mj{3m} & \mj{1334m} & A kanchan and a ryanmen. \\
+    \mj{4m} & \mj{1344m} & A kanchan and a pair. Decent as our final wait. \\
+    \mj{5m} & \mj{1345m} & A floating \mj{1m} and a mentsu. However, drawing \mj{2m} gives us \mj{45m} ryanmen, drawing \mj{3m} also gives us a decent kanchan. Drawing \mj{6p} and we have the \mj{13456m} shape which can easily further develop into a mentsu and a ryanmen. \\
+    \mj{6m} & \mj{1346m} & Two kanchans.
+  \end{tabular}
+  \caption{Development of \mj{134m}.}
+  \label{tab:134}
+\end{table}
+
+Therefore, when our hand does not have 5 blocks ready, we keep \mj{134p} over single yakuhais. When there is no head in our hand, we also prioritize \mj{134p}. Otherwise, dropping \mj{1p} is fine.
+
+\ref{mj:134-1} does not have enough blocks, so we keep \mj{134m} and expect it to develop. Drop \mj{56z} from \ref{mj:134-1}.
+
+\tehai{134m 340899p 248s 56z}[East-1, West seat][134-1]
+
+\ref{mj:134-2} already has 5 blocks to aim for tenpai, so we can drop \mj{1m} and keep \mj{56z} as safe tiles.
+
+\tehai{13488m 3468p 345s 56z}[East-1, West seat][134-2]
+
+\ref{mj:134-3} has no head confirmed, so we keep \mj{134m} to increase our chances of getting a head. Drop \mj{2z}.
+
+\tehai{134m 1236789p 888s 2z}[East-1, West seat, dora \mj{8s}][134-3]
+
+
+\subsubsection*{Play Defensively when Our Hand is Too Messy}
+
+\ref{mj:134-4} is 5-away and only has one ryanmen \mj{34m}. No matter how good \mj{134m} can develop, it is more likely that some one will slam riichi earlier than us do. In this case, we drop \mj{1m} and keep safe tiles \mj{567z}.
+
+\tehai{1348m 4899p 136s 567z}[][134-4]
+
+
+\subsubsection*{Avoid No Dora Bad-wait Rii-Nomi}
+
+\ref{mj:134-3a} has the same tiles as \ref{mj:134-3} but dora is \mj{7z} instead of \mj{8s}. The possible kanchan that \mj{134m} brings us becomes unfavorable, so we drop \mj{1m} and fix it into a ryanmen.
+
+\tehai{134m 1236789p 888s 2z}[East-1, West seat, dora \mj{7z}][134-3a]
+
+
+\subsubsection*{When the 1 is Also a Dora}
+
+As shown in Table~\ref{tab:134-dora}, when we have no akadora in \ref{mj:134}, keeping dora \mj{1p} or taking \mj{34p} ryanmen does not make too much difference in terms of hand value. Hence drop \mj{1p} and take ryanmen to increase win rate. When we have one or more akadoras, keeping dora \mj{1p}, and possibly calling pon \mj{1s} and pivot to \mj{1p} tanki or drawing another \mj{1p} and waiting on shanpon greatly increase hand value. When it is still early, with akadoras in our hand, it is advantageous to drop \mj{4p} \citep{yuusee-134}.
+
+\tehai{?67m 134p 11?67s -7'77z}[East-1, West seat, dora \mj{1p}][134]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    \mj{?} & Drop \mj{1p} & Drop \mj{4p} \\
+    \hline
+    \mj{5m} + \mj{5s} & 1000 points: \mj{25p} 7 tiles; 2000 points: \mj{0p} 1 tile & 2000 points \\
+    \mj{5m} + \mj{0s} & 2000 points: \mj{25p} 7 tiles; 3900 points: \mj{0p} 1 tile & 3900 points \\
+    \mj{0m} + \mj{0s} & 3900 points: \mj{25p} 7 tiles; 7700 points: \mj{0p} 1 tile & 7700 points
+  \end{tabular}
+  \caption{Value of \ref{mj:134} depending on drop and draw.}
+  \label{tab:134-dora}
+\end{table}
+
+
+%--------------------------------------------
+\subsubsection{When the 5 of 578 Shape is an Akadora}
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{ll}
+    Hand state & Action \\
+    \hline
+    Far away from tenpai & Keep \mj{078m} \\
+    1-away & Drop \mj{0m} if tanyao is infeasible \\
+    Tenpai & Generally drop \mj{0m} \\
+  \end{tabular}
+  \caption{Handing \mj{078m}.}
+\end{table}
+
+When we are still far away from tenpai, we can expect to draw tiles around \mj{0m}. Since \ref{mj:5-1} has the risk of ending up no dora bad-wait rii-nomi, we drop \mj{7s} from \mj{778s}. \ref{mj:5-2} also has the same risk, and \mj{557p} has more ryanmen-improvement draws than \mj{224s}, so we drop \mj{4s} \citep{yuusee-578}.
+
+\tehai{078m 23557p 224 778s}[][5-1]
+
+\tehai{078m 123557p 22478s}[][5-2]
+
+When we are 1-away, acceptance and final wait becomes more important than the value the dora brings. \ref{mj:5-3} has \mj{5z} yaku which gives us value of 1 han and we do not have to cling to \mj{0m} for value. Drop \mj{0m}
+
+\tehai{078m 22456p 688s 555z}[][5-3]
+
+However, as an exception, when keeping \mj{07m} gives us sanshoku or tanyao which enables us to call and speed up our hand, we drop \mj{8m}. When reaching tenpai, if dropping \mj{8m} guarantees sanshoku and tanyao, we can also dama our hand instead of dropping \mj{0m} and riichi. In this regard, \ref{mj:5-4} is at tenpai but does not have sanshoku confirmed, we drop \mj{0m} and riichi; on the other hand, \ref{mj:5-5} has confirmed sanshoku, and its value is already mangan, we drop \mj{8m} but do not riichi.
+
+\tehai{078m 22456p 22256s -7s}[][5-4]
+
+\tehai{078m 22567p 22256s -7s}[][5-5]
+
+
+%--------------------------------------------
+\subsubsection{3568 Shape}
+
+It is easy to produce a head out of \mj{3568p} shape \citep{yuusee-3568}. Not just stacking \mj{38p}, but drawing \mj{47p} also gives us yonrenkei. \mj{3p} can also function as a floater. Thus, it is generally treated as 2 blocks. Table~\ref{tab:3568} lists our policy when taking the rest of our hand into consideration.
+
+\begin{table}
+  \centering
+  \begin{tabular}{lll}
+    Number of block & Compared with & Action \\
+    \hline\hline
+    4 & & Keep \mj{3568p} \\
+    \hline
+    5 & Floaters (no head in hand) & Keep \mj{3568p} \\
+      & Floaters tiles other than 34567 & Keep \mj{3568p} \\
+      & Penchan (bottleneck of tanyao) & Keep \mj{3568p} \\
+      & Penchan (not bottleneck of tanyao) & Drop \mj{3568p} \\
+      & Floaters tiles of 34567 & Drop \mj{3568p} \\
+    \hline
+    6 & & Drop \mj{3568p} \\
+    \hline\hline
+  \end{tabular}
+  \caption{Handling \mj{3568p} or \mj{2457p} \citep{yuusee-3568, clearrain-3568}}
+  \label{tab:3568}
+\end{table}
+
+\ref{mj:3568-1} already has \mj{5z} ankou, and directly accepting \mj{3m} using \mj{12m} penchan is valuable. Thus, we drop \mj{8p} first, and then drop \mj{3p} if it does not give us ryanmen.
+
+\tehai{12m 3568p 22788s 555z}[East-1, West seat, turn 3, dora \mj{1s}][3568-1]
+
+\ref{mj:3568-2}, however, gains tanyao if \mj{12m} is removed. Therefore, we drop \mj{1m} and expect to draw \mj{8p} or tiles around \mj{3p}.
+
+\tehai{12m 3568p 22455788s}[East-1, West seat, turn 3, \mj{1s}][3568-2]
+
+Compared to 3--7 floaters, generally, we drop \mj{8p} from \mj{3568p} since it has 4 less tiles of acceptance as a floater. However, for hands like \ref{mj:3568-3} where there is no confirmed head, we drop \mj{7m} and expect to find a head in shaped developed from \mj{3568p}.
+
+\tehai{237m 3568p 1236778s}[East-1, West seat, turn 3, dora \mj{1s}][3568-3]
+
+There are 6 blocks in \ref{mj:3568-4}, which makes us choose between \mj{2m89p} to drop. If we simply treat \mj{2457m} as two kanchans, we are tempted to drop the weakest taatsu, which is \mj{89p} penchan. However, dropping penchan has the following demerits:
+
+\begin{itemize}
+\item \mj{45m} cannot function as ryanmen (as long as we do not draw \mj{278m})
+\item We lose \mj{7p} acceptance
+\end{itemize}
+
+On the other hand, if we keep \mj{457m89p} shape, we will not lose \mj{3m} acceptance because we still have \mj{45m} ryanmen, and drawing \mj{7p} completes a block. The merits of keeping \mj{2m} here, which is to increase the probability of confirming a head, becomes irrelevant due to \mj{11p}, so we can drop \mj{2m} without much loss.
+
+\tehai{2457m 1189p 667s 444z}[][3568-4]
+
+
+%--------------------------------------------
+\subsubsection{35689 Shape}
+
+In situations where we are choosing between a 3--7 floater and \mj{35689p} shape, drop the latter, but not its penchan part. \textbf{Generally, drop mj{3p} and keep penchan at 1-away} \citep{yuusee-35689}. With \mj{35689p}, riichi chance on \mj{7p} draw is more valuable than forming a taatsu around \mj{3p}. Besides, this floater \mj{3p} is inferior to an isolated floater 3 because:
+
+\begin{itemize}
+\item Drawing \mj{2p} produces a ryanmen with overlapping acceptance
+\item Drawing \mj{4p} does not give us a ryanmen; it produces a mentsu \mj{345p} and a kanchan \mj{68p}
+\end{itemize}
+
+While it is true that \mj{34568p} has \mj{245p} draws that give us ryanmen, from dropping \mj{9p} to drawing any of \mj{245p} upgrade will inevitably take a couple of turns.
+
+That said, there are two cases where we can drop penchan \mj{89p} and go back to 2-away after dropping \mj{3p}:
+
+\begin{enumerate}
+\item Penchan is the bottleneck of tanyao
+\item We have other strong shapes such as yonrenkei and nakabukure\footnote{Shapes such as \mjfn{2334p}.}
+\end{enumerate}
+
+When we are comparing between floaters in \ref{mj:35689-1} at 2-away\footnote{While generally we take penchan over floaters at 1-away, when we are 2-away instead, we have some leeway to seek taatsu around floaters and hope for better shapes. Indeed \citet{yuusee-389} states that we can drop penchan if we have two 3--7 floaters at 2-away. However, as stated previously, the \mjfn{3p} floater is actually weaker than an isolated 3--7 floater, so, in the case of \mjfn{35689p}, we do not really meet the standard of dropping penchan.}, \mj{3s} from \mj{35689s} is inferior to isolated \mj{6p}. Therefore, drop \mj{3s}.
+
+\tehai{22378m 1136p 35689s}[East-1, West seat, turn 5, dora \mj{8m}][35689-1]
+
+Likewise, for \ref{mj:35689-2} which is 1-away, we keep \mj{89s} penchan and cut \mj{3s} floater.
+
+\tehai{234789m 115p 35689s}[East-1, West seat, turn 5, dora \mj{8m}][35689-2]
+
+If we later draw \mj{6m} and get yonrenkei \mj{6789m} in \ref{mj:35689-3}, we can drop \mj{89s} penchan. Since this penchan still has overlapping acceptance, when we have very strong shapes in the rest of our hand, we can opt to drop penchan at 1-away.
+
+\tehai{2346789m 115p 5689s}[East-1, West seat, turn 6, dora \mj{8m}][35689-3]
+
+If this \mj{89s} penchan is the only bottleneck of tanyao, we can drop it in exchange of value and flexibility even if it increases our shanten number. Drop \mj{9s} from \ref{mj:35689-4}.
+
+\tehai{22367m 2247p 35689s}[East-1, West seat, turn 5, dora \mj{8m}][35689-4]
+
+
+%--------------------------------------------
+\subsubsection{Sankanchan and Yonkanchan}
+
+Shapes like \mj{1357p} are dubbed \textit{sankanchan} and \mj{13579p} \textit{yonkanchan} in Japanese, because they have three kanchans and four kanchans respectively. In general, the order of importance is ``even-numberred sankanchan \textless{} floaters \textless{} odd-numbered sankanchan \textless{} outer kanchan \textless{} yonkanchan \textless{} inner kanchan'' \citep{chirno-kanchan}.
+
+For odd-numbered sankanchan like \mj{1357p}, drawing \mj{17p} produces a ryankanchan and a head, drawing \mj{9p} produces a yonkanchan, drawing \mj{35p} produces a ryankanchan and a kanchan, drawing \mj{8p} produces a ryanmen, and drawing \mj{246p} completes a mentsu. Therefore, the acceptance of \mj{1357p} is \mj{123456789p}. However, if we must choose between an outside kanchan and a sankanchan, dropping \mj{1p} from \mj{1357p} while keeping the kanchan gives us the same number of acceptance but more ryanmen-improvement draws, as shown in Table~\ref{tab:1357}. Hence the conclusion that sankanchans are weaker than outside kanchans.
+
+\begin{table}
+  \centering
+  \begin{tabular}{lll}
+    Drop & \mj{1p} & \mj{13s} \\
+    \hline
+    Acceptance & \sfrac{3}{12}: \mj{46p2s} & \sfrac{3}{12}: \mj{246p} \\
+    Ryanmen-improvement draws & (\mj{2p})\tablefootnote{Since we just cut \mjfn{1p}, this could make us end up furiten.}\mj{8p4s} & \mj{8p}
+  \end{tabular}
+  \caption{Acceptance of \mj{1357p13s}.}
+  \label{tab:1357}
+\end{table}
+
+Yonkanchans like \mj{13579p} accept \mj{2468p} but lack any ryanmen improvement. When we choose between yonkanchan and a inside kanchan, we can reduce yonkanchan into a sankanchan without losing acceptance while increasing our ryanmen improvement draws.
+
+Even-numbered sankanchans such as \mj{2468m} also lack any ryanmen improvement. In most cases, we reduce it to a ryankanchan. The only case where we would keep it as is is when we are aiming for tanyao and treat it as \mj{24m} and \mj{68m} two kanchans. Therefore, we drop \mj{8s} from \mj{2468s} in \ref{mj:3-1} for the faint possibility of 234 sanshoku, and we drop \mj{11m} pair from \ref{mj:3-2} to aim for tanyao \citep{yuusee-2468}.
+
+\tehai{24m 44699p 2468s 777z}[][3-1]
+
+\tehai{11357m 46688p 2468s}[][3-2]
+
+
+%--------------------------------------------
+\subsubsection{Shapes with Overlapping Acceptance}
+
+When two taatsus share the same tiles as their acceptances, our effective number of acceptance reduces. This is known as \textit{nidouke} in Japanese, which literally means ``to accept twice.'' Shapes like \mj{3467p} shares \mj{5p} acceptance, so only \mj{258p} 3 kinds 12 tiles complete a mentsu out of this shape, whereas \mj{2569s} 4 kinds 16 tiles complete a mentsu out of \mj{3478s} shape. Shapes with overlapping acceptance are not always bad or weak; there are cases where we keep them over other weak taatsus.
+
+
+\subsubsection*{Neighboring Pairs}
+
+Shapes like \mj{3344p} can be treated as two neighboring pairs \mj{33p} and \mj{44p} or two ryanmens \mj{34p} and \mj{34p}, therefore shapes with overlapping acceptance. We can easily produce a ryanmen out of this shape, so when pinfu is within sight, its priority is higher than weak taatsus such as kanchans, but lower than other pairs and ryanmens. Therefore, we drop one tile from \mj{3344p} in \ref{mj:narabtt-1}, and we drop \mj{68s} kanchan from \ref{mj:narabtt-2} \citep[][pp. 112--113]{uzaku-haikouritsu}.
+
+\tehai{33678m 3344p 23478s}[][narabtt-1]
+
+\tehai{33678m 3344p 23468s}[][narabtt-2]
+
+Since \ref{mj:narabtt-3} has no possibility of pinfu, and dropping \mj{99p} gives us tanyao, it becomes optimal to drop \mj{9p}.
+
+\tehai{33678m 8899p 23468s}[][narabtt-3]
+
+
+\subsubsection*{Leaping Pairs}
+
+Shapes like \mj{7799p} can be treated as two pairs \mj{77p} and \mj{99p} with a gap in between or two kanchans \mj{79p} and \mj{79p}, therefore shapes with overlapping acceptance. Since drawing \mj{8p} gives us iipeikou, we still keep it over other kanchans and penchans, and destroy it when the rest of our hand are completed mentsus, pairs, and ryanmens \citep[][pp. 114--117]{uzaku-haikouritsu}. In this regard, we either drop \mj{7m} from \ref{mj:tobitt-1} to keep the possibility of \mj{9m} shanpon wait, or drop \mj{9m} and expect \mj{6m} draw which gives us complete iishanten.
+
+\tehai{7799m 123456p 5578s}[][tobitt-1]
+
+Drop \mj{68s} from \ref{mj:tobitt-2}. Drop \mj{8s} first so that we still keep the possibility of \mj{5s} which gives us ryanmen.
+
+\tehai{237799m 123456p 68s}[][tobitt-2]
+
+\ref{mj:tobitt-3} has three leaping pairs \mj{224466p}. In general case, dropping \mj{4p} results in \mj{22466p} shape, which accepts \mj{2356p} and thus have the most acceptance out of all choices, as shown in Table~\ref{tab:tobitt-1}. However, the \mj{224466p} shape gives us iipeikou if we draw \mj{35p}, so our optimal drop depends on the rest of our hand.
+
+\tehai{678m 224466p 123s ??}[][tobitt-3]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{llll}
+    \mj{??} & Drop & Acceptance \\
+    \hline
+    \mj{78s} & \mj{4p} & \sfrac{6}{20}: \mj{2356p69s} \\
+             & \mj{2p} & \sfrac{5}{16}: \mj{346p69s} \\
+             & \mj{6p} & \sfrac{5}{16}: \mj{245p69s} \\
+    \mj{77s} & \mj{4p} & \sfrac{5}{14}: \mj{2356p7s} \\
+             & \mj{2p} & \sfrac{5}{14}: \mj{3456p7s} \\
+             & \mj{6p} & \sfrac{5}{14}: \mj{2345p7s} \\
+             & \mj{7s} & \sfrac{5}{14}: \mj{23456p} 
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:tobitt-3}.}
+  \label{tab:tobitt-1}
+\end{table}
+
+\begin{table}
+  \centering
+  \begin{tabular}{lll}
+    \mj{??}  & Drop \\
+    \hline
+    \mj{78s} & \mj{4p} \\
+    \mj{99s} & \mj{9s} \\
+    \mj{77s} & \mj{7s}: aim for iipeikou \\
+             & \mj{4p}: aim for improvements of \mj{77s}
+  \end{tabular}
+  \caption{Tiles to drop from \ref{mj:tobitt-3}}
+  \label{tab:tobitt-2}
+\end{table}
+
+
+%\subsubsection*{2335の形}
+%
+%例え手牌の中に \mj{2335m} の形があったら、要すると、1ブロックにしたい時は打 \mj{5m}、1面子と一つの頭が欲しいなら打 \mj{2m}。\mj{5m} がなくなると受け入れが \mj{134m} になったが、\mj{134m} のどちらをツモったら \mj{33m} の部分が頭になれない。\mj{2m} を切ったら \mj{33m} が頭になって、受け入れが \mj{5m} のくっつきで広がるが、ツモ \mj{37m} でピンフが消え、ツモ \mj{7m} で嬉しくない愚形が残す。
+%
+%\tehai{123m 2335p 123789s -9m}[][nssg-1]
+%
+%\begin{table*}[!tb]
+%  \centering
+%	\begin{threeparttable}
+%  \begin{tabular}{llll}
+%    切る牌 & \mj{2p} & \mj{5p} & \mj{9m} \\
+%    \hline
+%    受け入れ & \mj{789m34567p} & \mj{789m1234p} & \mj{1234567p} \\
+%    枚数 & 8種28枚 & 7種24枚 & 7種24枚 \\
+%    ピンフがつくツモ & \mj{46p} (28.6\%) & \mj{9m3p}\tnote{1} (20.8\%) & \mj{3p}\tnote{1} \mj{46p} (41.7\%)
+%  \end{tabular}
+%  
+%  \smallskip
+%  \footnotesize
+%  \begin{tablenotes}
+%  \item[1] 待ちが\mjfn{124p}になるが\mjfn{2p}で和了ればピンフがない
+%  \end{tablenotes}
+%  
+%  \caption{手牌\ref{mj:nssg-1}の受け入れ}
+%  \label{tab:nssg-1}
+%  \end{threeparttable}
+%\end{table*}
+
+
+%\subsubsection*{1224 Shape}
+%
+%1224の辺張の部分を払って辺張の受けの \mj{3m} を引いても損にならない\citep{gendai-penchan}。多くの場合で6889の形の中の9を余り牌として切ると大した差は出ないが、\mj{5m} と \mj{7m} を引いたら \mj{9m} が残る方が少し有利（\mj{8m}とあと一つのペアの双碰または \mj{56m} の両面）。ですので、\mj{9m} を残す基準は孤立の么九牌や役牌との比較\citep{yuusee-6889}。
+%
+%\begin{table}[ht]
+%  \centering
+%  \begin{tabular}{lll}
+%    形 & \mj{6889m} & \mj{688m} \\
+%    \hline
+%    枚数 & 6枚 (\mj{7m}$\times4$ + \mj{8m}$\times2$) & 6枚 (\mj{7m}$\times4$ + \mj{8m}$\times2$)
+%  \end{tabular}
+%  \caption{1面子になる枚数の比べ}
+%\end{table}
+%
+%\begin{table}[ht]
+%  \centering
+%  \begin{tabular}{lll}
+%    形 & \mj{6889m} & \mj{688m} \\
+%    \hline
+%    変化 & \mj{567m} + \mj{88m} & \mj{567m} + \mj{88m} \\
+%     & \mj{56m} + \mj{789m} & 
+%  \end{tabular}
+%  \caption{\mj{5m} と \mj{7m} を引いた場合（頭はもう一つできている上に）}
+%\end{table}
+%
+%一向聴に絞るとき基本的に \mj{9m} 切りは効率的な方であるが、手牌\ref{mj:2-1}または\ref{mj:2-2}のような切る候補は孤立の么九牌や役牌の場合 \mj{9m} を残す方は少し有利である。
+%
+%\tehai{6889m1235p167s44z-8s}[東1局　西家　ドラ\mj{7s}][2-1]
+%
+%\tehai{6889m1235p67s445z-8s}[東1局　西家　ドラ\mj{7s}][2-2]
+%
+%手牌\ref{mj:2-3}と\ref{mj:2-4}のようなテンパイまで遠い場合は孤立の么九牌やオタ風を切る方がマシである。
+%
+%\tehai{6889m125p1668s44z-5z}[東1局　西家　ドラ\mj{7s}][2-3]
+%
+%\tehai{6889m125p668s445z-2z}[東1局　西家　ドラ\mj{7s}][2-4]
+%
+%手牌\ref{mj:2-5}のように切る候補は \mj{9m} と孤立の役牌の場合、役牌を残し方がいい。しかし、\ref{mj:2-6}のように横引きが期待でき立直を目指す手牌なら孤立の役牌を切る方がいい。
+%
+%\tehai{6889m125p2668s44z-5z}[東1局　西家　ドラ\mj{7s}][2-5]
+%
+%\tehai{26889m237p456s44z-5z}[東1局　西家　ドラ\mj{7s}][2-6]
+%
+%%--------------------------------------------
+%\subsubsection{112246の形}
+%
+%\begin{table}[ht]
+%  \centering
+%  \begin{tabular}{ll}
+%    切る牌 & 条件 \\
+%    \hline
+%    \mj{1m} & タンヤオに向かう \\
+%    \mj{2m} & ピンフに向かう \\
+%    \mj{6m} & タンヤオもピンフもならない
+%  \end{tabular}
+%  %\caption{キャップション}
+%\end{table}
+%
+%\tehai{112246m34p34566-6s}[][1-1]
+%
+%\tehai{112246m789p3467-8s}[][1-2]
+%
+%\tehai{112246m999p3467-8s}[][1-3]
+%
+%\tehai{112246m34678s11-1z}[][1-4]
+%
+%手牌\ref{mj:1-1}はタンヤオが見えるので、\mj{1m} を切って仕掛けでもしてタンヤオを目指す。手牌\ref{mj:1-2}にはタンヤオはちょっと無理だけど、ピンフがつく可能性が高いなら \mj{2m} を切ってリャンカンを残す。手牌\ref{mj:1-3}のような立直のみを目指す場合は \mj{6m} を切って \mj{12m} の双碰を狙う。手牌\ref{mj:1-4}は役牌に絡んでいるのでポン材を残し \mj{46m} の嵌張を落とす\citep{yuusee-112246}。
+%
+%%--------------------------------------------
+%\subsubsection{12235の形}
+%
+%\tehai{4567m 12235p 67788s}[東1局　西家　7巡目　ドラ \mj{2s}][12235-1]
+%
+%\textbf{12235の形はほぼ面子固定でいい}\citep[][p.~32]{uzaku-nankiru}。手牌\ref{mj:12235-1}は頭のない形。頭ができやすい四連形や \mj{67788s} に手をかけるより \mj{12235p} から \mj{2p} を外すの方がいい。
+
+%============================================
+\subsection{Shapes Involving Mentsus}
+
+%--------------------------------------------
+\subsubsection{Sanmenchan}
+
+Shapes like \mj{34567p} are called \textit{sanmenchan} in Japanese, which means ``three-sided tiles.'' It can be treated as either \mj{345p} mentsu + \mj{67p} ryanmen or \mj{34p} ryanmen + \mj{567p} mentsu, so drawing any of \mj{258p} completes this shape, hence the name. 
+
+\ref{mj:sanmenchan-1} has \mj{345667p} shape, and one may be tempted to drop \mj{6p} to fix sanmenchan. However, dropping \mj{5s} here from aryamen \mj{3455s} and keep it as a mentsu actually has the most acceptance and the most tiles for good-wait (including nobetan) tenpai. This is one of the cases where, in doubt, just drop aryanmen.
+
+\tehai{4567m 345667p 3455s}[East-1, East seat, turn 4, \mj{2p}][sanmenchan-1]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Drop & \mj{5s} & \mj{6p} \\
+    \hline
+    Acceptance & \sfrac{15}{51}: \mj{23456789m2356789p} & \sfrac{7}{23}: \mj{47m258p25s} \\
+    Good-wait tenpai & \sfrac{10}{26}: \mj{345678m2358p} & \sfrac{7}{23}：\mj{47m258p25s}
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:sanmenchan-1}.}
+  \label{tab:sanmenchan-1}
+\end{table}
+
+%--------------------------------------------
+\subsubsection{Yonrenkei}
+
+Shapes like \mj{3456p} are called \textit{yonrenkei} in Japanese, which means ``the shape of 4 consecutive numbers.'' If we draw \mj{36p}, we get a pair and a mentsu; if we draw \mj{2457p}, we get a ryanmen and a mentsu. It is therefore a strong shape. Depending on the rest of our hand, we may have to sacrifice this shape and fix it into a mentsu.
+
+\ref{mj:yonren-1} has two yonrenkei. If we drop either of \mj{13s}, we get the most acceptance, but it is also very likely that we end up kanchan or shanpon bad-wait rii-nomi. The \mj{122233s} consists of \mj{123s} + \mj{223s}, which gives us iipeikou possibility. Therefore we will not touch \mj{122233s} and we opt to drop one tile from the weakest yonrenkei. Drop \mj{1m} \citep[][p.~14]{uzaku-nankiru}.
+
+\tehai{1234m 5678p 122233s}[East-1, West seat, turn 7, dora \mj{9s}][yonren-1]
+
+\ref{mj:yonren-2} has tanyao already, and with \mj{07m} kanchan we have tanyao dora 2, a very valuable hand. On top of that, we already have 6 blocks in our hand, the merit of producing head or ryanmen out of yonrenkei \mj{5678m} becomes very little. Considering also the possibility of 567 sanshoku, we drop \mj{8s} here \citep[][p.~16]{uzaku-nankiru}.
+
+\tehai{2207m 3466p 225678s}[East-1, East seat, turn 6, dora \mj{7m}][yonren-2]
+
+
+\subsubsection*{Reaching Tenpai with 3456 Shape}
+
+\textbf{Generally, drop the outermost tile} \citep{yoteru-yonrenkei}. If we have \mj{3456p} and we must dropping one to reach tenpai, dropping \mj{3p} works in general cases. Merits of cutting the outermost tile are:
+
+\begin{itemize}
+\item Outer tiles generally have less deal-in rate
+\item Not giving other players easy time calling
+\item Strength of discards: a \mj{6p} signals that \mj{39p} are relatively safe, while a \mj{3p} gives way less information about our hand.
+\end{itemize}
+
+Exceptions are:
+
+\begin{itemize}
+\item Doras and sanshoku are involved
+\item To keep the possibility of catching kamichi's akadora
+\item To keep possibilities of improvements
+\item Inner tiles are safer according to table situation
+\item Early in a round
+\end{itemize}
+
+
+\subsubsection*{Cases involving doras and sanshoku}
+
+\ref{mj:yonren-3} is an open hand with \mj{3456s}. Our general policy is to drop \mj{3s}. However, since dora is \mj{2s} and, if we keep \mj{345s} shape and drawing one \mj{2s}, we can drop \mj{5s} instead. This is called \text{sliding} and is something one must keep in mind when they have a shuntsu close to dora. Drop \mj{6s} from \ref{mj:yonren-3}.
+
+\tehai{3456s 2256p -2'13m 77'7z}[Dora \mj{2s}][yonren-3]
+
+If we drop \mj{2s} form \ref{mj:yonren-4}, we will not be able to call chi on kamicha's \mj{0s} discard. If we instead keep \mj{234456s}, we can chi \mj{0s} with \mj{46s} and discard \mj{2s}. If \mj{0s} is already discarded, follow the general policy and drop \mj{2s}.
+
+\tehai{2344556s 3367p -55'5z}[][yonren-4]
+
+\ref{mj:yonren-5} has a slight possibility of 123 or 234 sanshoku. In this case, drop \mj{5p}.
+
+\tehai{123m 2345p 2399s -55'5z}[][yonren-5]
+
+
+\subsubsection*{Iipeikou-like Shapes Has Less Improvements}
+
+Dropping either of \mj{36p} from \ref{mj:yonren-6} will give us the same waits \mj{47p}. If we drop \mj{6p} and keep \mj{34556p}, drawing \mj{2p} and dropping \mj{5p} gives us \mj{23456p} sanmenchan. Dropping \mj{3p} means that we will lose this upgrade. Therefore, drop \mj{6p} here.
+
+\tehai{345566p 23488s -6'66z}[][yonren-6]
+
+Note that this is for open hands only since iipeikou shapes gives us no additional value when our hand is open. If this is a closed hand, definitely go for iipeikou since we cannot change our tiles after we riichi.
+
+
+\subsubsection*{Half Suji}
+
+When another player already declared riichi and we must drop either \mj{3p} or \mj{6p} in order to take tenpai, and \mj{9p} is genbutsu, half suji \mj{6p} is safer than musuji \mj{3p} \citep[][pp.~140--141]{miinin-stat}. Likewise, when \mj{8p} is genbutsu, half suji \mj{5p} is safer than musuji \mj{2p}.
+
+The main reason why half suji is safer than musuji is because, in terms of possibility of the incomplete shape we deal in, musuji \mj{3p} deals into \mj{12p} penchan, which \mj{6p} does not deal into. Kanchan waits and ryanmen waits are shared by both \mj{36p}, so \mj{3p} has more possible shapes to deal into than \mj{6p}, hence higher deal-in rate.
+
+
+\subsubsection*{Early in a Round}
+
+To make sure that, when we draw \mj{6p} back later in the game we can drop \mj{3p}, we can drop \mj{3p} when it is very early in a round.
+
+\subsubsection*{Cases of 1234 and 2345}
+
+To be able to slide when we draw middle tiles, in most cases, we drop outer tiles from \mj{1234p} or \mj{2345p}. Other general rules such as keeping sanshoku chance or dora slide still apply.
+
+
+%--------------------------------------------
+\subsubsection{23445 Shape} \label{subsec:23445}
+
+\textbf{The 23445 shape produces a head very easily}. Drawing \mj{1245p} with \mj{23445p} shape gives us a mentsu and a pair. When we reach tenpai with \mj{23445p} and without a head in the rest of our hand, we can either drop \mj{5p}, make \mj{44p} as head, and take \mj{14p} wait, or drop \mj{4p} and reach tenpai with \mj{2345p} nobetan.
+
+\tehai{34556m 67p 307889s -4s}[][1-5]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{llll}
+    Drop & \mj{8s} & \mj{5m} & \mj{9s} \\
+    \hline
+    Acceptance & \sfrac{10}{33}: \mj{234567m5678p} & \sfrac{5}{16}: \mj{36m58p8s} & \sfrac{4}{15}: \mj{47m58s}
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:1-5}.}
+  \label{tab:1-5}
+\end{table}
+
+When we complete the kanchan \mj{30s} it seems that we must fix \mj{88s} head in \ref{mj:1-5}, which renders \mj{79s} useless. However, if we drop \mj{8s} and keep \mj{789s} mentsu, we have no surplus tile in our hand and thus end up the most acceptance, as shown in Table~\ref{tab:1-5}. While it is true that drawing \mj{47m} leaves us no choice other than tanki wait, but this is a rather small risk compared to the width of our acceptance.
+
+
+%--------------------------------------------
+\subsubsection{Ryanmenkanchan} \label{subsec:rmkc}
+
+The shape \mj{455679p} is called \textit{ryanmenkanchan} in Japanese since it has a ryanmen \mj{45p} and a ryankanchan \mj{579p}, thus accepting \mj{368p}. When we draw \mj{9p}, we have a pair, a mentsu, and a ryanmen. Since this \mj{9p} is easily overlooked, this is a strong shape that is often ignored \citep[][p. 118]{uzaku-haikouritsu}.
+
+We have 6 blocks in \ref{mj:rmkc-1} and we must drop one block. If we drop either of \mj{67m3578s}, at that moment we have a surplus tile in our hand, and we end up 4 kinds 16 tiles of acceptance, as shown in \ref{tab:rmkc-1}. The key here is to identify the \mj{356778s} ryanmenkanchan, which makes use of all souze tiles and gives us one more kind of tiles of acceptance. Drop \mj{2s}.
+
+\tehai{67m 11456p 2356778s}[][rmkc-1]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Drop & \mj{2s} & \mj{578s} \\
+    \hline
+    Acceptance & \sfrac{5}{19}: \mj{58m469s} & \sfrac{4}{16}: \mj{58m14s}
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:rmkc-1}.}
+  \label{tab:rmkc-1}
+\end{table}
+
+\ref{mj:rmkc-31} has 6 blocks consisting of mentsus, ryanmens, and pairs. We intend to drop either of the pair. The pinzu shape may look completed, but if we drop \mj{8p}, there is actually \mj{344568p} ryanmenkanchan in our hand and gives us more acceptance than dropping \mj{8s}.
+
+\tehai{345m 3445688p 3488s}[][rmkc-31]
+
+\ref{mj:rmkc-34} is a similar case where dropping \mj{2m} gives us the ryanmenkanchan \mj{245667m} which makes full use of every tiles \citep{yoteru-joui}.
+
+\tehai{2245667m 22678p 45s}[East-1, turn 4][rmkc-34]
+
+
+\subsubsection*{Chooosing between Ryanmenkanchan and Iipeikou}
+
+The manzu part of \ref{mj:rmkc-4} has predecessor of iipeikou shape \mj{55677m} and ryanmenkanchan shape \mj{356778m}. Dropping either of \mj{35m} gives us the same number of acceptance as shown in Table~\ref{tab:rmkc-4}, therefore we consider the expected value of each drop. If we drop \mj{5m} and take ryanmenkanchan, we are guaranteed pinfu. However, since pinfu tsumo only has 20fu and pinfu ron has 30fu, for the same 1 han, pinfu has slightly lower overall score than iipeikou. It is true that \mj{3m} drop will not guarantee us iipeikou; even worse, there is a probability that we end up rii-nomi. Therefore, we leave the \mj{3m} route to the situation where we are last and in dire need of points. Drop \mj{5m} (in flat situation.)
+
+\tehai{3556778m 45p 1238 -8s}[][rmkc-4]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Drop & \mj{3m} & \mj{5m} \\
+    \hline
+    Acceptance & \sfrac{6}{19}: \mj{569m36p8s} & \sfrac{5}{19}: \mj{469m36p} \\
+    Pinfu drawn & \mj{69m36p} (78.9\%) & \mj{469m36p} (100\%) \\
+    Iipeikou draws & \mj{6m} (15.8\%) & None
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:rmkc-4}.}
+  \label{tab:rmkc-4}
+\end{table}
+
+
+\subsubsection*{Predecessor of Ryanmenkanchan}
+
+Shapes such as \mj{36778m} and \mj{35677m} are predecessors of ryanmenkanchan; the former lacks \mj{5m}, and the latter lacks \mj{8m}. When comparing with other 3--7 floater, we prioritize these floaters near \mj{6778m} or \mj{5677m} shape. This also applied to \ref{mj:rmkc-5} and \ref{mj:rmkc-6} where we are choosing between \mj{8m} and \mj{8p}. In both hands, we are 1 tile away from forming ryanmenkanchan, so we keep \mj{8p} in both cases. Drop the most isolated \mj{8m}.
+
+\tehai{348m 34458p 357788s}[][rmkc-5]
+
+\tehai{348m 44568p 357788s}[][rmkc-6]
+
+
+\subsubsection*{Choosing between pinfu and tanyao} 
+
+\textbf{For the same 1 han, tanyao has a probability of scoring higher than pinfu, and we are ready to make calls and speed up, so we prioritize tanyao over pinfu} \citep[][p. 119]{uzaku-haikouritsu}. Dropping either of \mj{9p2s} from \ref{mj:rmkc-3} leaves us no surplus tile and gives us the same 19 tiles of acceptance. Dropping \mj{9p} gives us tanyao chance, and dropping \mj{2s} confirms pinfu. Considering the merits mentioned earlier, we opt to drop \mj{9p} and go for tanyao.
+
+\tehai{678m 455679p 2238 -8s}[][rmkc-3]
+
+Likewise for \ref{mj:rmkc-32}, we drop \mj{9p} and choose tanyao \citep[][p. 10]{uzaku-nankiru}.
+
+\tehai{23488m 455679p 556s}[][rmkc-32]
+
+
+\subsubsection*{Dropping Ryanmenkanchan for a Better Chance of a Head}
+
+As mentioned previously in Section \ref{subsec:23445}, the shape \mj{34556m} produces a head easily. To produde a head out of \mj{134556m} ryanmenkanchan, the only draw is \mj{1m}. In hands such as \ref{mj:rmkc-33} where we seek to confirm our head, we can drop \mj{1m} without losing the opportunity to incorporate \mj{2m}.
+
+\tehai{134556m 67p 307889s}[][rmkc-33]
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Drop & \mj{1m} & \mj{9s} \\
+    \hline
+    Acceptance & \sfrac{16}{49}: \mj{1234567m5678p34568s} & \sfrac{7}{27}：\mj{247m58p46s}
+  \end{tabular}
+  \caption{Acceptance of \ref{mj:rmkc-33}.}
+  \label{tab:rmkc-33}
+\end{table}
+
+%--------------------------------------------
+\subsubsection{1345 Shape}
+
+\textbf{Keep \mj{1p} in \mj{1345p} over isolated \mj{28s}} \citep{ittaku}. Drawing \mj{2m} gives us \mj{45m} ryanmen, and drawing \mj{36m} gives us a \mj{13m} kanchan which can be a decent wait. Compared to an isolated \mj{2s} which produces a penchan if we draw \mj{1s}, kanchan if we draw \mj{4s}, and a ryanmen if we draw \mj{3s}, \mj{1345m} has slight advantage. In this regard, we drop \mj{8p} from \ref{mj:1345-1}.
+
+\tehai{1345m 2338p 5889s 11z}[East-1, West seat, turn 3, \mj{1p}][1345-1]
+
+%--------------------------------------------
+\subsubsection{13457 Shape}
+
+\textbf{Keep isolated \mj{28s} over \mj{1p} in \mj{13457p}} \citep{ittaku}. Drawing \mj{7p} with \mj{13457p} makes \mj{1p} much weaker since, if we drop \mj{1p}, we will not lose sanmenchan chance with \mj{6p} draw, and we can still incorporate \mj{2p} since \mj{23457p} is a shape that has \mj{1348p} ryanmen-improvement draws. Therefore, drop \mj{1m} from \ref{mj:13457-1}.
+
+\tehai{13457m 2668p 23699s}[East-1, East seat, turn 4, dora \mj{6p}][13457-1]
+
+%--------------------------------------------
+\subsubsection{Entotsu}
+
+The shape \mj{22234p22s} is called \textit{entotsu} in Japanese whose literal meaning is ``chimney.'' Why this particular shape is associated with chimneys remains disputed. Since \mj{22234p} can be treated as wither \mj{22p} + \mj{234p} and \mj{222p} + \mj{34p}, with \mj{2s} pair in our hand, we end up \mj{25p2s} wait.
+
+\ref{mj:entotsu} is an open hand and we draw \mj{7m}. Since dora is \mj{8m}, we would like to work our shapes closer to dora. On top of that, since we have a kanchan \mj{68p} in our hand, it is more likely to draw another copy of \mj{68p} (6 tiles) than tsumo our winning tile \mj{7p}; in the former case, we can upgrade our hand to entotsu shape and catch dora \mj{8m}. Therefore, drop \mj{4m}\footnote{This is from one of my games and in the end I did pick entotsu shape and draw \mjfn{8m}.}.
+
+\tehai{40556m 68p -7m -1'23p222z}[South-2, South seat, turn 4, dora \mj{8m}][entotsu]
+
+%===========================================================
+\subsection{6 Block Theory} \label{subsec:6block}
+
+We have seen the term ``block'' here and there previously without defining its exact meaning. In this section, we will cover the term ``block'' thoroughly and explore the possibility of keeping multiple blocks in our hand, even cases where we have more blocks than needed.
+
+A block is a group of tiles that we expect to become mentsu when we complete our hand. To complete a hand in mahjong using 14 tiles, we need 4 mentsus and 1 head\footnote{Except for kokushi musou and chiitoitsu.}. In that regard, we may think that we only need to keep 5 blocks in our hand. However, when we are still far away from completion and each block does not take up too much space, we can fit 6 blocks in our hand. The method of developing our hand while keeping all 6 blocks is called ``6 block theory'' \citep[][p. 16]{uzaku-haikouritsu}.
+
+Merits of keeping 6 blocks include \multicitep{uzaku-haikouritsu, p.~17; yuusee-6block-1; yuusee-6block-2}:
+
+\begin{itemize}
+\item Keeping maximal choices between yakus and waits
+\item Able to adapt to new table situation such as pon or kan from other players
+\item Dropping a tile and fixing ryanmen makes its outside wait come out more easily
+\end{itemize}
+
+Demerits of keeping 6 blocks include \multicitep{uzaku-haikouritsu, p.~18; yuusee-6block-1}:
+
+\begin{itemize}
+\item Keeping 6 blocks leaves us no room for follow-up tiles for each block, thus harder to reach complete iishanten
+\item The moment we drop 1 block to take 1-away, the destroyed block leaves us 1 surplus tile, thus making our acceptance narrower and lowers our defense
+\end{itemize}
+
+%---------------------------------------------
+\subsubsection{Standard of Keeping 6 Blocks}
+
+Our policy regarding block number in our hand is \multicitep{uzaku-haikouritsu, p.~22--23; yoteru-6block;  yuusee-6block-1; yuusee-6block-2}:
+
+\begin{itemize}
+  \item Keep 6 blocks when
+  \begin{itemize}
+    \item Going straightforward leaves us high probability of bad wait
+    \item Blocks involve hand value and yaku
+    \item There is no huge difference between blocks
+  \end{itemize}
+  \item Keep 5 blocks when
+  \begin{itemize}
+    \item There is huge difference between blocks
+    \item We prioritize the speed of reaching tenpai
+    \item Our hand is open and we want pairs for pon calls
+    \item We prioritize defense
+  \end{itemize}
+\end{itemize}
+
+\textbf{Keep 6 blocks if going straightforward with blocks we currently have leaves us bad waits or cheap hand} \citep[][p. 23]{uzaku-haikouritsu}. For \ref{mj:block-3}, if there is no difference in player points, drop \mj{3p} and take complete iishanten. However, if we are far behind other players, keeping \mj{3p} gives us a slight chance of sanshoku and dropping \mj{7m} confirms pinfu. This is the case where even a single tile can be treated as a whole block.
+
+\tehai{234 677m 3 88p 234 78s}[][block-3]
+
+When there is no discernible difference between taatsus, we can delay our decision by keeping 6 blocks \citep{yoteru-6block}. \ref{mj:block-make6a} has 6 taatsus, and dropping any of \mj{78m23p45s} leaves us 5 blocks. We can also fix \mj{334m} into a ryanmen and progress with 6 blocks.
+
+\tehai{334 78m 23 678p 45 88s}[East-1, South seat, turn 3, dora \mj{3z}][block-make6a]
+
+We can drop \mj{4s} from \ref{mj:block-make6b} and keep 6 blocks, or drop \mj{6z} and reduce it to 5 blocks\footnote{If we drop \mjfn{7s} we lose pinfu and sanshoku becomes undetermined. Do not drop \mjfn{7s}.}. If we drop \mj{4s}, drawing \mj{7s} will not destroy sanshoku, and we keep the possibility of drawing another copy of \mj{6z}. If any other ryanmen gets filled up before we complete \mj{66z}, we can drop \mj{66z} and aim for pinfu. This is the case where keeping 6 blocks gives us more choices between yakus \citep{yuusee-6block-1}.
+
+\tehai{345m 34 78p 445 77s 66z}[East-1, South seat, turn 3, dora \mj{8p}][block-make6b]
+
+\ref{mj:block-2} has a penchan that is clearly weaker than kanchan, so we drop \mj{89s} \citep[][p. 21]{ishibashi-black}.
+
+\tehai{11 667m 68p 34 89s 333z}[][block-2]
+
+\ref{mj:penchan-1} has \mj{6667p} shape which can be treated as 2 blocks \mj{66p} + \mj{67p}. If we reduce it to \mj{666p} 1 block, we have the widest acceptance of 7 kinds 24 tiles. However, if we don't draw any of \mj{789m} 9 tiles (1 copy of \mj{8m} is the dora indicator) first, we end up a weak penchan wait. We therefore drop \mj{8m}. If we later draw another copy of dora \mj{9m}, we can drop \mj{7m} \citep[][p.~16]{uzaku-nankiru}.
+
+\tehai{23489m 6667p 34789s}[East-1, East seat, turn 7, dora \mj{9m}][penchan-1]
+
+\textbf{Being able to pon is crucial for open hands} \citep{yoteru-6block}. We just called pon \mj{7z} in \ref{mj:block-make5a}. Since we can change tiles and waits with open hands, having tiles following taatsus becomes more important and contributes to our flexibility. If \ref{mj:block-make5a} develops into \ref{mj:block-make5b}, calling chi \mj{1245m} gives us two ryanmens, drawing \mj{5p} also improves our hand into ryanmens. Therefore, drop either of \mj{24p68s} depending on table situation.
+
+\tehai{33478m 2477p 68s -77'7z}[][block-make5a]
+
+\tehai{233478m 2477p -77'7z}[][block-make5b]
+
+At the moment we draw \mj{5p} in \ref{mj:block-7}, we have 6 blocks. The only purpose of \mj{12m} is to accept \mj{3m}; if the other taatsus get completed first, we end up \mj{3m} penchan wait rii-nomi. It is therefore close to useless, and we would expect to draw another copy of \mj{16z} to give our hand more value; even for defense purposes, \mj{16z} is generally more safe than \mj{12m}. Thus we drop \mj{12m} here \citep[][pp.~154--155]{suphx}.
+
+\tehai{12m 44578p 67s 1336z -5p}[East 1, East seat, turn 1, dora \mj{7p}][block-7]
+
+\ref{mj:block-8} already has 5 blocks necessary for manzu honitsu. If we keep \mj{23p}, at worst our hand becomes haku nomi 1500 points. Therefore we drop \mj{23p}. Keep in mind that dora is \mj{7s} and keeping \mj{6s} makes us able to incorporate dora.
+
+\tehai{3357m 23p 6s 114456 -5z}[East-1, East seat, turn 4, dora \mj{7s}][block-8]
+
+
+%---------------------------------------------
+\subsubsection{Order of Dropping a Block}
+
+\subsubsection*{Comparing Different Shapes}
+
+\textbf{The order of dropping a block is penchan \textgreater{} kanchan \textgreater{} pair \textgreater{} ryanmen} \citep[][pp. 21--22]{ishibashi-black}. Dropping either \mj{6m} (keeping 6 blocks) or \mj{1p} (reducing to 5 blocks) from \ref{mj:block-5} gives us the same acceptance of 24 tiles. However, dropping \mj{6m} leaves us a kanchan and we lose the chance of drawing \mj{16m} to avoid kanchan wait, there is no reason to keep 6 blocks. Considering that \mj{68p} can be upgraded to ryanmen with \mj{5p} draw, we drop the weakest block \mj{12p}.
+
+\tehai{11 668m 12 68p 35s 333z}[][block-5]
+
+Even if the weakest taatsu has 1 dora, the order will not change \citep{yuusee-5block}. The \mj{79s} kanchan in \ref{mj:block-make5c} has a dora, but we have nice shapes in the rest of our hand. Thus, we drop \mj{7s} first, and drop \mj{33p} pair if later we draw another copy of \mj{9s}.
+
+\tehai{234788m 3367p 3479s}[Dora \mj{9s}][block-make5c]
+
+The reasons why we keep toitsus over kanchans \multicitep{uzaku-haikouritsu, pp.~30--33; yuusee-kanchan-toitsu} are:
+
+\begin{itemize}
+\item By keeping two pairs, we keep the possibility of their ryanmen improvements and therefore the possibility of complete iishanten
+\item If our pairs are outside, they come out more likely, especially for honor tile pairs
+\item Two pairs means that our waits becomes \textit{atosuji}\footnote{When our discards after riichi makes our wait suji, it is called atosuji. The part \textit{ato} means ``behind, after'' in Japanese.} twice likely
+\item Pairs do not use neighboring tiles, thus making them no-chance\footnote{If there are 4 copies of \mjfn{3p}, it makes \mjfn{12p} \textit{no-chance} since the ryanmens waiting on \mjfn{1p} or \mjfn{2p} requires 1 copy of \mjfn{3p}. It makes \mjfn{13p} kanchan also impossible. It, however, does not negate the possibility of \mjfn{11p} or \mjfn{22p} shanpon wait.} more likely
+\end{itemize}
+
+In terms of ryanmen improvement and complex taatsu improvement, outer kanchan and one pair are weaker than two pairs of number 2 (or 8). When we have two pairs, we keep ryanmen improvement and complex taatsu improvement of each pair. On the contrary, when we only have a pair and a kanchan, we must keep the pair as our head, so we lose its improvement; our only improvement becomes the improvement of kanchan. Table~\ref{tab:24p2288s} lists acceptance and all improvement of \mj{24p22s} (a kanchan and a pair) and \mj{2288s} (pairs of number 2 and 8.)
+
+\begin{table}[ht]
+  \centering
+  \begin{tabular}{lll}
+    Shape & \mj{24p22s} & \mj{2288s} \\
+    \hline
+    Acceptance & \sfrac{1}{4}: \mj{3p} & \sfrac{2}{4}: \mj{28s} \\
+    Ryanmen improvement & \sfrac{1}{4}: \mj{5p} & \sfrac{2}{8}: \mj{37s} \\
+    Ryankanchan improvement & \sfrac{1}{4}: \mj{6p} & \\
+    Kanchan-toitsu improvement & None & \sfrac{2}{8}: \mj{46s}
+  \end{tabular}
+  \caption{Comparing \mj{24p22s} and \mj{2288s}.}
+  \label{tab:24p2288s}
+\end{table}
+
+Even for pairs like \mj{1199s} which lack any ryanmen improvement, due to them being the outmost number tiles and twice likely becoming atosuji than a kanchan, they are decent as final waits. In this regard, the only cases where we would keep kanchan is when we have yakus such as tanyao or sanshoku involved, or when table situation makes pairs less favorable than kanchan.
+
+\textbf{When we decide to reduce our hand to 5 blocks, keep safe tiles over the block to drop} \citep[][pp.~152--153]{suphx}. At the moment of drawing \mj{6z} in \ref{mj:block-6}, we have 6 blocks. We will not touch yakuhai pairs that give us value and speed; in that regard, we have no incentive to keep \mj{68s}. Instead of keeping \mj{68s} and maintaining 6 blocks until we complete another block, we must drop it immediately to make room for \mj{1z} safe tile. Drop \mj{6s}.
+
+\tehai{456m 2245p 68s 1226 -6z}[South-2, East seat, turn 4, dora \mj{6p}][block-6]
+
+
+\subsubsection*{Comparing Similar Shapes}
+
+Even for shapes in the same class, since their acceptances are same (without table condition,) their differences lie in their improvement and shapes around them. In particular, we must also take into consideration whether or not we can still incorporate the tiles their accept when we drop the taatsu and its accepted tiles backfires. For each class of shapes, we have following merits \multicitep{suphx, pp.~152--153; yuusee-follow}:
+
+\begin{enumerate}
+\item (Kanchan, penchan) remaining number of acceptance
+\item (Ryanmen, penchan) follow-up of acceptance
+\item (Kanchan) follow-up of ryanmen-improvement, ryankanchan-improvement draws
+\item (Toitsu) whether or not we can slide towards dora
+\end{enumerate}
+
+There are two penchans \mj{89m} and \mj{12s} in \ref{mj:block-follow1}. To prepare for the moment we pon \mj{5z}, we must keep another pair \mj{33m}, so we cannot drop \mj{3m}. In this hand, after dropping \mj{12s}, its acceptance \mj{3s} can still be incorporated by its neighboring kanchan, which forms \mj{357s} ryankanchan. On the other hand, drawing \mj{7m} after dropping \mj{89m} is useless; it is just a floater with furiten risk. In other words, dropping \mj{12s} loses the least. Drop \mj{12s} \citep{yuusee-follow}.
+
+\tehai{33489m 057p 1257s 55z}[East-1, North seat, turn 3, \mj{7z}][block-follow1]
+
+\ref{mj:block-follow2} is also choosing between \mj{89m} and \mj{12s}. Since we have \mj{55m} pair, the acceptance \mj{7m} of penchan \mj{89m} gives us \mj{557m} kanchan-toitsu, and its kanchan-improvement draw \mj{6m} gives \mj{556m} ryanmen-toitsu. When there is no other information available to us, judging on how we can still incorporate accepted tiles and improvement draws, \mj{89m} becomes the weakest penchan. However, when \mj{3s} is once cut, or when we immediately draw \mj{7m} after dropping \mj{9m}, we still keep manzu and drop \mj{12s} \citep{yuusee-follow}.
+
+\tehai{5589m 123678p 1288s}[East-1, East seat, turn 2, dora \mj{8s}][block-follow2]
+
+\ref{mj:ist-1-1} is choosing between \mj{56m} and \mj{67p}. With \mj{123m} shape, when we drop \mj{56m} and draw \mj{4m}, we can still slide towards \mj{4m} and drop \mj{1m}. Drop \mj{56m} \citep{gendai-iishanten-yojouhai}.
+
+\tehai{12356m2267p23456s}[][ist-1-1]
+
+\ref{mj:block-9} is choosing between \mj{99p} and \mj{11s}. With \mj{11234s} shape, when we draw another dora \mj{4s}, we can drop \mj{1s} and maintaining a head in our hand. Therefore, drop \mj{9p} \citep[][p.~20]{uzaku-nankiru}.
+
+\tehai{45m 67899p 1123467s}[East-1, West seat, turn 7, dora \mj{4s}][block-9]
+
+
+
+
+
+\nocite{*}
+\bibliographystyle{jecon}
+\bibliography{refmj}
+
+
+\end{document}

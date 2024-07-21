@@ -190,9 +190,11 @@
 
 ダマの場合は立直の場合より大差が出ないのでダマより立直で打点を高くする方がいい\citep[][p. 103]{miinin-stat}。
 
+
 \subsubsection*{七対子}
 
 \textbf{親の立直に対しても1枚切れ字牌単騎ぐらいなら押す}\citep[][pp.~133--134]{miinin-choice}。七対子のみでも追いかける\footnote{待ちがそんなによくないというデータはまだないのでこの辺はまだわからない。}。
+
 
 \subsubsection*{回し打ち}
 
@@ -202,9 +204,11 @@
 
 2600のみ手ならどちらでもいい。場況・河・点数によって決める。
 
+
 \subsubsection*{2軒立直に対する}
 
 \textbf{ドラが2枚あってもオリる}\citep[][pp.~153--154]{miinin-choice}。5200で2軒立直と勝負する局収支は$-1000$しかないから。
+
 
 \subsubsection*{データの補足} 
 
@@ -213,6 +217,58 @@
 \tehai{123666m 478p 23466s}[東1局　南家　親が立直　11巡目　ドラ \mj{9m}][3-stat-1]
 
 切る牌がドラ、または一発の場合、局収支は元の数値から宣言牌の危険度に放銃平均値の差をかけた値を引く。相手が子の場合、放銃平均値の差は2300点、親なら3400点。よって、親の立直に対してドラの10\%牌を切ったら局収支が340点低くなる\citep[][p. 95]{miinin-stat}。
+
+
+\subsubsection*{残り2枚しかない愚形}
+
+節~\ref{subsec:senseigukei} で先に触れているが、ここで実際の場面を紹介にいく。便宜上に残り2枚しかない愚形の立直判断はここで再掲する。
+
+\begin{table*}[t]
+  \centering
+  \begin{tabular}{l|lll}
+    ドラ枚数 & いい形がない & いい形がある & 先制された場合 \\
+    \hline
+    なし & ダマ & 聴牌外し & 追いかけない \\
+    1枚 & 待ちがいいなら立直する & 待ちがいいなら立直する & 追いかけない \\
+    2枚 & 立直 & 待ちがいいなら立直する & 待ちがいいなら立直する \\
+    3枚以上 & 立直 & 立直 & 立直
+  \end{tabular}
+  \caption{愚形待ちが残り2枚しかない状況の立直判断（七対子除き）}
+\end{table*}
+
+立体図~\ref{rittai:twoleft} はMリーグのある局面。自分が親でドラ2愚形聴牌だが待ちの \mj{5p} が既に2枚切れ。しかも対面から立直来ている。残りの \mj{5p} が山にありそうか否か分かりにくいが、上がればほぼ満貫なので、ここで対面と勝負する。
+
+\begin{rittai}[h]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 東,
+    jicha/point = 28500,
+    jicha/hand = 123m 12346p 45678s -0s,
+    jicha/river = 9m 1s 3z 9p 8^p 2^z,
+    jicha/riverb = 4z 7z 7^z 6^z 2^s 1z,
+    %
+    toimen/point = 18600,
+    toimen/river = 5z 7z 5^z 3^z 4s 2^z,
+    toimen/riverb = 5s 6p 7^s 8m 6^m 9'm,
+    %
+    kami/point = 48400,
+    kami/river = 2z 6m 6z 5^p 3^z 3m,
+    kami/riverb = 3^5^6^1^p 9^s 5^z,
+    %
+    shimo/point = 3500,
+    shimo/river = 1z 8m 6s 2^z 5m 7^s,
+    shimo/riverb = 2s 6^s 9^m 8p 4p 6^m,
+    %
+    kyoku = 南3局,
+    kyoutaku = 1,
+    dora = 2m
+  }
+  
+  \caption{親で2枚切の嵌 \mj{5p} で聴牌の場面}
+  \label{rittai:twoleft}
+\end{rittai}
+
 
 %--------------------------------------------
 \subsection{現物待ち}

@@ -51,10 +51,12 @@
 \captionsetup[table]{name=表}
 \captionsetup[figure]{name=図}
 
-\usepackage{titlesec, ulem} % formatting \subsubsection* and underline
+\usepackage[explicit]{titlesec} % formatting \subsubsection* and underline
+\usepackage{ulem}
 \renewcommand{\ULthickness}{0.7pt} % default: 0.4pt
 \renewcommand{\ULdepth}{4pt} % default: 3pt ish
-\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{\uline}
+% format only numberless subsubsections
+\titleformat{name=\subsubsection,numberless}{\normalfont\normalsize\bfseries}{}{1em}{\hspace{-2ex}\uline{#1}}
 %\titlespacing*{command}{left}{before-sep}{after-sep}[right-sep]
 \titlespacing*{\subsubsection}{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
 
@@ -376,23 +378,23 @@
 
 \tableofcontents
 
-%\section{牌理}
-%\subfile{section/hairi}
-%
-%\section{副露判断}
-%\subfile{section/furo}
-%
-%\section{立直判断}
-%\subfile{section/riichi}
-%
-%\section{立直対応}
-%\subfile{section/riichicare}
-%
-%\section{副露対応}
-%\subfile{section/furocare}
-%
-%\section{河読み}
-%\subfile{section/read}
+\section{牌理}
+\subfile{section/hairi}
+
+\section{副露判断}
+\subfile{section/furo}
+
+\section{立直判断}
+\subfile{section/riichi}
+
+\section{立直対応}
+\subfile{section/riichicare}
+
+\section{副露対応}
+\subfile{section/furocare}
+
+\section{河読み}
+\subfile{section/read}
 
 
 %=============================================================
@@ -714,28 +716,28 @@
 %
 %従って、AIの行動について検討すべきのは「こうすると得は何、損は何」ということ。AIの行動の「理由」にこだわるのは賽の河原の石積み。AIの行動も必ずしも100\%最善手ではない。
 %
-%\subsubsection*{Mortalの仕組み}
+\subsubsection*{Mortalの仕組み}
+
+\begin{figure*}
+  \centering
+  \includegraphics[width=\textwidth]{mortal}
+  \caption{A diagram of how Mortal AI makes its decision.}
+  \label{fig:mortal}
+\end{figure*}
+
+Mortal is an AI engine trained with Q learning algorithm \citep{mortal}. With each episode equal to one round (\textit{kyoku}), the reward function is thus $\Phi_{k+1} - \Phi_k$ where $\Phi_k$ is the expected value of points at the end of round $k$. \eqref{eq:pt-ev} shows how $\Phi_k$ of player $n$ is calculated from $P_k^n \in \mathbb{R}^4$, the possibilities of placements of player $n$ when game ends estimated at the start of round $k$, and $w \in \mathbb{R}^4$, a vector of point distributions (\textit{uma}). In other words, Mortal is trained to maximize the expected value of points.
 %
-%\begin{figure*}
-%  \centering
-%  \includegraphics[width=\textwidth]{mortal}
-%  \caption{A diagram of how Mortal AI makes its decision.}
-%  \label{fig:mortal}
-%\end{figure*}
+\begin{align}
+  \Phi_k = P_k^n \cdot w \label{eq:pt-ev}
+\end{align}
 %
-%Mortal is an AI engine trained with Q learning algorithm \citep{mortal}. With each episode equal to one round (\textit{kyoku}), the reward function is thus $\Phi_{k+1} - \Phi_k$ where $\Phi_k$ is the expected value of points at the end of round $k$. \eqref{eq:pt-ev} shows how $\Phi_k$ of player $n$ is calculated from $P_k^n \in \mathbb{R}^4$, the possibilities of placements of player $n$ when game ends estimated at the start of round $k$, and $w \in \mathbb{R}^4$, a vector of point distributions (\textit{uma}). In other words, Mortal is trained to maximize the expected value of points.
-%%
-%\begin{align}
-%  \Phi_k = P_k^n \cdot w \label{eq:pt-ev}
-%\end{align}
-%%
-%The possibility of placements $P_k^n$ is calculated by a neural network referred to as GRP in Mortal codebase which takes round number and player scores into consideration. $P_k^n$ and the tiles in Mortal's hand are then fed into another neural network called DQN to produce the Q values of actions and states. In an environment where Mortal is asked to react (i.e. to pick an action based on Q values), the action chosen is $a^\ast$ which maximizes the Q value given a certain state. An agari-guard makes sure that Mortal does not choose an action that confirms its last place even if such action has the highest Q value. The decision making process is illustrated in Figure \ref{fig:mortal}.
+The possibility of placements $P_k^n$ is calculated by a neural network referred to as GRP in Mortal codebase which takes round number and player scores into consideration. $P_k^n$ and the tiles in Mortal's hand are then fed into another neural network called DQN to produce the Q values of actions and states. In an environment where Mortal is asked to react (i.e. to pick an action based on Q values), the action chosen is $a^\ast$ which maximizes the Q value given a certain state. An agari-guard makes sure that Mortal does not choose an action that confirms its last place even if such action has the highest Q value. The decision making process is illustrated in Figure \ref{fig:mortal}.
+
+Since Q learning algorithm does not use policy to update its Q values and Mortal greedily chooses an action when asked to do so, there is no function as that is equivalent to the policy function $\pi(a|s)$ in Mortal's engine. The $\pi_\tau(a|s)$ that is presented to users is merely a result of Softmax normalization of Q values as shown in \eqref{eq:softmax}. The parameter $\tau$ is referred to as ``temperature.''
 %
-%Since Q learning algorithm does not use policy to update its Q values and Mortal greedily chooses an action when asked to do so, there is no function as that is equivalent to the policy function $\pi(a|s)$ in Mortal's engine. The $\pi_\tau(a|s)$ that is presented to users is merely a result of Softmax normalization of Q values as shown in \eqref{eq:softmax}. The parameter $\tau$ is referred to as ``temperature.''
-%%
-%\begin{align}
-%  \pi_\tau(a|s) = \frac{\exp(Q(s, a) / \tau)}{\sum_i \exp(Q(s, a_i) / \tau)} \label{eq:softmax}
-%\end{align}
+\begin{align}
+  \pi_\tau(a|s) = \frac{\exp(Q(s, a) / \tau)}{\sum_i \exp(Q(s, a_i) / \tau)} \label{eq:softmax}
+\end{align}
 %
 %
 %\subsection{嘘、大嘘、そして統計}
