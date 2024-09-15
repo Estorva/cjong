@@ -8,7 +8,7 @@
 %        (disabling most rendering of mahjong tiles)       %
 %==========================================================%
 
-\documentclass[10pt, twocolumn]{article}
+\documentclass[10pt, twocolumn, notitlepage]{report}
 
 
 \newcommand{\renderOption}{1}
@@ -16,8 +16,8 @@
 % 1: full render
 
 
-\usepackage[top=2cm, bottom=2cm, left=2cm, right=2cm]{geometry}
-\usepackage{graphicx, expl3, minibox, amsmath, stfloats, tablefootnote, tikz, float, threeparttable, xfrac, multirow, etoolbox, verbatim, diagbox, titling, subfiles, bibentry, amssymb}
+\usepackage[top=4cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+\usepackage{graphicx, expl3, minibox, amsmath, stfloats, tablefootnote, tikz, float, threeparttable, xfrac, multirow, multicol, etoolbox, verbatim, diagbox, titling, subfiles, bibentry, amssymb, extramarks}
 \usetikzlibrary{backgrounds}
 
 \usepackage{siunitx} % for aligning numbers within table
@@ -45,7 +45,7 @@
 \usepackage{natbib}
 \addto{\captionsjapanese}{\renewcommand{\refname}{参考文献}}
 
-\usepackage[nottoc,numbib]{tocbibind} % to add references into the ToC
+\usepackage[nottoc]{tocbibind} % to add references into the ToC; use numbib to make it numbered in ToC
 
 \usepackage{caption}
 \captionsetup[table]{name=表}
@@ -80,6 +80,39 @@
 \externaldocument[furocare-]{section/furocare}
 \externaldocument[read-]{section/read}
 
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+% redefine \chaptermark and \sectionmark in the context of fancy page style
+\renewcommand{\chaptermark}[1]{\markboth{#1}{}}
+\renewcommand{\sectionmark}[1]{\markright{#1}}
+% clear header and footnote
+\fancyhf{}
+% use " \ " to introduce two space characters to match the spacing
+% between (sub)section number and (sub)section name
+\fancyhead[L]{\leftmark{}｜\rightmark}
+\fancyhead[R]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\setlength{\headheight}{12.1pt}
+
+% continuous numbering of sections
+\counterwithout{section}{chapter}
+
+% make subsubsections numbered in report doc class
+\setcounter{secnumdepth}{5}
+
+% make ToC include subsubsections in report doc class
+\setcounter{tocdepth}{3}
+
+% remove the indentation of toc entries
+\usepackage{tocloft}
+\setlength{\cftsecindent}{12pt}
+\setlength{\cftsubsecindent}{12pt}
+\setlength{\cftsubsubsecindent}{12pt}
+% add spacing before sections
+\setlength{\cftbeforesecskip}{10pt}
+% close the gap between sections and chapters
+\renewcommand\cftchapafterpnum{\vskip-10pt}
+
 
 %============================== New command and float ==============================
 
@@ -98,14 +131,13 @@
 % these are later to be redefined
 
 \newcommand{\subfilepreamble}[1]{%
+	\onlyinsubfile{\tableofcontents}
 	\onlyinsubfile{\section{#1}}
-	\onlyinsubfile{\tableofcontents\vspace{5mm}}
 	\onlyinsubfile{\bibliographystyle{../jecon}}
   \onlyinsubfile{\nobibliography{../refmj}}
 }
 % the preamble that is common to all subfiles
 % arg: name of standalone section
-
 
 
 %============================== ExplSyntax ==============================
@@ -364,6 +396,21 @@
 \ExplSyntaxOff
 
 
+% macro to make two column TOC in book/report document class
+% since default behavior put the title of the TOC *inside*
+% one column, leaving another column higher than the TOC title
+\makeatletter
+\newcommand{\twocolumntoc}{% added <<<<<<<<<<<<<<<<
+    %\chapter*{\contentsname
+    %\@mkboth{%
+    %    \MakeUppercase\contentsname}{\MakeUppercase\contentsname}}%
+    \begin{multicols}{2}
+        \@starttoc{toc}%
+    \end{multicols}
+    \onecolumn
+    }
+\makeatother
+
 
 
 %======================= END OF PREAMBLE ==========================
@@ -372,17 +419,44 @@
 \renewcommand{\onlyinsubfile}[1]{}
 \renewcommand{\notinsubfile}[1]{#1}
 
+% special formatting for title page since the content list is too long
+% and spans over two pages
+\newgeometry{top=2cm, bottom=2cm, left=2cm, right=2cm}
+
+\begin{titlepage}
+
 \title{spaghet boiの麻雀ノート}
 \renewcommand\maketitlehookc{\vspace{-2ex}}
 \maketitle
+\vspace{2ex}
 
-\tableofcontents
+% put \pagestyle after \maketitle since the latter sets thispagestyle to plain
+\pagestyle{empty}
 
-\section{牌理}
+%\addtocontents{toc}{\protect\thispagestyle{empty}}
+\twocolumntoc
+
+\thispagestyle{empty}
+\end{titlepage}
+\restoregeometry
+\pagestyle{fancy}
+
+\chapter*{牌理総合}
+\markboth{牌理総合}{} % unnumbered chapters dont mark
+\addcontentsline{toc}{chapter}{牌理総合}
+
+\section{牌効率}
 \subfile{section/hairi}
+
+\section{手作り}
+\subfile{section/teyaku}
 
 \section{副露判断}
 \subfile{section/furo}
+
+\chapter*{押し引き}
+\markboth{押し引き}{}
+\addcontentsline{toc}{chapter}{押し引き}
 
 \section{立直判断}
 \subfile{section/riichi}
@@ -399,7 +473,10 @@
 
 %=============================================================
 %\clearpage
-\appendix
+%\appendix
+
+\chapter*{付録}
+\addcontentsline{toc}{chapter}{付録}
 
 \section{数値計算}
 
