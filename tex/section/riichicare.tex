@@ -5,6 +5,13 @@
 % override main tex render option
 \renewcommand{\renderOption}{0}
 
+% 本来ここにある期待値の表はnankiru_main.texに移された、
+% 下記のハンドルで引用する：
+% tab:ev-ryanmen-chase
+% tab:ev-ryanmen-furo
+% tab:ev-gukei-chase
+% tab:ev-gukei-furo
+
 \begin{document}
 
 \subfilepreamble{立直対応}
@@ -43,85 +50,6 @@
 「ベタオリ」というのは安牌が複数枚の前提で成立する。安牌がたくさんあるならベタオリが成功する確率が高い。一方、安牌がないなら、どうせどっちの牌を切っても放銃のリスクがあるなら、聴牌で勝負する、という意見も。
 
 データによると、\textbf{子が子の立直に対してベタオリの局収支は$-1100$点}\citep[][p. 83]{miinin-stat}、\textbf{子が親のリーチに対してベタオリの局収支は$-1700$点、親が子のリーチに対してベタオリの局収支も$-1700$点}\citep[][p. 84]{miinin-stat}。よって、立直に対して局収支はそれらの状況でそれらの数値より高いなら全部押す。
-
-\begin{table*}[!h]
-  \centering
-  \begin{tabular}{ll|SSSSSS}
-     　　& 　　 & \multicolumn{2}{c}{− 8巡目 −} & \multicolumn{2}{c}{− 11巡目 −} & \multicolumn{2}{c}{− 14巡目 −} \\
-    相手 & 立直の打点 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 \\
-    \hline
-    子 & 1飜40符 & 200 & -400 & 100 & -500 & 100 & -500 \\
-    　 & 2飜30符 & 700 & 100 & 500 & -100 & 500 & -100 \\
-    　 & 3飜30符 & 1900 & 1200 & 1700 & 1000 & 1400 & 800 \\
-    親 & 1飜40符 & -500 & \color{red}-1200 & -600 & \color{red}-1300 & -500 & \color{red}-1200 \\
-    　 & 2飜30符 & 0 & -800 & -200 & -900 & -100 & -900 \\
-    　 & 2飜40符 & 600 & -300 & 400 & -400 & 300 & -500 \\
-    　 & 3飜30符 & 1200 & 400 & 1000 & 100 & 800 & 0
-  \end{tabular}
-  \caption{先制立直に対する子の追いかけ両面立直の局収支。10\%牌とは初手に10\%の危険度の牌を切った場合。先行者は2巡以上前に立直しているとする。宣言牌で振っても一発にならないとする\citep[][p. 87]{miinin-stat}}
-  \label{tab:ev-ryanmen-chase}
-\end{table*}
-
-\begin{table*}[!h]
-  \centering
-  \begin{tabular}{lll|SSSSSS}
-    　　 & 　　 & 　　　　　 & \multicolumn{2}{c}{− 8巡目 −} & \multicolumn{2}{c}{− 11巡目 −} & \multicolumn{2}{c}{− 14巡目 −} \\
-    自分 & 相手 & 副露の打点 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 \\
-    \hline
-    子 & 子 & 1飜30符 & -200 & -700 & -200 & -700 & 0 & -500 \\
-    　 & 　 & 2飜30符 & 300 & -300 & 200 & -300 & 400 & -200 \\
-    　 & 　 & 3飜30符 & 1200 & 500 & 110 & 400 & 110 & 400 \\
-    子 & 親 & 1飜30符 & -900 & \color{red}-1600 & -900 & \color{red}-1500 & -600 & \color{red}-1300 \\
-    　 & 　 & 2飜30符 & -400 & -1100 & -400 & -1100 & -200 & -1000 \\
-    　 & 　 & 3飜30符 & 500 & -300 & 400 & -400 & 500 & -300 \\
-    親 & 子 & 1飜30符 & -600 & -1100 & -600 & -1000 & -400 & -800 \\
-    　 & 　 & 2飜30符 & -100 & -600 & -100 & -600 & 0 & -500 \\
-    　 & 　 & 3飜30符 & 800 & 200 & 700 & 100 & 700 & 100
-  \end{tabular}
-  \caption{両面副露手で立直に対して押した時の局収支\citep[][p. 92]{miinin-stat}}
-  \label{tab:ev-ryanmen-furo}
-\end{table*}
-
-\begin{table*}[!h]
-  \centering
-  \begin{tabular}{lll|SSSSSS}
-    　　 & 　　 & 　　　　　 & \multicolumn{2}{c}{− 8巡目 −} & \multicolumn{2}{c}{− 11巡目 −} & \multicolumn{2}{c}{− 14巡目 −} \\
-    自分 & 相手 & 立直の打点 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 \\
-    \hline
-    子 & 子 & 1飜40符 & -900 & \color{red}-1300 & -800 & \color{red}-1300 & -700 & \color{red}-1200 \\
-    　 & 　 & 2飜40符 & -200 & -700 & -200 & -700 & -200 & -700 \\
-    　 & 　 & 3飜40符 & 600 & 0 & 600 & 0 & 400 & -100 \\
-    子 & 親 & 1飜40符 & \color{red}-1800 & \color{red}-2300 & \color{red}-1600 & \color{red}-2200 & \color{red}-1400 & \color{red}-2000 \\
-    　 & 　 & 2飜40符 & -1100 & \color{red}-1700 & -1000 & \color{red}-1600 & -900 & \color{red}-1500 \\
-    　 & 　 & 3飜40符 & -200 & -1000 & -200 & -900 & -300 & -1000 \\
-    親 & 子 & 1飜40符 & -900 & -1300 & -800 & -1300 & -700 & -1200 \\
-    　 & 　 & 2飜40符 & 200 & -400 & 100 & -400 & 0 & -500 \\
-    　 & 　 & 3飜40符 & 1400 & 700 & 1300 & 600 & 1000 & 300
-  \end{tabular}
-  \caption{愚形で立直に対して押した時の局収支\citep[][p. 98]{miinin-stat}}
-  \label{tab:ev-gukei-chase}
-\end{table*}
-
-\begin{table*}[!h]
-  \centering
-  \begin{tabular}{lll|SSSSSS}
-    　　 & 　　 & 　　　　　 & \multicolumn{2}{c}{− 8巡目 −} & \multicolumn{2}{c}{− 11巡目 −} & \multicolumn{2}{c}{− 14巡目 −} \\
-    自分 & 相手 & 副露の打点 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 \\
-    \hline
-    子 & 子 & 1飜30符 & -800 & \color{red}-1300 & -700 & \color{red}-1100 & -400 & -900 \\
-    　 & 　 & 2飜30符 & -500 & \color{red}-1000 & -400 & -800 & -100 & -700 \\
-    　 & 　 & 3飜30符 & 100 & -400 & 200 & -300 & 300 & -200 \\
-    子 & 親 & 1飜30符 & \color{red}-1700 & \color{red}-2300 & \color{red}-1500 & \color{red}-2100 & -1100 & \color{red}-1700 \\
-    　 & 　 & 2飜30符 & -1400 & \color{red}-2000 & -1200 & \color{red}-1800 & -800 & \color{red}-1500 \\
-    　 & 　 & 3飜30符 & -700 & -1400 & -600 & -1300 & -400 & -1100 \\
-    親 & 子 & 1飜30符 & -1300 & \color{red}-1700 & -1100 & \color{red}-1500 & -800 & -1200 \\
-    　 & 　 & 2飜30符 & -900 & -1400 & -800 & -1200 & -500 & -1000 \\
-    　 & 　 & 3飜30符 & -300 & -800 & -200 & -700 & 0 & -600
-  \end{tabular}
-  \caption{愚形副露手で立直に対して押した時の局収支\citep[][p. 101]{miinin-stat}}
-  \label{tab:ev-gukei-furo}
-  \vspace{2em}
-\end{table*}
 
 %--------------------------------------------
 \subsection{両面聴牌}
@@ -193,7 +121,7 @@
 
 安全度から見ると \mj{2m} と \mj{9p} が同じレベルだが、七対子の可能性も考えると \mj{9p} の方が少し危険。それに、\mj{9p} を切った後ヘッドレスになるので復活するとき聴牌の質は保証されない。よって、ここは打 \mj{2m}。上家が \mj{23s}、下家が \mj{68p} の搭子を落としたので、筋の \mj{3m} もかなり愚形に刺さりづらい。後でドラ \mj{6s} を引いたら追いかけてトップを大きく引き寄せる。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -220,7 +148,7 @@
 
 立体図~\ref{rittai:ryanmen-push} は両軒立直に近い場況、\mj{4m} を切ったら \mj{69s} 待ちの立直・ドラ1になる。まずは一発の巡目に \mj{0m} 切りを敢行する下家に \mj{78s} を切ることはない。このままで \mj{4m} を切って立直していいが、安全牌の \mj{5m} をツモ切って、ツモ \mj{9m} による一通やツモ \mj{7s} で危険な \mj{4m8s} で勝負することもあり\citep[][pp.~106--109]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -277,7 +205,7 @@
 
 立体図~\ref{rittai:bakyou-1} のような真ん中の待ちのメンピンは\citet{doi}の基準なら通常押せないが、今回ドラ \mj{7z} がいっぱい切られていて、36待ちでも押せる\footnote{\citet{doi}は冒頭で長い文で放銃失点と押し引きの基準に至った計算と経緯を説明してきたが、どうやってドラ枚数で失点を調整するのには説明がない。}。打 \mj{3m} で立直\citep[][pp.~76--77]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -325,7 +253,7 @@
 
 よって、のみ手なら \mj{3m} まで押す。3900点あるなら \mj{9m} で押すか微妙だが、8000点あるなら全て押す。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -353,7 +281,7 @@
 
 立体図~\ref{rittai:ryoukei-nisen} は下家から \mj{6z} が出てポンして一発を消しつつ両面聴牌の2000で \mj{7m} が押せるかという問題。対子、そして残っている筋は14本なので、副露でも両面の2000は中盤で相当押せる。終盤で残っている筋が少なくなって危険牌を掴んでしまったらオリてもいい\citep[][pp.~172--173]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 北,
@@ -379,7 +307,7 @@
 
 立体図~\ref{rittai:ryoukei-niku} は下家の \mj{3p} の立直宣言牌をポンしたら2900の両面聴牌が取れる局面。序盤とはいえ、下家の河に \mj{34p} の搭子があって、\mj{25p} よりいい両面がありそうな良形濃厚なので危険度は中盤並び。だとしても、親としてツモられたら振り込む時の減点とは差が大きくないので、$2/13 \approx 15\%$は押せる。6巡くらいゼンツして他の無筋を掴んでしまったらオリてもいい\citep[][pp.~174--175]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 東,
@@ -401,7 +329,7 @@
 
 立体図~\ref{rittai:ryoukei-zanku} は親の立直の一発巡で \mj{3m} を切らなければ3900の両面聴牌が取れない局面。親の立直に対して通っていない筋は13本、そして捨て牌のまたぎの筋を除けば9本だけ。つまり \mj{3m} の放銃率は8\%〜10\%くらい。そして親の立直の平均打点は9000で、一発で振り込んだらほぼ親満。だが、待ちの \mj{69p} も相当なアガリ率があるので、表~\ref{tab:ev-ryanmen-furo} によっても3900で \mj{3m} を切るのは見合う。ここは押す\citep[][pp.~176--177]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 北,
@@ -424,7 +352,7 @@
 
 立体図~\ref{rittai:ryoukei-sen} は上家の立直宣言牌の \mj{6p} で1000のチーテンを取るか取らないかという問題。自分が今ラス目で、立直で一気にラスから抜き出す気持ちがわかるが、今回の注目点は供託と本場。自分の手はクイタンだけではなく、1000 + 3300 = 4300です。1000点差のラス目と5000点差のラス目は断然違うレベル。よって、ここは \mj{6p} をチーしてゼンツする\citep[][pp.~200--201]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -454,7 +382,7 @@
 
 そして立体図~\ref{rittai:ryoukei-sen2} は立体図~\ref{rittai:ryoukei-sen} から1巡進んで \mj{8p} を掴んでしまう瞬間。宣言牌に関連するとはいえ、ここで4300をアガらないとほぼラス確定。ここは逃げる余地がない。目をつぶって \mj{8p} で押す\citep[][pp.~202--203]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -484,7 +412,7 @@
 
 \textbf{跳満などが見えても先制されたら一歩聴牌を取る方がいい}。立体図~\ref{rittai:yasume-chi}のような平場の東1局で、自分の手牌は超勝負手なので立直したいのはわかるが、先制立直を受けている後手も事実。聴牌を取らないとあと聴牌まで無筋危険牌を何回掴むのがわからないけれど、この3900で \mj{4p} で勝負できるのでチーして聴牌を取る方がいい\citep[][pp.~114--117]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -512,7 +440,7 @@
 
 \textbf{門前（高め）5200一向聴より副露2000聴牌}。立体図~\ref{rittai:ittsu-chiten} は上家が切ってくれた \mj{2p} をチーして2000の聴牌を取るかどうかという問題。この手には一通が見えていて、どの有効牌を引いても好形聴牌になるので、他家から立直や副露が入らないなら通常は鳴かない。ですが、今回の先制者である親の河に \mj{5p} が早めに切られていて、\mj{14p} の危険度が高まっている。そして自分の一向聴の受け入れを確認すると、\mj{247p14s} の中に \mj{47p} を引いたら \mj{1p} を切らなければ聴牌にならない。\mj{247p14s} 以外の危険牌を掴むとどのくらい勝負するかという難問は聴牌まで続く（その時ほぼオリるが）。そうするとさっさと聴牌を取ってめくり合った方がいい。\mj{2p} チー打 \mj{5p} \citep[][pp.~150--153]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -539,7 +467,7 @@
 
 立体図~\ref{rittai:ryoukei-taioya} は2000で終盤の親リーに対してド無筋の \mj{7p} は押せるかという問題。同じ牌姿なら序盤では押せるが、終盤で通っている筋が多いなら \mj{7p} が当たる確率が激増する。元々表~\ref{tab:ev-ryanmen-furo} によるとここで \mj{7p} を押す期待値はベタオリに近い上、通っている筋が多いならさらにオリに寄る。ここは \mj{4s} でオリる\citep[][pp.~164--165, p.~219]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 南,
@@ -569,7 +497,7 @@
 
 立体図~\ref{rittai:ryoukei-oya} はダブ東の2900で終盤の子リーに対して（ア）ド両無筋の \mj{5m} を押す（イ）片筋の \mj{6m} を押すと（ウ）\mj{9s} でオリるという三択の問題。残った筋は7本で、片筋の \mj{6m} で当たる確率は14\%なら両無筋の \mj{5m} の確率は28\%。超終盤で自分のツモ番は1回2回しかないなら、聴牌料のために筋を一本押すには値するが、2900で両無筋を押すのは微妙。ドラが1枚あるなら \mj{5m} で押す。ダブ東だけなら \mj{56m} のどちらもあるかな \citep[][pp.~169--170, p.~219]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 東,
@@ -612,7 +540,7 @@
 
 \textbf{愚形リーのみは打たない}。ただし、立体図~\ref{rittai:gukei-chase-1} の場合は早い立直に対して自分が安牌を1枚も持っていない状況。そうならば、自己都合でまず打 \mj{3p} として聴牌を取って、ドラを引いたり良形になったりすると勝負するに値する手になる可能性も、ひょっとしてカン \mj{4p} をツモる可能性も、他家が鳴いたり立直したりして安牌を増やしてくれる可能性も。また、打 \mj{5s} とする意見も\citep[][pp.~154--155, p.~219]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -642,7 +570,7 @@
 
 立体図~\ref{rittai:chiitoi} は序盤の子の立直に対して七対子のみで追いかけ立直するかダマにするかオリるかという問題。上家の立直宣言牌の \mj{3m} に対して \mj{1m} は危険に見えるが、\mj{1m} 待ちにするとアガリ率が激減する。そうなると1回のリスクを背負って \mj{1m} 切り立直の方が得。そして今回の持ち点について、立直すると二着に浮上する確率が高くなる。二着とラス目が等価なら立直する方が得。天鳳などのラス回避ルールならラス争いに巻き込まれないように打 \mj{6z} としてダマにするのもあるかな\citep[][pp.~190--191, p.~221]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -702,7 +630,7 @@
 
 諸説あるが、\mj{9p} の方が少しマシかな\citep[][pp.~160--161, p.~219]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 南,
@@ -756,7 +684,7 @@
 
 立体図~\ref{rittai:twoleft} はMリーグのある局面。自分が親でドラ2愚形聴牌だが待ちの \mj{5p} が既に2枚切れ。しかも対面から立直来ている。残りの \mj{5p} が山にありそうか否か分かりにくいが、上がればほぼ満貫なので、ここで対面と勝負する。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -792,7 +720,7 @@
 
 立体図~\ref{rittai:gukei-oya-zanku} は混一色にもならず子の立直の一発巡で混一色狙いを続行するか立直・一盃口の3900で勝負するかという問題。混一色両向聴とはいえ、立直に対して何巡目の複数の無筋を押さなければ5800にはならない。そうならば嵌張でも勝負する。3900は立直による打点上昇の恩恵が高い\citep[][pp.~180--181, p.~221]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 東,
@@ -822,7 +750,7 @@
 
 打 \mj{9m} として立直打たずに \mj{23457m} に \mj{134m} をツモったらいい待ちになって、ピンフ・タンヤオ・ドラ2も近くなる。だが、今回は \mj{14m} が枯れていて、手変わりの効果は薄くなる。それに、\mj{9m} は両面・双碰に当たる；\mj{2m} は両面にしか当たらない。待ちとして \mj{8m} も \mj{6m} に優れている。宣言牌の安全度と待ちの強さから見ると、ここで \mj{2m} を切って立直するのは正着\citep[][pp.~154--157]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -851,7 +779,7 @@
 
 立体図~\ref{rittai:gukei-zanku} は子の立直に対して3900愚形聴牌で一発巡でドラの \mj{8s} が押せるかという問題。ドラとはいえ、確かに振り込んだ時は他のケースより痛いでドラ切りに心理的な抵抗はある人もいるが、打牌に意識の介入が少ない序盤なら他の無筋と比べると放銃率はほぼ同じ。よって、この手は押せる\citep[][pp.~178--179]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -876,7 +804,7 @@
 
 立体図~\ref{rittai:gukei-shuuban-mangan} は \mj{4s} を押さないと満貫聴牌が取れない局面。先行者は親だとしても、まだ通っていない筋は11本で、両無筋の \mj{4s} の放銃率は18\%台。そして自分の手は満貫なので、18\%の放銃率に見合う。なのでここは押す。アガリ率と打点効率のために立直はしない。ただし、次で他の危険牌を引くとオリってもいい\citep[][pp.~170--171, p.~220]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -906,7 +834,7 @@
 
 立体図~\ref{rittai:gukei-shuuban-mangan-2} は残り2枚の満貫聴牌で立直するかダマにするかという問題。押すのは当然。立直するとツモか一発か裏ドラで跳満になるが、残り2枚はさすがにアガリづらい。立直せずとして危険な \mj{24p} を引いても手変わりができる。よって、ここはダマにする\citep[][pp.~182--183, p.~221]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 南,
@@ -933,13 +861,42 @@
   \label{rittai:gukei-shuuban-mangan-2}
 \end{rittai}
 
+立体図~\ref{rittai:gukei-shuuban-mangan-3} は終盤で七対子ドラドラの聴牌になる瞬間。出ていく \mj{9m} は対面にとっては無筋だが、対面に通っていない筋はまだ11本で、そして下家が直前に切ったドラ \mj{4z} が誰もポンしなかったことは、北家も仕掛けが入っている親も持ってなっかたと推測できる、つまりまだ山にいる。1枚切れの字牌自体もかなりアガれるので、ここは \mj{9m} を切って
+曲げる\footnote{\url{https://naga.dmv.nico/htmls/6659c17b33f0e1f7ae2132b1cccbf5530c2722bada8997b0c7eb8e2e7476bb0ev2_2.html?tw=0}}。しかし、43000点持ちなどのトップ目なら前に出ず、一旦 \mj{9m} を切って、あと無筋を掴んだら降りてもいい；\mj{1m} を連打して降りてもいい\footnote{\url{https://naga.dmv.nico/htmls/181453b0b53c85d1d28d4dcb8fb1cb50d6a8a5cbdc86e54fc10d3d4284ddc502v2_2.html?tw=0}}。
+
+\begin{rittai}[hbt]
+  \centering
+  \drawrittai{
+    jicha/seat = 南,
+    jicha/hand = 1133559m 77s 2466z -2z,
+    jicha/river = 2p 7m 5^p 8s 1z 3p,
+    jicha/riverb = 3m 6^s 9p 2^m 1^s 7^m,
+    %
+    toimen/river = 1m 2^z 1s 8s 8p 9p,
+    toimen/riverb = 9s 9s 8^s 9p 4m,
+    %
+    kami/hand = XXXXXXXXXX -11'1z,
+    kami/river = 3z 5z 7z 5^z 5s 2m,
+    kami/riverb = 1m 1p 3z 8^m 0^s 7^p,
+    kami/riverc = 4m,
+    %
+    shimo/river = 1s 5z 7z 8s 9p 2^p,
+    shimo/riverb = 6m 1p 5s 6^s 4z,
+    %
+    kyoutaku = 1,
+    dora = 4z
+  }
+  \caption{}
+  \label{rittai:gukei-shuuban-mangan-3}
+\end{rittai}
+
 
 %-----------------------------------------------------
 \subsubsection{終盤・副露手}
 
 立体図~\ref{rittai:gukei-shuuban-nisen} は2000で終盤の子リーに対してド無筋の \mj{3p} は押せるかという問題。立体図には示さなかったけど、元の牌譜を見てみると、残っている筋は \mj{36p}、\mj{47p} と \mj{69p}。立体図~\ref{rittai:ryoukei-taioya} に似ていて、先行者は子だが、自分のアガリ率は両面聴牌より低い上、\mj{3p} で当たる確率は33\%。表~\ref{tab:ev-gukei-furo} には33\%の危険度の牌のデータはない。ならばここは \mj{8m} でオリる\citep[][pp.~166--167, p.~219]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -1005,7 +962,7 @@
 
 ゲンバリが有効なのは（1）他家が現物を持っていて、（2）安牌に困るときに切ってくる。今回下家から \mj{1s} が早めに出ていて、\mj{6'07s} の仕掛けも入っていて、周りの \mj{25s} が持っている確率は低いと推測できる。つまり、\mj{25s} が現物といっても、下家から出てくるのは期待できない。ゲンバリの効果が薄くなる上、打点効率が高い2000なら、立直にするのが正着。打点効率がそこまで良くないドラ0やドラ3ならダマもあり\citep[][pp.~146--149]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -1040,7 +997,7 @@
 
 立体図~\ref{rittai:niken-genbari} と違い、今回は下家から \mj{25p} の出アガリがかなり期待できる。上家のドラ色の染め手を阻止するためにもアガリ率を高めるに値する。よって、ここはワンチャンスの \mj{3p} を切る\citep[][pp.~158--161]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -1069,7 +1026,7 @@
 
 序盤では通っている筋の本数はまだ少ないので、押し引きはちょっと押し寄りであろう。切った牌が少ないため、安全度の読みはあまりできない。手牌~\ref{mj:3-1-1} から~\ref{mj:3-1-4} までは全て立体図 \ref{rittai:3-1} の状況を仮定している\citep[][pp. 16--21]{tetsuoshi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -1116,7 +1073,7 @@
 
 立体図~\ref{rittai:shantenoshi-open-1} も仕掛けは入っている途端に立直がくる場面。ドラの \mj{1z} 切らないと手牌の受け入れは最大でも13枚ほど狭いし、一発の巡目で \mj{1z} を切って放銃への減点が高いし自分の手牌の価値もひどく安くなる。なので、ここは押せない。\mj{1s} も \mj{1z} も切らない。現物の \mj{4m} で全力でベタオリ\citep[][pp.~158--159]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 北,
@@ -1141,7 +1098,7 @@
 
 立体図~\ref{rittai:mangan-1} はドラ3の満貫一向聴。5巡目で親から立直がきて、通った筋は一本だけ。そうなると素直に \mj{2s} を切って満貫に向かうのが得。\mj{0s} を切ったら自分の手牌がひどく安くなるし、振り込んだ時はすごく痛い。\mj{7z} を切ったら2巡凌げるが、ポンテンの機会も逃げる\citep[][pp.~162--163]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 南,
@@ -1166,7 +1123,7 @@
 
 七対子一向聴ならオリ寄り。立体図~\ref{rittai:chiitoi-iishanten} であれば、ドラが重なったり、待ち牌が場況によっていい待ちであったり、序盤で切る牌が嵌張（\mj{68m}）・辺張（\mj{89m}）に放銃するリスクを負って押すのが少し有利。ただし、これらの条件が整わないなら \mj{1s} でオリよう\citep[][pp. 50--55]{tetsuoshi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -1193,7 +1150,7 @@
 
 立体図 \ref{rittai:3-2} を想定する。自分の手は高めで立直・タンヤオ・ピンフ・三色の8000（一発・裏ドラ・ツモのどちらがあったら12000）、安めで立直のみの1300。ここで現物の \mj{4m} を切ると \mj{3m} の受け入れと \mj{5m} の入れ替えが無くなり、打点が一気に下がるので、序盤で \mj{3s} 切りは有利。以降の巡目で \mj{6m} を引いたらダマにしよう\citep[][pp. 62--65]{tetsuoshi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -1253,7 +1210,7 @@
 
 同卓のメンツのレベルが上がるほど聴牌か高打点かのパターンが絞られる。そういうとき押せる一向聴の手牌も押せなくなる。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -1289,7 +1246,7 @@
 
 立体図 \ref{rittai:chuuban} は立体図 \ref{rittai:3-1} に続いて、6回のツモ切りもしてもまだ一向聴の状態。残り筋が6本（ \mj{47m}、\mj{25p}、\mj{47p}、\mj{58p}、\mj{36s}、\mj{69s} ）で、\mj{3s} を切ったら$1/6\approx17.8\%$の確率で放銃する。巡目はもう中盤〜終盤なので和了率はそこまで高くないので一旦 \mj{8m} を切ってオリよう。もし \mj{2s} を引いたら \mj{14p} の闇聴にしよう\citep[][pp. 40--45]{tetsuoshi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -1329,7 +1286,7 @@
 
 立体図~\ref{rittai:oya-iishanten} は親の完全一向聴で \mj{4s} を掴んだ瞬間。親としては向聴押しの機会が多いが、まずメンピンだけは子と同じ押せない。メンピン・ドラ1なら待ちが4枚切れになるまでは押せる。よって、今回の手牌はドラがないので押せないが、ドラが1枚持ちになるなら押せる\citep[][pp.~96--97]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 東,
@@ -1355,7 +1312,7 @@
 
 立体図~\ref{rittai:good-wait} では一通も見込む超良形一向聴だがここで \mj{0p} を掴まえてしまった。まずはどれぐらい良形でも片筋 \mj{0p} を放つことはない。一旦 \mj{8p} を切って \mj{58p} の筋を試す選択肢もあるが、もう11巡目に加えて \mj{6p} が既に2枚切れなので結局オリになるケースが多い。点棒が切実に必要ではないなら \mj{89s} でオリる\citep[][pp.~126--129]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -1383,7 +1340,7 @@
 
 そうなると立直を優先にケアする。\mj{3s} と \mj{7s} は3枚見えていて \mj{5s} と \mj{8s} はワンチャンスになるが、自分の手牌はタンヤオもピンフも確定していないため、ワンチャンスで押すに値しない。よって、ここは打 \mj{8p} \citep[][pp.~166--169]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -1421,7 +1378,7 @@
 
 ちなみに親の捨て牌に「ワタシトイトイヤッテイマス」と書いてある。ですが自分がピンフドラ1一向聴なので一旦無視しよう\citep[][pp.~110--113]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -1448,7 +1405,7 @@
 
 立体図~\ref{rittai:taioya-sanshoku} は三色も見える好形一向聴で親のダブ \mj{1z} 落としの立直の一発を受ける場面。通常のリーチなら \mj{2p} をツモ切り。だが、親はダブ \mj{1z} 落としだけではなく、尖張牌もいっぱい切っている。このようなタンピン濃厚の捨て牌に対して、聴牌もしてないままで無筋を切るのは無謀。現物は \mj{2m6m2s} だが、打 \mj{2m} としてドラ \mj{3p} をツモれば \mj{3m} で勝負する価値がある\citep[][pp.~138--141]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -1474,7 +1431,7 @@
 
 立体図~\ref{rittai:nanikkyoku} はドラ2の両面両面一向聴で無筋の \mj{5p} を掴んだ瞬間。まずドラが2枚あってもノーテンから無筋を2本押すのはないでしょう、しかもラス目の親に対して。\mj{9p} 連打で様子を見つつ後で勝負するかどうかを判断するのもあるが、良形の保証がないので結局オリになることが多いでしょう。親の宣言牌は2枚切れの \mj{5z} なので、筋の \mj{3m} は絶対に安全ではないが刺さりづらい。よって、ここは一旦 \mj{3m} を切って、聴牌になったら無筋の \mj{2m} で勝負し、他の無筋を掴んだらオリる\citep[][pp.~162--165]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -1510,7 +1467,7 @@
 
 ですがこんな手でも下家の河にドラ \mj{5m} や無筋 \mj{6p} を放つ価値がない。\mj{37s} などの中張牌をいっぱい切ったのは手牌が整った有力な証拠。そしてドラ \mj{5m} も1枚しか見えないので下家の手牌に複数枚あっても珍しくない。ここで一旦 \mj{1m} を切って、\mj{4m} が入ったら \mj{9p} で勝負する。ただし以外の危険牌を掴まえたらオリる\citep[][pp.~122--125]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -1538,7 +1495,7 @@
 
 \textbf{3900の両面両面は鉄押し。}\citep[][pp.~94--95]{doi}。立体図~\ref{rittai:honitsu-iishanten} は混一色・役牌の5200の一向聴。\mj{36m} チーで役牌の双碰待ちは強いし、\mj{36m} 待ちになってもギリギリ押せるので、ここは打 \mj{78p}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -1567,7 +1524,7 @@
 
 立体図~\ref{rittai:honitsu-riichi} は自分がラス目で押したい点数状況だが下家から立直が入って上家から派手な打牌をしている場面。難しい点は上家には振り込んだら最低満貫だが聴牌しているかしないかまだわからない；それに対して下家は聴牌しているが高いか安いかわからない。そうならば立直を優先にケアして \mj{1m} 三連発\citep[][pp.~170--173]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -1604,7 +1561,7 @@
 
 \textbf{複合している部分を残すのは基本}\citep[][pp.~48--49]{suphx}。立体図~\ref{rittai:shanten-back} の場合、ドラ \mj{6z} 立直に対して無筋の \mj{9m} が掴まえて一発を避けるため現物の \mj{6p} と \mj{5s} を切る二択。Suphxは打 \mj{6p} とした。そうするとツモ \mj{4578p} の変化が拾えるし、切りにくい \mj{17s} も拾える。一方、\mj{5s} にすれば聴牌しても残り2枚の双碰待ち、ケイテンではないなら微妙。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -1643,7 +1600,7 @@
 
 ここの最大な不確定要素は北家。\mj{0p} チー後で打 \mj{2p} のは食い替えたばかり、速度はわかりにくいところ。よって、ここは一旦 \mj{2p} を切って一向聴を維持しつつ、次の引く牌や北家の動向次第で行動する。ちなみにこの直後Suphxは \mj{1p} チー打 \mj{6m} とした。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -1677,7 +1634,7 @@
 
 \subsubsection*{手牌維持}
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -1712,7 +1669,7 @@
 
 アガりに向かうけれどSuphxはド無筋の \mj{7m} や \mj{4p} でゼンツはしない。やや安全そうな \mj{9m} で押し、一向聴を維持する。聴牌なら押し、安牌が増えたらオリ、頭ができないならオリる。とはいえ、手牌がもっと悪い場合ちゃんと \mj{3m} でオリよう。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -1747,7 +1704,7 @@
 
 \subsubsection*{吸収性能}
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   
   \drawrittai{
@@ -1789,7 +1746,7 @@
 
 自分のツモ番が3回しかない超終盤なら、アガリ率がひどく低いので、聴牌料と比べるとアガリ放棄の方がマシであることもある。立体図~\ref{rittai:agari-houki} は純チャン・三色・ドラ1の8000。中盤なら鉄押し。しかし今回の場面は流局まで自分のツモ番が3回だけ。危険な \mj{4p} を押してもこのままで流局を迎えることは多々ある。ならば打 \mj{1p} によって聴牌料をしっかり取りに行く、という選択も視野に入れよう\citep[][pp.~98--99]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -1831,7 +1788,7 @@
 
 この \mj{3p} は鳴かないとはいえ、上家から \mj{7m25p} が出たらチーして安全な \mj{3p} を切って聴牌を取っていくのも悪くない。ポイントはこの点数状況で2000の価値はどれくらい、そして2000のためにどれくらい押せる。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -1883,7 +1840,7 @@
 \item 聴牌せずに危険牌を掴んだらオリる
 \end{itemize}
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -1922,7 +1879,7 @@
 
 こう見ると打 \mj{1s} は最善。立直せず5200でアガるとトップにもなるが、オーラスの条件が軽くなるように立直した方がいい\citep[][pp.~190--193]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 南,
@@ -1963,7 +1920,7 @@
 
 そして立直・ダマについて考えると、\mj{27m} にせよ \mj{6p} にせよどちらも現物ではないのでダマしても明確に出やすい牌はない。一応 \mj{7m} は現物だが、一枚の \mj{7m} を待つために対面から出た \mj{6p} を逃すのはもったいない。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -1997,7 +1954,7 @@
 
 立体図~\ref{rittai:toppume} はトップ目で対二軒で両面聴牌になる場面。ここで注目したい点は点棒状況：オリても二着、放銃したら三着。危険な無筋の \mj{6s} を押したらどうかははっきりわからない。西家の2600へ振り込んだら二着止まり、南家が西家の2600へ振り込んだら自分がトップ、西家か南家か北家に振り込む……など色んな結果がある。そして巡目がまだ早いので、オリても流局の前に誰かがアガることが多いでしょう。そうならばここは点棒を出さずに \mj{6s} でダマして抽選を受ける。トップが$+50$なら尚更\citep[][pp.~202--205]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 東,
@@ -2035,7 +1992,7 @@
 
 少し前の立体図~\ref{rittai:rasu} の場合は待ちの良さの差が出ないので切る牌の安全度で選択するが、今回は待ちの良さと切る牌の安全度が互角する。なので、プロの中でも意見が割れている\citep[][pp.~206--209]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 東,
@@ -2086,7 +2043,7 @@
 
 まだ序盤なので、通っている筋が4本しかない。18分の1の理論によると、ここで \mj{3m} や \mj{3p} の放銃率は1/14 $\approx$ 7\%台。よって、ここは押すのはちょっと有利。そして打 \mj{3p} とするのは \mj{79p} を引いた時受け入れを最大限にすることができるから\citep[][pp.~156--157]{fkt}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -2118,7 +2075,7 @@
 
 \mj{8p} $\to$ \mj{9p} の切り順には \mj{6p} の方が \mj{2m} より愚形に当たりづらいが、\mj{6p} の方にくっつきやすいので自己都合で \mj{2m} を切る。聴牌までは筋を2本くらい押さなければならないので、後で安牌が増えたら迂回したり降りたりする\citep[][pp.~134--137]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,
@@ -2143,7 +2100,7 @@
 
 立体図~\ref{rittai:shantenoshi-3} はドラ3の両向聴で親の立直を受けている場面。\mj{2p} と \mj{78s} はともに親の現物。立直や副露が入らなくても牌効率で打 \mj{2p}。今回の不確定要素は下家とはいえ、聴牌しているか打点が高いかわからない。高打点の信号は見出しない。\mj{2p} が刺さる可能性があるが、ラス目の親から立直が入ったら \mj{2p} で安そうな下家に放銃して対面の親番を流したらむしろありがたいとも思える\citep[][pp.~174--177]{doi}。
 
-\begin{rittai}[h]
+\begin{rittai}[hbt]
   \centering
   \drawrittai{
     jicha/seat = 西,

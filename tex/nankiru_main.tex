@@ -16,9 +16,16 @@
 % 1: full render
 
 
-\usepackage[top=4cm, bottom=2cm, left=2cm, right=2cm]{geometry}
-\usepackage{graphicx, expl3, minibox, amsmath, stfloats, tablefootnote, tikz, float, threeparttable, xfrac, multirow, multicol, etoolbox, verbatim, diagbox, titling, subfiles, bibentry, amssymb, extramarks}
+\usepackage[top=3cm, bottom=2cm, left=2cm, right=2cm]{geometry}
+\usepackage{graphicx, expl3, minibox, amsmath, stfloats, tablefootnote, tikz, float, threeparttable, xfrac, multirow, multicol, etoolbox, verbatim, diagbox, titling, subfiles, bibentry, amssymb, extramarks, lipsum}
 \usetikzlibrary{backgrounds}
+
+\usepackage[section]{placeins} %Float Barriers
+
+% externalize rittai and use absolute paths
+\usetikzlibrary{external}
+\tikzsetexternalprefix{rittai-img/}
+\tikzexternalize
 
 \usepackage{siunitx} % for aligning numbers within table
 \sisetup{table-format=-4,
@@ -39,7 +46,15 @@
 \usepackage[CJKspace]{xeCJK}
 \setCJKmainfont{YuMincho}
 
-\usepackage[hidelinks]{hyperref}
+\usepackage{hyperref}
+% hyperlink setting
+\hypersetup{
+  colorlinks = true,
+  linkcolor  = black,
+  filecolor  = black,
+  citecolor  = black,      
+  urlcolor   = blue,
+}
 
 \usepackage[japanese]{babel}
 \usepackage{natbib}
@@ -60,6 +75,31 @@
 %\titlespacing*{command}{left}{before-sep}{after-sep}[right-sep]
 \titlespacing*{\subsubsection}{0pt}{3.25ex plus 1ex minus .2ex}{1.5ex plus .2ex}
 
+% remove space above chapter names
+\makeatletter
+\def\@makechapterhead#1{%
+  %%%%\vspace*{50\p@}% %%% removed!
+  {\parindent \z@ \raggedright \normalfont
+    \ifnum \c@secnumdepth >\m@ne
+        \huge\bfseries \@chapapp\space \thechapter
+        \par\nobreak
+        \vskip 20\p@
+    \fi
+    \interlinepenalty\@M
+    \Huge \bfseries #1\par\nobreak
+    \vskip 40\p@
+  }}
+\def\@makeschapterhead#1{%
+  %%%%%\vspace*{50\p@}% %%% removed!
+  {\parindent \z@ \raggedright
+    \normalfont
+    \interlinepenalty\@M
+    \Huge \bfseries  #1\par\nobreak
+    \vskip 40\p@
+  }}
+\makeatother
+
+% restore parindent
 \edef\restoreparindent{\parindent=\the\parindent\relax}
 \usepackage[skip=\glueexpr \baselineskip + 0pt plus 2pt\relax]{parskip}
 
@@ -71,14 +111,20 @@
   \gdef\stdblsn{\strip@pt\stdbls}%
 }
 
+% restore parskip in minipage
+\makeatletter
+\newcommand{\@minipagerestore}{\setlength{\parskip}{\baselineskip + 0pt plus 2pt\relax}}
+\makeatother
+
 \usepackage{xr}
-\externaldocument[hairi-]{section/hairi}
-\externaldocument[joban-]{section/joban}
-\externaldocument[furo-]{section/furo}
-\externaldocument[riichi-]{section/riichi}
-\externaldocument[riichicare-]{section/riichicare}
-\externaldocument[furocare-]{section/furocare}
-\externaldocument[read-]{section/read}
+% uncomment these when compiler main
+%\externaldocument[hairi-]{section/hairi}
+%\externaldocument[joban-]{section/joban}
+%\externaldocument[furo-]{section/furo}
+%\externaldocument[riichi-]{section/riichi}
+%\externaldocument[riichicare-]{section/riichicare}
+%\externaldocument[furocare-]{section/furocare}
+%\externaldocument[read-]{section/read}
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
@@ -139,6 +185,18 @@
 % the preamble that is common to all subfiles
 % arg: name of standalone section
 
+% new env and command for text with rittai on the right
+% \begin{textwrittai}
+%   ... (text) ...
+% \textwrittaisep
+%   \drawrittai{
+%      ...
+%   }
+%   \captionof{rittai}{...}
+%   \label{...}
+% \end{textwrittai}
+\newenvironment{textwrittai}{\begin{minipage}[t]{0.48\textwidth}\vspace{-\topskip}}{\end{minipage}}
+\newcommand{\textwrittaisep}{\end{minipage}\hfill\begin{minipage}[t]{0.5\textwidth}\vspace{-\topskip}\centering}
 
 %============================== ExplSyntax ==============================
 \ExplSyntaxOn
@@ -241,14 +299,18 @@
   dora    .initial:n = 0m,
 }
 
+% If we externalize rittai, we dont need a switch for it
 \NewDocumentCommand{\drawrittai}{m}{
-  % DECIDE FAST RENDER OR FULL RENDER
-  \ifdefstring{\renderOption}{1}{
-    \nankiru_drawRittai:n {#1}
-  }{
-    \nankiru_drawRittaiFast:n {#1}
-  }
+  \nankiru_drawRittai:n {#1}
 }
+%\NewDocumentCommand{\drawrittai}{m}{
+%  % DECIDE FAST RENDER OR FULL RENDER
+%  \ifdefstring{\renderOption}{1}{
+%    \nankiru_drawRittai:n {#1}
+%  }{
+%    \nankiru_drawRittaiFast:n {#1}
+%  }
+%}
 
 % draw rittai (ver 2 10/15/2023)
 \tl_new:N \l_rittai_sws
@@ -445,28 +507,36 @@
 \markboth{牌理総合}{} % unnumbered chapters dont mark
 \addcontentsline{toc}{chapter}{牌理総合}
 
+\tikzsetfigurename{hairi-figure}
 \section{牌効率}
 \subfile{section/hairi}
 
+\tikzsetfigurename{teyaku-figure}
 \section{手作り}
 \subfile{section/teyaku}
 
+\tikzsetfigurename{furo-figure}
 \section{副露判断}
 \subfile{section/furo}
+
 
 \chapter*{押し引き}
 \markboth{押し引き}{}
 \addcontentsline{toc}{chapter}{押し引き}
 
+\tikzsetfigurename{riichi-figure}
 \section{立直判断}
 \subfile{section/riichi}
 
+\tikzsetfigurename{riichicare-figure}
 \section{立直対応}
 \subfile{section/riichicare}
 
+\tikzsetfigurename{furocare-figure}
 \section{副露対応}
 \subfile{section/furocare}
 
+\tikzsetfigurename{read-figure}
 \section{河読み}
 \subfile{section/read}
 
@@ -476,7 +546,8 @@
 %\appendix
 
 \chapter*{付録}
-\addcontentsline{toc}{chapter}{付録}
+\markboth{付録}{}
+%\addcontentsline{toc}{chapter}{付録}
 
 \section{数値計算}
 
@@ -736,6 +807,161 @@
 \end{table}
 
 \textbf{ダマしても局収支の視点から結果は良くならない}。\citet{sinkagaku}によるとダマにより横移動率・放銃率が12\%台になる。アガリ率が増えるが、立直より得点が低い上、点棒を失う確率が増えるので、立直すべき手は立直しよう。
+
+
+%=============================================================
+\onecolumn
+\chapter*{データ集}
+\markboth{データ集}{}
+\addcontentsline{toc}{chapter}{データ集}
+
+\section{先制立直の期待値}
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{l|SSSSSS}
+    巡目       & \multicolumn{2}{c}{− 5巡目 −} & \multicolumn{2}{c}{− 8巡目 −} & \multicolumn{2}{c}{− 12巡目 −} \\
+    手牌基本価値 & 立直 & ダマ & 立直 & ダマ & 立直 & ダマ \\
+    \hline
+    のみ手     & 1300 &      & 600 &     & -100 &  \\
+    1飜30符    & 1900 & 600 & 1100 & 200 & 300 & -300 \\
+    1飜40符    & 2800 & 1000 & 1900 & 500 & 900 & 0 \\
+    2飜30符    & 3600 & 1600 & 2600 & 1000 & 1400 & 400 \\
+    2飜40符    & 4500 & 2300 & 3400 & 1600 & 1900 & 800 \\
+    3飜30符    & 5500 & 3400 & 4200 & 2600 & 2600 & 1600 \\
+    3飜40符    & 5600 & 4800 & 4300 & 3800 & 2600 & 2500 \\
+    3飜50符    & 5600 & 5600 & \color{red}4300 & \color{red}4500 & \color{red}2600 & \color{red}3000 \\
+    4飜30符    & 7000 & 6300 & 5500 & 5100 & \color{red}3500 & \color{red}3600 \\
+    満貫確定    & 7000 & 6500 & 5500 & 5300 & \color{red}3500 & \color{red}3700 \\
+    立直で跳満 & 8300 & 7500 & 6500 & 6100 & \color{red}4300 & \color{red}4400 \\
+    跳満確定    & \color{red}9600 & \color{red}9900 & \color{red}7600 & \color{red}8200 & \color{red}5100 & \color{red}5900
+  \end{tabular}
+  \caption{先制両面立直とダマの局収支\citep[][p. 23]{miinin-stat}。赤字はダマの方が有利の場面}
+  \label{tab:ev-ryanmen-riichi}
+\end{table}
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{l|SSSSSS}
+    巡目       & \multicolumn{2}{c}{− 5巡目 −} & \multicolumn{2}{c}{− 8巡目 −} & \multicolumn{2}{c}{− 12巡目 −} \\
+    手牌基本価値 & 立直 & ダマ & 立直 & ダマ & 立直 & ダマ \\
+    \hline
+    のみ手     & 500 &      & -100 &      & -600 & \\
+    1飜40符    & 1600 & 500 & 800 & 0 & 0 & -500 \\
+    2飜40符    & 2900 & 1600 & 1900 & 900 & 800 & 100 \\
+    3飜40符    & 3800 & 3800 & 2700 & 2600 & 1400 & 1300 \\
+    3飜50符    & 3800 & 4500 & 2700 & 3100 & 1400 & 1700 \\
+    満貫確定    & 4800 & 5300 & 3500 & 3700 & 1900 & 2100 \\
+    立直で跳満 & 5900 & 6100 & 4300 & 4400 & 2600 & 2600 \\
+    跳満確定    & 6900 & 8200 & 5200 & 6000 & 2100 & 3700
+  \end{tabular}
+  \caption{先制愚形立直とダマの局収支\citep[][p. 28]{miinin-stat}}
+  \label{tab:ev-gukei-riichi}
+\end{table}
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{l|llllllll}
+               & \multicolumn{2}{l}{全体} & \multicolumn{2}{l}{場に0枚見え} & \multicolumn{2}{l}{場に1枚見え} & \multicolumn{2}{l}{場に2枚見え} \\
+               & 和了 (\%) & ツモ (\%) & 和了 (\%) & ツモ (\%) & 和了 (\%) & ツモ (\%) & 和了 (\%) & ツモ (\%) \\
+    \hline
+    無筋456 & 34 & 62 & 37 & 63 & 30 & 61 & 23 & 57 \\
+    無筋37  & 40 & 51 & 43 & 52 & 36 & 49 & 28 & 46 \\
+    無筋28  & 43 & 46 & 46 & 47 & 41 & 46 & 34 & 42 \\
+    片筋456 & 36 & 52 & 40 & 53 & 32 & 52 & 24 & 48 \\
+    無筋19  & 46 & 36 & -- & -- & 47 & 37 & {\color{red}44} & 33 \\
+    筋37    & 48 & 36 & 51 & 37 & 44 & 34 & 35 & 32 \\
+    筋28    & 51 & 31 & 55 & 32 & 50 & 31 & {\color{red}43} & 30 \\
+    両筋456 & 47 & 33 & 51 & 34 & 42 & 33 & 36 & 31 \\
+    筋19    & 57 & 24 & -- & -- & 58 & 24 & {\color{red}56} & 25
+  \end{tabular}
+  \caption{当たり牌の種類・枚数別5〜12巡目の先制単騎・嵌張立直の和了率とツモの割合\citep[][p. 38]{miinin-stat}。赤字は12巡目の先制両面立直より和了率が高い立直}
+  \label{tab:ev-gukei-riichi-machi}
+\end{table}
+
+\newpage
+\section{追いかけ立直の期待値}
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{ll|SSSSSS}
+     　　& 　　 & \multicolumn{2}{c}{− 8巡目 −} & \multicolumn{2}{c}{− 11巡目 −} & \multicolumn{2}{c}{− 14巡目 −} \\
+    相手 & 立直の打点 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 \\
+    \hline
+    子 & 1飜40符 & 200 & -400 & 100 & -500 & 100 & -500 \\
+    　 & 2飜30符 & 700 & 100 & 500 & -100 & 500 & -100 \\
+    　 & 3飜30符 & 1900 & 1200 & 1700 & 1000 & 1400 & 800 \\
+    親 & 1飜40符 & -500 & \color{red}-1200 & -600 & \color{red}-1300 & -500 & \color{red}-1200 \\
+    　 & 2飜30符 & 0 & -800 & -200 & -900 & -100 & -900 \\
+    　 & 2飜40符 & 600 & -300 & 400 & -400 & 300 & -500 \\
+    　 & 3飜30符 & 1200 & 400 & 1000 & 100 & 800 & 0
+  \end{tabular}
+  \caption{先制立直に対する子の追いかけ両面立直の局収支。10\%牌とは初手に10\%の危険度の牌を切った場合。先行者は2巡以上前に立直しているとする。宣言牌で振っても一発にならないとする\citep[][p. 87]{miinin-stat}}
+  \label{tab:ev-ryanmen-chase}
+\end{table}
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{lll|SSSSSS}
+    　　 & 　　 & 　　　　　 & \multicolumn{2}{c}{− 8巡目 −} & \multicolumn{2}{c}{− 11巡目 −} & \multicolumn{2}{c}{− 14巡目 −} \\
+    自分 & 相手 & 副露の打点 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 \\
+    \hline
+    子 & 子 & 1飜30符 & -200 & -700 & -200 & -700 & 0 & -500 \\
+    　 & 　 & 2飜30符 & 300 & -300 & 200 & -300 & 400 & -200 \\
+    　 & 　 & 3飜30符 & 1200 & 500 & 110 & 400 & 110 & 400 \\
+    子 & 親 & 1飜30符 & -900 & \color{red}-1600 & -900 & \color{red}-1500 & -600 & \color{red}-1300 \\
+    　 & 　 & 2飜30符 & -400 & -1100 & -400 & -1100 & -200 & -1000 \\
+    　 & 　 & 3飜30符 & 500 & -300 & 400 & -400 & 500 & -300 \\
+    親 & 子 & 1飜30符 & -600 & -1100 & -600 & -1000 & -400 & -800 \\
+    　 & 　 & 2飜30符 & -100 & -600 & -100 & -600 & 0 & -500 \\
+    　 & 　 & 3飜30符 & 800 & 200 & 700 & 100 & 700 & 100
+  \end{tabular}
+  \caption{両面副露手で立直に対して押した時の局収支\citep[][p. 92]{miinin-stat}}
+  \label{tab:ev-ryanmen-furo}
+\end{table}
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{lll|SSSSSS}
+    　　 & 　　 & 　　　　　 & \multicolumn{2}{c}{− 8巡目 −} & \multicolumn{2}{c}{− 11巡目 −} & \multicolumn{2}{c}{− 14巡目 −} \\
+    自分 & 相手 & 立直の打点 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 \\
+    \hline
+    子 & 子 & 1飜40符 & -900 & \color{red}-1300 & -800 & \color{red}-1300 & -700 & \color{red}-1200 \\
+    　 & 　 & 2飜40符 & -200 & -700 & -200 & -700 & -200 & -700 \\
+    　 & 　 & 3飜40符 & 600 & 0 & 600 & 0 & 400 & -100 \\
+    子 & 親 & 1飜40符 & \color{red}-1800 & \color{red}-2300 & \color{red}-1600 & \color{red}-2200 & \color{red}-1400 & \color{red}-2000 \\
+    　 & 　 & 2飜40符 & -1100 & \color{red}-1700 & -1000 & \color{red}-1600 & -900 & \color{red}-1500 \\
+    　 & 　 & 3飜40符 & -200 & -1000 & -200 & -900 & -300 & -1000 \\
+    親 & 子 & 1飜40符 & -900 & -1300 & -800 & -1300 & -700 & -1200 \\
+    　 & 　 & 2飜40符 & 200 & -400 & 100 & -400 & 0 & -500 \\
+    　 & 　 & 3飜40符 & 1400 & 700 & 1300 & 600 & 1000 & 300
+  \end{tabular}
+  \caption{愚形で立直に対して押した時の局収支\citep[][p. 98]{miinin-stat}}
+  \label{tab:ev-gukei-chase}
+\end{table}
+
+\begin{table}[h!]
+  \centering
+  \begin{tabular}{lll|SSSSSS}
+    　　 & 　　 & 　　　　　 & \multicolumn{2}{c}{− 8巡目 −} & \multicolumn{2}{c}{− 11巡目 −} & \multicolumn{2}{c}{− 14巡目 −} \\
+    自分 & 相手 & 副露の打点 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 & 安牌 & {10}\%牌 \\
+    \hline
+    子 & 子 & 1飜30符 & -800 & \color{red}-1300 & -700 & \color{red}-1100 & -400 & -900 \\
+    　 & 　 & 2飜30符 & -500 & \color{red}-1000 & -400 & -800 & -100 & -700 \\
+    　 & 　 & 3飜30符 & 100 & -400 & 200 & -300 & 300 & -200 \\
+    子 & 親 & 1飜30符 & \color{red}-1700 & \color{red}-2300 & \color{red}-1500 & \color{red}-2100 & -1100 & \color{red}-1700 \\
+    　 & 　 & 2飜30符 & -1400 & \color{red}-2000 & -1200 & \color{red}-1800 & -800 & \color{red}-1500 \\
+    　 & 　 & 3飜30符 & -700 & -1400 & -600 & -1300 & -400 & -1100 \\
+    親 & 子 & 1飜30符 & -1300 & \color{red}-1700 & -1100 & \color{red}-1500 & -800 & -1200 \\
+    　 & 　 & 2飜30符 & -900 & -1400 & -800 & -1200 & -500 & -1000 \\
+    　 & 　 & 3飜30符 & -300 & -800 & -200 & -700 & 0 & -600
+  \end{tabular}
+  \caption{愚形副露手で立直に対して押した時の局収支\citep[][p. 101]{miinin-stat}}
+  \label{tab:ev-gukei-furo}
+  \vspace{2em}
+\end{table}
+
+\FloatBarrier
 
 
 %%=============================================================

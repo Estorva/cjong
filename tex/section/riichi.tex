@@ -5,45 +5,55 @@
 % override main tex render option
 \renewcommand{\renderOption}{1}
 
+% 本来ここにある期待値の表はnankiru_main.texに移された、
+% 下記のハンドルで引用する：
+% tab:ev-ryanmen-riichi
+% tab:ev-gukei-riichi
+% tab:ev-gukei-riichi-machi
+
+
 \begin{document}
 
 \subfilepreamble{立直判断}
 
 \subsection{先制両面立直}
 
-\begin{table*}[t]
-  \centering
-  \begin{tabular}{l|SSSSSS}
-    巡目       & \multicolumn{2}{c}{− 5巡目 −} & \multicolumn{2}{c}{− 8巡目 −} & \multicolumn{2}{c}{− 12巡目 −} \\
-    手牌基本価値 & 立直 & ダマ & 立直 & ダマ & 立直 & ダマ \\
-    \hline
-    のみ手     & 1300 &      & 600 &     & -100 &  \\
-    1飜30符    & 1900 & 600 & 1100 & 200 & 300 & -300 \\
-    1飜40符    & 2800 & 1000 & 1900 & 500 & 900 & 0 \\
-    2飜30符    & 3600 & 1600 & 2600 & 1000 & 1400 & 400 \\
-    2飜40符    & 4500 & 2300 & 3400 & 1600 & 1900 & 800 \\
-    3飜30符    & 5500 & 3400 & 4200 & 2600 & 2600 & 1600 \\
-    3飜40符    & 5600 & 4800 & 4300 & 3800 & 2600 & 2500 \\
-    3飜50符    & 5600 & 5600 & \color{red}4300 & \color{red}4500 & \color{red}2600 & \color{red}3000 \\
-    4飜30符    & 7000 & 6300 & 5500 & 5100 & \color{red}3500 & \color{red}3600 \\
-    満貫確定    & 7000 & 6500 & 5500 & 5300 & \color{red}3500 & \color{red}3700 \\
-    立直で跳満 & 8300 & 7500 & 6500 & 6100 & \color{red}4300 & \color{red}4400 \\
-    跳満確定    & \color{red}9600 & \color{red}9900 & \color{red}7600 & \color{red}8200 & \color{red}5100 & \color{red}5900
-  \end{tabular}
-  \caption{先制両面立直とダマの局収支\citep[][p. 23]{miinin-stat}。赤字はダマの方が有利の場面}
-  \label{tab:ev-ryanmen-riichi}
-\end{table*}
+表~\ref{tab:ev-ryanmen-riichi} によると平場でダマが有利な手牌は下記のように、
 
-表~\ref{tab:ev-ryanmen-riichi} によると\textbf{3飜50符と跳満確定以外の先制両面は立直有利}。終盤なら4飜30符の7700はダマ有利。例え、手牌~\ref{mj:rch-1-1} の1飜40符を5巡目で立直すると局収支は2800点。一方、ダマにすると局収支は1000点しかないので、早めに先制立直を打つのは大体正解。中盤（8巡目ごろ）では、手牌の価値は \ref{mj:rch-1-1} の3飜50符\footnote{門前加符30符 ＋么九牌暗刻8符＋么九牌暗刻8符＝50符（切り上げ）。詳細な点数計算は\ref{sec:point}参照。}より少ないなら立直するのは大体正解。
+\begin{itemize}
+  \item 巡目に関わらずダマが有利
+  \begin{itemize}
+    \item 3飜50符
+    \item 跳満確定
+  \end{itemize}
+  \item 終盤でダマが有利
+  \begin{itemize}
+    \item 4飜30符
+    \item 満貫や満貫以上
+  \end{itemize}
+\end{itemize}
 
-\tehai{12388m 67p 555 666z}[東1局　南家　8巡目　ドラ \mj{1m}][rch-1-1]
+そのほかの先制両面は立直有利。あとは南場のトップ目で局を消化したい局面ならダマしてもいい。
 
-終盤（12巡目以降）で \ref{mj:rch-1-2} のような3飜40符手牌があるなら、立直とダマの局収支に大きな差は出ないから、アガリ率を優先してダマにするのがおすすめ。
+立直を含まず3飜50符の手牌は具体的に言うと、
+
+\begin{itemize}
+  \item 三暗刻＋ドラ1 \ref{mj:3h50f-1}
+  \item 么九牌暗刻二つ＋ドラ1 \ref{mj:3h50f-2}
+\end{itemize}
+
+その価値はすでに6400なので立直による打点上昇の幅は限られている上、三暗刻の手牌はツモによって四暗刻にもなるので、巡目に問わずダマは有利。
+
+\tehai{23888m 666p 33377s}[東1局　南家　8巡目　ドラ \mj{3m}][3h50f-1]
+
+\tehai{12388m 67p 555 666z}[東1局　南家　8巡目　ドラ \mj{1m}][3h50f-2]
+
+終盤（12巡目以降）で \ref{mj:rch-1-2} のような3飜40符の手牌なら、立直とダマの局収支に大きな差は出ない。アガリ率を優先してダマにするのがおすすめが、ラス目で点数が欲しい場面なら立直してもいい。
 
 \tehai{233445m 2267p 888s}[東1局　南家　12巡目　ドラ \mj{2p}][rch-1-2]
 
 
-\subsubsection*{両面リーのみと}
+\subsubsection*{両面リーのみ}
 
 両面先制立直はリーのみでもほぼ正解。といっても、下記の３つの条件を全て満たしたら聴牌を外してもいい：
 
@@ -53,7 +63,7 @@
 \item 他の形からブロックを作りやすい
 \end{enumerate}
 
-手牌 \ref{mj:2-4-0} から \ref{mj:2-4-2} までは全て早めの両面リーのみ。打点はただの1300。手牌~\ref{mj:2-4-0} と~\ref{mj:2-4-1} は \mj{22z} を落としたらタンヤオや三色やピンフで打点は大きく上昇するため、速度を遅らせる価値がある。一方、\ref{mj:2-4-2} が \mj{6p} 単騎になる可能性があるので、それを避けて即リーがおすすめ\citep[][pp. 68--73]{tetsusenryaku}。
+手牌 \ref{mj:2-4-0} から \ref{mj:2-4-2} までは全て早めの両面リーのみ。打点はただの1300。手牌~\ref{mj:2-4-0} と~\ref{mj:2-4-1} は \mj{33z} を落としたらタンヤオや三色やピンフで打点は大きく上昇するため、速度を遅らせる価値がある。一方、\ref{mj:2-4-2} が \mj{6p} 単騎になる可能性があるので、それを避けて即リーがおすすめ\citep[][pp. 68--73]{tetsusenryaku}。
 
 \tehai{34m 234p 3335567s 33z}[東1局　南家　3巡目　ドラ \mj{7m}][2-4-0]
 
@@ -68,12 +78,35 @@
 
 \tehai{345678m 3345p 123s}[東1局　南家　8巡目　ドラ \mj{7p}][rch-1-3]
 
+3枚見えの先制両面立直を打たないのは~\ref{mj:rch-3mie-2} のような形が伸びやすい場面。一旦 \mj{36m} のダマを取って、表~\ref{tab:rch-3mie-2} の通り、ツモ \mj{2458m} で三面張へ移行して曲げる\footnote{\href{https://naga.dmv.nico/htmls/f065f2379a8063799f111a9fe030366deb6a0acc7b1c6ae8323e2ca5fe9eb7a7v2_2.html?tw=2}{NAGAのシミュレーション。}}。
 
-\subsubsection*{親ドラポンに対する}
+\tehai{3345567m 234777p}[南3局　東家　7巡目　ドラ \mj{8m}][rch-3mie-2]
 
-\textbf{親ドラポンが入ってもドラ2両面で勝負する}\citep[][pp.~136--137]{miinin-choice}。ベタオリなら局収支が$-$1900になるので価値があれば11巡目でも両面立直で勝負する方は局収支（$-$1100）が高い。よって、手牌~\ref{mj:rch-1-4} なら親のドラ \mj{7z} ポンを無視して立直すべき。ただし、ドラが1枚だけならベタオリすべき。
+\begin{table}[h]
+  \centering
+  \begin{tabular}{lll}
+    ツモ & 形 & 待ち \\
+    \hline
+    \mj{2m} & 打 \mj{3m} $\rightarrow$ \mj{2345567m777p} & \mj{258m} \\
+    \mj{4m} & 打 \mj{7p} $\rightarrow$ \mj{33445567m77p} & \mj{258m} \\
+    \mj{5m} & 打 \mj{3m} $\rightarrow$ \mj{3455567m777p} & \mj{258m} \\
+    \mj{8m} & 打 \mj{3m} $\rightarrow$ \mj{3455678m777p} & \mj{258m} \\
+            & 打 \mj{5m} $\rightarrow$ \mj{3345678m777p} & \mj{369m}
+  \end{tabular}
+  \caption{手牌~\ref{mj:rch-3mie-2} の手変わり。}
+  \label{tab:rch-3mie-2}
+\end{table}
 
-\tehai{307m 789p 2206s 333z -6m}[東1局　南家　11巡目　ドラ \mj{7z}][rch-1-4]
+
+\subsubsection*{ドラポンに対する}
+
+\textbf{親ドラポンが入ってもドラ2両面で勝負する}\citep[][pp.~136--137]{miinin-choice}。ベタオリなら局収支が$-$1900になるので価値があれば11巡目でも両面立直で勝負する方は局収支（$-$1100）が高い。よって、手牌~\ref{mj:rch-taidorapon-1} なら親のドラ \mj{7z} ポンを無視して立直すべき。ただし、ドラが1枚だけならベタオリすべき。
+
+\tehai{307m 789p 2206s 333z -6m}[東1局　南家　11巡目　ドラ \mj{7z}][rch-taidorapon-1]
+
+子のドラポンに対してはまだデータがないが、NAGAによると~\ref{mj:rch-taidorapon-2} のような2飜40符の手牌は押せる\footnote{\href{https://naga.dmv.nico/htmls/81892458a0f91708d1835dd4bf25f41e8e31fe5e5ac94d050a88e61129ee5745v2_2.html?tw=1}{NAGAのシミュレーション。}}。
+
+\tehai{44467m 333p 345788s}[南2局　南家　9巡目　ドラ \mj{5z}][rch-taidorapon-2]
 
 
 \subsubsection*{三面張と三色確定両面の二択}
@@ -91,7 +124,7 @@
   \centering
   \drawrittai{
     jicha/seat = 東,
-    jicha/hand = 340m 135p 5066788s -2s,
+    jicha/hand = 340m 135p 5066788s -2p,
     jicha/river = 1s 6z 1z 1z 4m 8m,
     jicha/riverb = 2m 6m 3s 1z 3z 1p,
     jicha/riverc = 1s 1p,
@@ -120,28 +153,139 @@
 %--------------------------------------------
 \subsection{先制愚形立直} \label{subsec:senseigukei}
 
-\begin{table*}[t]
-  \centering
-  \begin{tabular}{l|SSSSSS}
-    巡目       & \multicolumn{2}{c}{− 5巡目 −} & \multicolumn{2}{c}{− 8巡目 −} & \multicolumn{2}{c}{− 12巡目 −} \\
-    手牌基本価値 & 立直 & ダマ & 立直 & ダマ & 立直 & ダマ \\
-    \hline
-    のみ手     & 500 &      & -100 &      & -600 & \\
-    1飜40符    & 1600 & 500 & 800 & 0 & 0 & -500 \\
-    2飜40符    & 2900 & 1600 & 1900 & 900 & 800 & 100 \\
-    3飜40符    & 3800 & 3800 & 2700 & 2600 & 1400 & 1300 \\
-    3飜50符    & 3800 & 4500 & 2700 & 3100 & 1400 & 1700 \\
-    満貫確定    & 4800 & 5300 & 3500 & 3700 & 1900 & 2100 \\
-    立直で跳満 & 5900 & 6100 & 4300 & 4400 & 2600 & 2600 \\
-    跳満確定    & 6900 & 8200 & 5200 & 6000 & 2100 & 3700
-  \end{tabular}
-  \caption{先制愚形立直とダマの局収支\citep[][p. 28]{miinin-stat}}
-  \label{tab:ev-gukei-riichi}
-\end{table*}
+%\begin{table*}[t]
+%  \centering
+%  \begin{tabular}{l|SSSSSS}
+%    巡目       & \multicolumn{2}{c}{− 5巡目 −} & \multicolumn{2}{c}{− 8巡目 −} & \multicolumn{2}{c}{− 12巡目 −} \\
+%    手牌基本価値 & 立直 & ダマ & 立直 & ダマ & 立直 & ダマ \\
+%    \hline
+%    のみ手     & 500 &      & -100 &      & -600 & \\
+%    1飜40符    & 1600 & 500 & 800 & 0 & 0 & -500 \\
+%    2飜40符    & 2900 & 1600 & 1900 & 900 & 800 & 100 \\
+%    3飜40符    & 3800 & 3800 & 2700 & 2600 & 1400 & 1300 \\
+%    3飜50符    & 3800 & 4500 & 2700 & 3100 & 1400 & 1700 \\
+%    満貫確定    & 4800 & 5300 & 3500 & 3700 & 1900 & 2100 \\
+%    立直で跳満 & 5900 & 6100 & 4300 & 4400 & 2600 & 2600 \\
+%    跳満確定    & 6900 & 8200 & 5200 & 6000 & 2100 & 3700
+%  \end{tabular}
+%  \caption{先制愚形立直とダマの局収支\citep[][p. 28]{miinin-stat}}
+%  \label{tab:ev-gukei-riichi}
+%\end{table*}
 
-表~\ref{tab:ev-gukei-riichi} によると、3飜40符（ダマで5200、立直で満貫）はダマってもいい。2飜以下は立直有利。手牌~\ref{mj:rch-2-1} のような手牌は立直してもダマしても局収支に大きな差がついていないので和了率優先ならダマにしよう。
+表~\ref{tab:ev-gukei-riichi} によると、2飜以下は立直有利。3飜50符以上はダマ有利。
 
-\tehai{112233m 22789p 68s}[東1局　南家　8巡目　ドラ \mj{2m}][rch-2-1]
+
+\subsubsection*{3飜40符の手牌}
+
+3飜40符（ダマで5200、立直で満貫）なら表~\ref{tab:ev-gukei-riichi} によると統計的には微差。立直による打点上昇は概ね5200 $\rightarrow$ 8000だけ、もっと高い点数を得るためにもう両飜が必要なので12000になる確率は著しく低い。つまり、打点の上昇幅は現実的に2800だけ。こんな低い上昇幅は立直による損失リスク（アガリ率の下落と追いかけられ立直に放銃）に近いので、5200の立直判断は場況、良形変化の枚数、河などの要因に左右されやすい。
+
+\citet{yoteru-5200riichi} によると、
+
+\begin{itemize}
+  \item 待ちがいいなら立直
+  \begin{itemize}
+    \item カン2、カン8、または両方28の双碰待ち
+    \item 么九牌含みの双碰待ち（一方が中張牌でも可）
+    \item 筋引っ掛け
+  \end{itemize}
+  \item 手替わりがないなら立直
+  \item 待ちが一枚切られているならダマ
+  \begin{itemize}
+    \item ツモりづらい
+    \item 待ちを切っている相手にとって使いづらいのでもう一回切ってくる確率が高いので、立直すると待ちが出る確率が激減する
+    \item 現物待ち
+  \end{itemize}
+  \item 待ちの色が安いならダマ
+\end{itemize}
+
+待ちがいいが場況が安い場合は、統計的に立直が微差で優位なので基本的に立直する。
+
+手牌~\ref{mj:5200-1} のように待ちが尖張牌の場合はダマ推奨 \citep[][p.~28]{miinin-stat}。\ref{mj:5200-2} のように待ちが28になると立直推奨。ソーズが安いでも基本的に立直推奨 \citep{yoteru-5200riichi}。
+
+\tehai{112233m 22789p 68s}[東1局　南家　8巡目　ドラ \mj{2m}][5200-1]
+
+\tehai{334405m 40588p 13s}[ドラなし][5200-2]
+
+手牌~\ref{mj:5200-3} のように嵌張が手役に直結する場合、手替わりがないので、\citep{yoteru-5200riichi} によると立直推奨。逆に、同じ手役に絡む嵌張待ちの~\ref{mj:5200-4} は \citep[][pp.~149--150]{ooi-gundou} によるとダマ推奨。\ref{mj:5200-4} の場合、巡目が遅いのでダマ優位になる。1段目の早い巡目や点数が欲しい状況なら立直もアリ。
+
+\tehai{12346789m 505p 22s}[ドラなし][5200-3]
+
+\tehai{22567m 57p 234567s}[北家　11巡目　ドラ \mj{9s}][5200-4]
+
+手替わりがあっても、内嵌張のように両面変化が2種類だけという少ない手替わりなら場況によって決める。よって、\ref{mj:5200-5} は平面的にどっちでもいいが、カン \mj{5p} が中筋となるなどの場況が入ってくると立直、逆に中筋ではない場合やピンズがやすい場合ならダマ \citep{yoteru-5200riichi}。
+
+\tehai{234067m 46p 34077s}[ドラなし][5200-5]
+
+両面変化と打点上昇を加えて手替わりが3種類以上ならダマ。\ref{mj:5200-6} には \mj{68p} の両面変化と \mj{7s} による三色があるのでNAGAがダマにする\footnote{\href{https://naga.dmv.nico/htmls/5f722b66e454e8ca530c15f05573ba08a6589ae633008265c74ac71b05559d11v2_2.html?tw=1}{NAGAのシミュレーション。}}。
+
+\tehai{567m 07p 344056 88s}[南家　7巡目　ドラ \mj{1p}][5200-6]
+
+尖張牌双碰など両面変化は4種類以上なら勿論ダマ優位。\ref{mj:5200-7} はツモ \mj{2468m} で両面になったりツモ \mj{4p} でタンヤオ・三色・ドラドラ（高め跳満）になったりするのでダマ推奨 \citep[][pp.~159--160]{ooi-gundou}。
+
+\tehai{3345677m 567p 456s}[南家　7巡目　ドラ \mj{7m}][5200-7]
+
+
+\subsubsection*{1300と2600の手牌は（尖張牌双碰以外）曲げろ}
+
+統計的に立直優位なので明確的にダマ有利な手牌は5200に比べるとそんなんい多くない。同じ手替わりが3種類ある手牌は1300になったら立直してもダマしてもアリ。\ref{mj:2600-2} は両面変化のともにピンフがつくので~\ref{mj:2600-1} よりダマ寄りだが立直も悪くない\footnote{NAGAによる~\ref{mj:2600-1} の\href{https://naga.dmv.nico/htmls/5f722b66e454e8ca530c15f05573ba08a6589ae633008265c74ac71b05559d11v2_2.html?tw=2}{シミュレーション}と~\ref{mj:2600-2} の\href{https://naga.dmv.nico/htmls/a76d22f74a343f2c3cfa9f6192a7622c8c864b37ba8d1268cead9a4719c5d60cv2_2.html?tw=2}{シミュレーション}。}。つまり場況次第。
+
+\tehai{222567m 57p 22567s}[西家　7巡目　ドラ \mj{1p}][2600-1]
+
+\tehai{455667m 57p 22567s}[西家　7巡目　ドラ \mj{1p}][2600-2]
+
+2600なら立直による打点上昇幅は最大なので立直するとほぼ間違いない。\ref{mj:2600-3} のように手替わりが3種類ある手牌も立直推奨\footnote{\href{https://naga.dmv.nico/htmls/5f722b66e454e8ca530c15f05573ba08a6589ae633008265c74ac71b05559d11v2_2.html?tw=3}{NAGAによるシミュレーション。}}。
+
+\tehai{333067m 57p 22456s}[北家　7巡目　ドラ \mj{1p}][2600-3]
+
+2600をダマする最低限は尖張牌双碰のように手替わりが4種類以上の手牌。\ref{mj:2600-4} に \mj{35p35s} 4種類の両面変化があるのでダマ推奨\footnote{\href{https://naga.dmv.nico/htmls/a76d22f74a343f2c3cfa9f6192a7622c8c864b37ba8d1268cead9a4719c5d60cv2_2.html?tw=3}{NAGAによるシミュレーション。}}。この点は親としても変わらない\footnote{\href{https://naga.dmv.nico/htmls/311f251cbea342c02468c73edb45c300af705c7a6d395176b6855ba1278e0651v2_2.html?tw=4}{NAGAによるシミュレーション。}}。
+
+\tehai{223344678m 44p 44s}[北家　7巡目　ドラ \mj{1p}][2600-4]
+
+まとめると1300から5200までの手牌を曲げる基準は以下の通り、
+
+\begin{itemize}
+  \item まず手牌に基づいて
+  \begin{itemize}
+    \item 強愚形（么九牌待ち、カン28、筋など）なら立直
+    \item 尖張牌双碰ならダマ
+    \item 他の弱愚形は手替わりと打点で決める
+    \begin{itemize}
+      \item 2600は立直
+      \item 1300と5200は手替りが2種類以下なら立直
+    \end{itemize}
+  \end{itemize}
+  \item 平面的にどっちでもいい手牌は場況次第
+  \begin{itemize}
+    \item 1枚切れならダマ
+    \item 待ちの色が安いならダマ
+    \item 現物待ちもダマ
+  \end{itemize}
+\end{itemize}
+
+
+\subsubsection*{役なし尖張牌双碰も曲げるか}
+
+役なしの手牌なら、出アガリできないのでダマのメリットは良形変化と打点上昇だけ。立直のメリット（打点上昇と他家の足止め）が減らないので、自己都合で曲げることになりやすい。尖張牌双碰の場合は、4種類の良形変化と前述した立直のメリットの比較になる。変化するまで巡目がかかるので、比較は巡目に左右されやすい。結論からいうと、
+
+\begin{itemize}
+  \item 2段目前半まで
+  \begin{itemize}
+    \item 1300はダマ
+    \item 2600以上はどっちでもいい\footnote{NAGAによる\href{https://naga.dmv.nico/htmls/8c2bd4b5841cb6cca44af62408bb00cdfd4165fd26776691a9ee891d767e8d80v2_2.html?tw=2}{西家4巡目ドラ2}と\href{https://naga.dmv.nico/htmls/d44d3e0059c563ff373cf9e4123c46e4fd66bcbb8cde386a935d8d96e6e041c9v2_2.html?tw=2}{西家8巡目ドラ2}と\href{https://naga.dmv.nico/htmls/dfbfd7e6d647892ceb0c9803245896534697d58598d4446fb26bf48b60986b93v2_2.html?tw=1}{南家5巡目ドラ3}のシミュレーション。}
+  \end{itemize}
+  \item 2段目後半なら立直
+  \item 3段目なら形聴として取ってもいい
+\end{itemize}
+
+ピンフやタンヤオになりやすい牌姿なら1段目で尖張牌双碰を曲げることはない。\ref{mj:midshanpon-1} は \mj{35p46s} だけではなく \mj{4m} でタンヤオがつくので5種類の変化はドラ1でも曲げない\footnote{\href{https://naga.dmv.nico/htmls/b54aa3ab3415c25091503f7538d5f4392f8dd8f81f07cf08f1a3215906ad76adv2_2.html?tw=1}{NAGAのシミュレーション。}}。
+
+\tehai{123678m 44678p 55s}[南家　4巡目　ドラ \mj{6p}][midshanpon-1]
+
+手牌~\ref{mj:midshanpon-2} のようにピンフとタンヤオにならないならちょっと立直によるが、1段目の尖張牌双碰はやはり曲げない\footnote{\href{https://naga.dmv.nico/htmls/8c2bd4b5841cb6cca44af62408bb00cdfd4165fd26776691a9ee891d767e8d80v2_2.html?tw=1}{NAGAのシミュレーション。}オメガは立直するが他のヘビはしない。}。
+
+\tehai{111678m 44678p 55s}[南家　4巡目　ドラ \mj{6p}][midshanpon-2]
+
+2段目に入ると巡目が深いほどNAGAが立直したい。8巡目はまだダマしたい\footnote{\href{https://naga.dmv.nico/htmls/d44d3e0059c563ff373cf9e4123c46e4fd66bcbb8cde386a935d8d96e6e041c9v2_2.html?tw=1}{NAGAのシミュレーション。}}が、10巡目になると立直したいとなった\footnote{\href{https://naga.dmv.nico/htmls/dfbfd7e6d647892ceb0c9803245896534697d58598d4446fb26bf48b60986b93v2_2.html?tw=3}{NAGAのシミュレーション。}}。
 
 
 \subsubsection*{愚形のみ手}
@@ -151,20 +295,20 @@
 \begin{itemize}
   \item 打つべき場面
   \begin{itemize}
-    \item 自分が親\citep[][p. 165]{rb1}
-    \item 筋待ち・1289待ち\citep[][p. 30]{miinin-stat}
-    \item 5待ち・赤受けある\citep[][pp.~31--32]{ishibashi-black}
-    \item 456待ち・中盤\multicitep{miinin-stat, p.~30; nisi-456kanchan; ayataka}
+    \item 自分が親 \multicitep{rb1, p.~165; mark2-gukeiriichi}
+    \item 筋待ち・1289待ち \citep[][p. 30]{miinin-stat}
+    \item 5待ち・赤受けある \citep[][pp.~31--32]{ishibashi-black}
+    \item 456待ち・中盤 \multicitep{miinin-stat, p.~30; nisi-456kanchan; ayataka}
   \end{itemize}
   \item 打つべきではない場面
   \begin{itemize}
-    \item 自分が子ども\citep[][p. 165]{rb1}
-    \item 456待ち・早巡 $\to$ 聴牌外し\multicitep{miinin-stat, p.~30; nisi-456kanchan}
-    \item 456待ち・晩巡 $\to$ ダマにして形聴\multicitep{miinin-stat, p.~30; nisi-456kanchan}
+    \item 自分が子ども \citep[][p. 165]{rb1}
+    \item 456待ち・早巡 $\to$ 聴牌外し \multicitep{miinin-stat, p.~30; nisi-456kanchan}
+    \item 456待ち・晩巡 $\to$ ダマにして形聴 \multicitep{miinin-stat, p.~30; nisi-456kanchan}
   \end{itemize}
 \end{itemize}
 
-愚形リーのみの手牌には4つの選択がある：（ア）立直（イ）ダマ（ウ）聴牌外し（エ）アガリ放棄。（エ）の局収支は-1500点ので論外\citep[][p. 30]{miinin-stat}。立直に対して、ダマにすると放銃率は12\%から8\%まで抑えられるが、アガリ率は40\%からから26\%までかなり落ちる。よって、「愚形リーのみ」は決して打つべきでないわけではない\citep{nisi-456kanchan}。また、表~\ref{tab:ev-tsumosen} によると全ての巡目で立直はダマ（ツモだけでアガれるのでツモ専ともいう）より局収支が高い。よって、ダマが有利な局面は超晩巡で形聴を狙う時だけ。
+愚形リーのみの手牌には4つの選択がある：（ア）立直（イ）ダマ（ウ）聴牌外し（エ）ベタオリ。（エ）の局収支は-1500点ので論外\citep[][p. 30]{miinin-stat}。立直に対して、ダマにすると放銃率は12\%から8\%まで抑えられるが、アガリ率は40\%からから26\%までかなり落ちる。よって、「愚形リーのみ」は決して打つべきでないわけではない\citep{nisi-456kanchan}。また、表~\ref{tab:ev-tsumosen} によると全ての巡目で立直はダマ（ツモだけでアガれるのでツモ専ともいう）より局収支が高い。よって、ダマが有利な局面は超晩巡で形聴を狙う時だけ。
 
 \begin{table}[ht]
   \centering
@@ -180,15 +324,19 @@
 聴牌取らずくっつき一向聴で好形待ちを待つ暇はあるなら序盤でしてもいい。が、副露が入って早そうな相手があるなら、速度に応じて序盤でも立直をかけるのが最善\citep{nisi-456kanchan}。
 
 
-\subsubsection*{手変わりの有効局面}
+\subsubsection*{聴牌外しの有効局面}
 
-\textbf{中盤まで辺張を払えばタンヤオがつくなら聴牌外しは有利}\citep[][pp.~33--36]{miinin-stat}。手牌~\ref{mj:rch-2-2} のような、四連形など強い形がなくても \mj{12p} を払えばタンヤオがあるので聴牌取らない方が有利。ドラが1枚があるなら\citet[p. 35]{miinin-stat}の主張は変わらないが、\citet[p. 165]{rb1}は「即リー」を推奨する。
+\textbf{中盤まで辺張を払えばタンヤオがつくなら聴牌外しは有利}\citep[][pp.~33--36]{miinin-stat}。手牌~\ref{mj:gukei-tphzs-1} のように、四連形など強い形がなくても \mj{12p} を払えばタンヤオがあるので聴牌取らない方が有利。ドラが1枚があるなら\citet[p. 35]{miinin-stat}の主張は変わらないが、\citet[p. 165]{rb1}は「即リー」を推奨する。
 
-\tehai{234666m 1288p 4888s}[東1局　南家　8巡目　ドラ \mj{5z}][rch-2-2]
+\tehai{234666m 1288p 4888s}[東1局　南家　8巡目　ドラ \mj{5z}][gukei-tphzs-1]
 
-手牌~\ref{mj:rch-2-3} のようなツモ専から \mj{1p} 切ればくっつき一向聴になる。しかし、リーのみと聴牌外しとの和了率の差は5巡目ではすでに5％あって、巡目が進むほどこの差は大きくなる\citep[][p. 34]{miinin-stat}。今回の牌姿は辺張を払ってもメリットは良形になる可能性だけで、打点も上がらない。よって、ここは先制立直をするのは正解。
+手牌~\ref{mj:gukei-tphzs-2} のようなツモ専から \mj{1p} 切ればくっつき一向聴になる。しかし、リーのみと聴牌外しとの和了率の差は5巡目ではすでに5％あって、巡目が進むほどこの差は大きくなる\citep[][p. 34]{miinin-stat}。今回の牌姿は辺張を払ってもメリットは良形になる可能性だけで、打点も上がらない。よって、ここは先制立直をするのが正解。
 
-\tehai{234999m 1277p 4567s}[東1局　南家　5巡目　ドラ \mj{6z}][rch-2-3]
+\tehai{234999m 1277p 4567s}[東1局　南家　5巡目　ドラ \mj{6z}][gukei-tphzs-2]
+
+手牌~\ref{mj:gukei-tphzs-3} はカン \mj{2m} の5200聴牌だが、マンズの形が複合していて、\mj{5s} へのくっつきやツモ \mj{3p} による \mj{369m} の三面張などの要素で、一旦打 \mj{1m} としてタンヤオや良形を狙うのが正着 \citep[][pp.~161--162]{ooi-gundou}。
+
+\tehai{13406678m 33067p 5s}[南家　7巡目　ドラ \mj{7s}][gukei-tphzs-3]
 
 \textbf{四連形$\times 2$なら一旦聴牌外ししてもいい}\citep[][pp.~184--185]{fkt}。立体図~\ref{rittai:kanchan-sokurii} はカン \mj{6p} で即リーするかしないかという問題。立直する理由としない理由を列挙してみたら、
 
@@ -200,7 +348,7 @@
   \item 即リーしない理由
   \begin{itemize}
     \item \mj{6p} が1枚切れですし下家が持っていそう
-    \item 打 \mj{7p} として良形聴牌が \mj{12346p345678s} 11種34枚ある
+    \item 打 \mj{7p} として良形聴牌ができるツモが \mj{1p} -- \mj{6p3s} -- \mj{8s} 11種34枚ある
     \item 打 \mj{7p} としてツモ \mj{7s} で打点上昇もある
   \end{itemize}
 \end{itemize}
@@ -230,25 +378,25 @@
 
 \subsubsection*{当たり牌の種類と残り枚数} 
 
-\begin{table*}[t]
-  \centering
-  \begin{tabular}{l|llllllll}
-               & \multicolumn{2}{l}{全体} & \multicolumn{2}{l}{場に0枚見え} & \multicolumn{2}{l}{場に1枚見え} & \multicolumn{2}{l}{場に2枚見え} \\
-               & 和了 (\%) & ツモ (\%) & 和了 (\%) & ツモ (\%) & 和了 (\%) & ツモ (\%) & 和了 (\%) & ツモ (\%) \\
-    \hline
-    無筋456 & 34 & 62 & 37 & 63 & 30 & 61 & 23 & 57 \\
-    無筋37  & 40 & 51 & 43 & 52 & 36 & 49 & 28 & 46 \\
-    無筋28  & 43 & 46 & 46 & 47 & 41 & 46 & 34 & 42 \\
-    片筋456 & 36 & 52 & 40 & 53 & 32 & 52 & 24 & 48 \\
-    無筋19  & 46 & 36 & -- & -- & 47 & 37 & {\color{red}44} & 33 \\
-    筋37    & 48 & 36 & 51 & 37 & 44 & 34 & 35 & 32 \\
-    筋28    & 51 & 31 & 55 & 32 & 50 & 31 & {\color{red}43} & 30 \\
-    両筋456 & 47 & 33 & 51 & 34 & 42 & 33 & 36 & 31 \\
-    筋19    & 57 & 24 & -- & -- & 58 & 24 & {\color{red}56} & 25
-  \end{tabular}
-  \caption{当たり牌の種類・枚数別5〜12巡目の先制単騎・嵌張立直の和了率とツモの割合\citep[][p. 38]{miinin-stat}。赤字は12巡目の先制両面立直より和了率が高い立直}
-  \label{tab:ev-gukei-riichi-machi}
-\end{table*}
+%\begin{table*}[t]
+%  \centering
+%  \begin{tabular}{l|llllllll}
+%               & \multicolumn{2}{l}{全体} & \multicolumn{2}{l}{場に0枚見え} & \multicolumn{2}{l}{場に1枚見え} & \multicolumn{2}{l}{場に2枚見え} \\
+%               & 和了 (\%) & ツモ (\%) & 和了 (\%) & ツモ (\%) & 和了 (\%) & ツモ (\%) & 和了 (\%) & ツモ (\%) \\
+%    \hline
+%    無筋456 & 34 & 62 & 37 & 63 & 30 & 61 & 23 & 57 \\
+%    無筋37  & 40 & 51 & 43 & 52 & 36 & 49 & 28 & 46 \\
+%    無筋28  & 43 & 46 & 46 & 47 & 41 & 46 & 34 & 42 \\
+%    片筋456 & 36 & 52 & 40 & 53 & 32 & 52 & 24 & 48 \\
+%    無筋19  & 46 & 36 & -- & -- & 47 & 37 & {\color{red}44} & 33 \\
+%    筋37    & 48 & 36 & 51 & 37 & 44 & 34 & 35 & 32 \\
+%    筋28    & 51 & 31 & 55 & 32 & 50 & 31 & {\color{red}43} & 30 \\
+%    両筋456 & 47 & 33 & 51 & 34 & 42 & 33 & 36 & 31 \\
+%    筋19    & 57 & 24 & -- & -- & 58 & 24 & {\color{red}56} & 25
+%  \end{tabular}
+%  \caption{当たり牌の種類・枚数別5〜12巡目の先制単騎・嵌張立直の和了率とツモの割合\citep[][p. 38]{miinin-stat}。赤字は12巡目の先制両面立直より和了率が高い立直}
+%  \label{tab:ev-gukei-riichi-machi}
+%\end{table*}
 
 基準として、12巡目の先制両面立直の和了率は42\%、そのときのツモの割合は54\%\citep[][p. 26]{miinin-stat}。表~\ref{tab:ev-gukei-riichi-machi} によると、自分から2枚見えても、基準より和了率が高いのは無筋19・筋19・筋28。これらの待ちになったら立直をかけるのは正解。
 
@@ -375,7 +523,7 @@
 
 
 %--------------------------------------------
-\subsection{愚形の打点が両面より高い}
+\subsection{愚形の打点が両面より高い場合}
 
 例として、手牌~\ref{mj:rch-6-1} は両面と嵌張の選択。\mj{25m} の両面にして立直をかけるとこの手の価値は2飜30符となり、その局収支は表~\ref{tab:ev-ryanmen-riichi} によると1100点となる。一方、嵌 \mj{2m} にすると三色がついて、表~\ref{tab:ev-gukei-riichi} によると3飜40符の局収支は1900点となる。両面ピンフより嵌張三色の方が高いので、ここで \mj{4m} 切り立直すべき\citep[][p. 55]{miinin-stat}。
 
@@ -418,6 +566,12 @@
 
 \tehai{234567m 445p 789s 44z}[東1局　南家　8巡目　ドラ \mj{6z}][rch-4-3]
 
+手牌~\ref{mj:rch-ryamen-jihai-3} と~\ref{mj:rch-ryamen-jihai-4} はともに \mj{5p} 切り立直と \mj{6p} 切り立直の二択。\mj{5p} を切るとドラが1枚減るがピンフがついて、手牌の符は30符（出アガリ）。よって、\mj{6p} 切りは飜数は同じだが符は40符で、\mj{5p3z} 待ちにする方がいい\footnote{\href{https://naga.dmv.nico/htmls/6f2da675938820c4e4e2aee73aab7b00f5fbf728fc223db932733307ff96c684v2_2.html?tw=0}{NAGAのシミュレーション。}}。一方、手牌~\ref{mj:rch-ryamen-jihai-4} のように字牌が尖張牌に変わると、アガリ率が下がるので、\mj{5p} を切ってピンフを取るのが正着になる\footnote{\href{https://naga.dmv.nico/htmls/8620eb82ba4651e70db2a67cd4baaa108b1481600f5fa8582d33c726931b0e37v2_2.html?tw=0}{NAGAのシミュレーション。}}。
+
+\tehai{123556p 456789s 22z}[東4局　9巡目　ドラ \mj{5p}][rch-ryamen-jihai-3]
+
+\tehai{66m 123556p 456789s}[東4局　9巡目　ドラ \mj{5p}][rch-ryamen-jihai-4]
+
 \textbf{どちらの待ちにしても打点が変わらない場合は両面にする}\citep[][p. 52]{miinin-stat}。両面待ちのツモ割合がより高いから、和了時の平均得点もより高い。手牌~\ref{mj:rch-4-4} の場合は \mj{2p} 切って立直。
 
 \tehai{234567m 223p 888s 44z}[東1局　南家　8巡目　ドラ \mj{2m}][rch-4-4] 
@@ -442,6 +596,7 @@
 \end{table}
 
 \tehai{123888m 345s 6788p 3z}[東1局　南家　12巡目　ドラ \mj{1m}][rch-4-5] 
+
 
 %--------------------------------------------
 \subsection{七対子の立直判断}
@@ -503,7 +658,7 @@
 
 \subsubsection*{中張牌ドラと生牌字牌}
 
-中張牌ドラ七対子の局収支は1400\citep[][p.~110]{miinin-choice}。表~\ref{tab:ev-chitoi} によると非ドラ生牌字牌（1700）より低いので生牌字牌にする\footnote{中張牌ではないドラと生牌字牌の比較なら？これは作者が実戦で出会ったケース}。よって、手牌~\ref{mj:rch-chitoi-5} は \mj{7s} を切って立直する\footnote{これも作者が実戦で出会ったケース。}。
+中張牌ドラ七対子の局収支は1400 \citep[][p.~110]{miinin-choice}。表~\ref{tab:ev-chitoi} によると非ドラ生牌字牌（1700）より低いので生牌字牌にする\footnote{中張牌ではないドラと生牌字牌の比較なら？これは作者が実戦で出会ったケース}。よって、手牌~\ref{mj:rch-chitoi-5} は \mj{7s} を切って立直する\footnote{これも作者が実戦で出会ったケース。}。
 
 \tehai{1105m 11p 11557s 334z}[東1局　南家　7巡目　ドラ \mj{7s}][rch-chitoi-5]
 
@@ -513,6 +668,43 @@
 \textbf{要すると「筋19 $\approx$ 1枚切れ字牌 ＞ 筋28 $\approx$ 生牌字牌 ＞ 筋37」}\citep[][pp.~115--116]{miinin-choice}。
 
 %https://www.bilibili.com/read/cv15365496/?spm_id_from=333.999.0.0
+
+
+%--------------------------------------------
+\subsection{ラス前・オーラスの立直判断}
+
+ラス目ではない限り、愚形立直はなるべく避けたい。立体図~\ref{rittai:rch-oorasu-1} の愚形ドラ1の手牌は東1局の平場なら立直すべき。打 \mj{6p} としてカン \mj{7p} にする方がいい。だが、南3局ならラス目との争いに巻き込まらないように、なるべく愚形立直はしない。打 \mj{8p} としてツモ \mj{35m5p} でピンフでダマできるし、チー \mj{3m} でタンヤオもできる\footnote{\href{https://naga.dmv.nico/htmls/0c207c8cb7f8fc58007c47be9f07ac713f31f8b82dcb021bec2774e663713193v2_2.html?tw=0}{平場の場合}と\href{https://naga.dmv.nico/htmls/023a1fe00f263fb68fbfffb033a261290e983b618ffbaa183232933ea7caa0e4v2_2.html?tw=0}{オーラスではない西1局2着目の場合}と\href{https://naga.dmv.nico/htmls/8b4d5d8a0942396bb0b6434984fa1e475a8201ab26dbbb77be49d03fc05865eav2_2.html?tw=0}{3着目の場合}と\href{https://naga.dmv.nico/htmls/2d12d86aa6f0ca0010be83dc28f40de83de498f5ed75340462a254e4007a65dav2_2.html?tw=0}{ラス目の場合}}。
+
+\begin{rittai}[h]
+  \centering
+  \drawrittai{
+    jicha/seat = 南,
+    jicha/hand = 12344m 24668p 067s -3p,
+    jicha/river = 1p 3s 8m 5z 6z 3m,
+    jicha/riverb = 6m 3s,
+    jicha/point = 18300,
+    %
+    toimen/river = 3z 4z 4z 1p 2z 2m,
+    toimen/riverb = 1s 9m,
+    toimen/point = 9800,
+    %
+    kami/river = 3z 3z 4z 2z 9p 5z,
+    kami/riverb = 1m 1z 1s, 
+    kami/point = 59700,
+    %
+    shimo/river = 4z 7z 3z 6z 5s 6s,
+    shimo/riverb = 2p 2p,
+    shimo/point = 12200,
+    %
+    kyoku = 南3局,
+    dora = 9s
+  }
+  \caption{}
+  \label{rittai:rch-oorasu-1}
+\end{rittai}
+
+
+
 
 
 \end{document}

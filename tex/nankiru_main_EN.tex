@@ -11,7 +11,7 @@
 \documentclass[12pt]{article}
 
 
-\newcommand{\renderOption}{0}
+\newcommand{\renderOption}{1}
 % 0: fast render
 % 1: full render
 
@@ -3453,7 +3453,7 @@ Call judgement is based on the following factors:
     \item Are there any other fast opponents?
   \end{itemize}
   \item How much defense there is after shortening our hand
-  \item How much the value of our hand decreases (except for cases such as agaritoppu where value is relevant)
+  \item How much the value of our hand decreases (except for cases such as agaritoppu where value is irrelevant)
   \item Whether the open part would alarm other players (and whether they care)
   \item Turn; the later it is, the better it would be for us to open our hand for tenpai
 \end{itemize}
@@ -3490,7 +3490,7 @@ When we open our hand with tanyao as its main yaku, it is called \textit{kuitan}
 
 \subsubsection*{Only Call for Tenpai for Hands Worth 1000 Points}
 
-Except for agaritoppu, regardless of the shapes of the rest of our hand, regardless of the callable part is bad shape or not, refrain from early cheap calls \multicitep{yoteru-badnaki; tetsusenryaku, pp.~170--175; hirasawa-naki, pp.~127--128}. Therefore, do not open \ref{mj:naki-tanyao-1000-1} or \ref{mj:naki-tanyao-1000-2} or \ref{mj:naki-tanyao-1000-3}.
+Except for agaritoppu, regardless of the shapes of the rest of our hand, regardless of the callable part being bad shape or not, refrain from early cheap calls \multicitep{yoteru-badnaki; tetsusenryaku, pp.~170--175; hirasawa-naki, pp.~127--128}. Therefore, do not open \ref{mj:naki-tanyao-1000-1} or \ref{mj:naki-tanyao-1000-2} or \ref{mj:naki-tanyao-1000-3}.
 
 \tehai{24m 3468p 3358899s}[East-1, non-dealer, turn 4, dora \mj{7z}][naki-tanyao-1000-1]
 
@@ -3572,7 +3572,7 @@ Hand \ref{mj:naki-3} is already tanyao dora 3, which we want to win no matter wh
 
 \subsubsection*{Tanyao Calls in All-Last}
 
-When we are in all-last and there is only 500 points left for us to overtake first place or get out of last place, tanyao calls become immensely important. While it is true that each call sacrifices one turn of tsumo, our hand is no longer confined to menzen and is thus faster than menzen. There is no need to consider defense as well since it is better to fight for a slim chance for a better placement than to fold and completely give up the chance of winning. The following hands assume that we absolutely to win 500 points in all-last for a better placement unless otherwise stated.
+When we are in all-last and there is only 500 points left for us to overtake first place or get out of last place, tanyao calls become immensely important. While it is true that each call sacrifices one turn of tsumo, our hand is no longer confined to menzen and is thus faster than menzen. There is no need to consider defense as well since it is better to fight for a slim chance for a better placement than to fold and completely give up the chance of winning. The following hands assume that we absolutely need to win 500 points in all-last for a better placement unless otherwise stated.
 
 Chi \mj{6p} with \mj{57p} and drop \mj{9p} from \ref{mj:naki-tanyao-oorasu-1}. Likewise, chi \mj{36p} with \mj{45p} and drop \mj{9p} from~\ref{mj:naki-tanyao-oorasu-2}. Both hands are perfect 1-away, and we stay menzen in flat situations. In all-last and in dire need to win any hand, value becomes irrelevant and we'd rather get to fastest tenpai with any yaku than wait for menzen riichi which is slow and has lower win-rate. Thus, the point here is to find ways to get rid of non-tanyao tiles, or to slide completed blocks such as \mj{789p} for tanyao \citep{mark2-tanyao-naki}.
 
@@ -3580,7 +3580,7 @@ Chi \mj{6p} with \mj{57p} and drop \mj{9p} from \ref{mj:naki-tanyao-oorasu-1}. L
 
 \tehai{34m 456789p 45588s}[All-last, dora \mj{1s}][naki-tanyao-oorasu-2]
 
-Keep in mind that dropping \mj{9p} after \mj{6'78p} chi is \textit{kuikae} which is forbidden in most rulesets. The reason why \ref{mj:naki-tanyao-oorasu-1} and \ref{mj:naki-tanyao-oorasu-2} are special is because \mj{789p} is connected to other completed blocks. Do better see this, we consider shapes minus the terminal tile \mj{9p}. The shape \mj{56778p} can be either \mj{567p} + \mj{78p} or \mj{57p} + \mj{678p}. Likewise, \mj{45678p} can be \mj{45p} + \mj{678p}. However, if we chi \mj{7p} with \mj{56p} from \mj{567789p} and drop \mj{9p}, we are left a furiten ryanmen-toitsu instead of a completed block, so this is not a call that really advances our hand. Table~\ref{tab:kuikae} lists all possible shapes and calls to allow us pivot to tanyao.
+Keep in mind that dropping \mj{9p} after \mj{6'78p} chi is \textit{kuikae} which is forbidden in most rulesets. The reason why \ref{mj:naki-tanyao-oorasu-1} and \ref{mj:naki-tanyao-oorasu-2} are special is because \mj{789p} is connected to other completed blocks. To better see this, we consider shapes minus the terminal tile \mj{9p}. The shape \mj{56778p} can be either \mj{567p} + \mj{78p} or \mj{57p} + \mj{678p}. Likewise, \mj{45678p} can be \mj{45p} + \mj{678p}. However, if we chi \mj{7p} with \mj{56p} from \mj{567789p} and drop \mj{9p}, we are left a furiten ryanmen-toitsu instead of a completed block, so this is not a call that really advances our hand. Table~\ref{tab:kuikae} lists all possible shapes and calls to allow us pivot to tanyao.
 
 \begin{table}[ht]
   \centering
@@ -3596,7 +3596,7 @@ Keep in mind that dropping \mj{9p} after \mj{6'78p} chi is \textit{kuikae} which
   \label{tab:kuikae}
 \end{table}
 
-There are indeed cases where we only have an isolated \mj{789p} block and must sacrifice one safe tile for tanyao like \ref{mj:naki-tanyao-oorasu-3}. Chi \mj{6p} with \mj{78p} and \mj{3z} \citep{mark2-tanyao-naki}.
+There are indeed cases where we only have an isolated \mj{789p} block and must sacrifice one safe tile for tanyao like \ref{mj:naki-tanyao-oorasu-3}. Chi \mj{6p} with \mj{78p} and drop \mj{3z} \citep{mark2-tanyao-naki}.
 
 \tehai{34678m 789p 4588s 3z}[All-last, dora \mj{1s}][naki-tanyao-oorasu-3]
 
@@ -3873,7 +3873,7 @@ Any of the following calls are collectively referred to as kan:
 
 An opened quadruplet is called \textit{minkantsu} or \textit{minkan} for short, and a closed quadruplet is called \textit{ankantsu} or \textit{ankan} for short. 
 
-The main benefits of kan is to increase hand value, either through the kan dora that is revealed after the kan call is completed, or through the additional fu from the quadruplet. For example, a terminal anko gives 8 fu, and a terminal ankan gives 32 tu. Another benefit of kan is an additional draw, which is why when we are tenpai with ryanmen kan is usually better. Kan dora also benefits our opponents, and it is three times likely that someone will get kandora than we getting it. Therefore, kan far away from tenpai is not wise and often advised against.
+The main benefits of kan is to increase hand value, either through the kan dora that is revealed after the kan call is completed, or through the additional fu from the quadruplet. For example, a terminal anko gives 8 fu, and a terminal ankan gives 32 fu. Another benefit of kan is an additional draw, which is why when we are tenpai with ryanmen kan is usually better. Kan dora also benefits our opponents, and it is three times likely that someone will get kandora than we getting it. Therefore, kan far away from tenpai is not wise and often advised against.
 
 
 \subsubsection*{Daiminkan}
