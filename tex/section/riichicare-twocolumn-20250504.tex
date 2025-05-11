@@ -100,6 +100,82 @@
 \end{table}
 
 
+\subsubsection*{待ちがよりいいならリスクを取れ}
+
+\textbf{ピンフドラ三面張ぐらいあるなら10\%の放銃率があってもリスクを背負って追いかける}\citep[][pp.~121--122]{miinin-choice}。手牌~\ref{mj:chase-1} は \mj{5s} 切りと \mj{8s} 切りの二択。\mj{8s} は先行者（子）の現物だが、\mj{5s} 切れば三面張はよりアガリやすい。
+
+\tehai{23m 56788p 455678s -1m}[東1局　西家　12巡目　ドラ \mj{1m}][chase-1]
+
+
+\subsubsection*{2軒立直に対する}
+
+\textbf{ピンフのみでも追いかける}\citep[][pp.~151--152]{miinin-choice}。子の2人が立直してベタオリの局収支は$-$900、ピンフのみで追いかける局収支は$-700$、いずれにせよ損なので追いかける方がマシ。
+
+と言うものの、立体図~\ref{rittai:niken} は自分がトップ目で、捨て牌濃厚な上家と下家の一発巡目に対して、ピンフのみでドラマタギの \mj{7s} が押せるかという問題。\citet[pp.~178--181]{doi} によるとこれは流石に押しすぎ。\mj{7s} 以外の打牌候補は、
+
+\begin{itemize}
+\item \mj{2m}：下家の現物、上家の筋、上家の双碰・単騎・嵌張にしか刺さらない
+\item \mj{3m}：下家と上家の筋、双碰・単騎・辺張・嵌張にしか刺さらない
+\item \mj{9p}：下家と上家の筋、双碰・単騎にしか刺さらない
+\end{itemize}
+
+安全度から見ると \mj{2m} と \mj{9p} が同じレベルだが、七対子の可能性も考えると \mj{9p} の方が少し危険。それに、\mj{9p} を切った後ヘッドレスになるので復活するとき聴牌の質は保証されない。よって、ここは打 \mj{2m}。上家が \mj{23s}、下家が \mj{68p} の搭子を落としたので、筋の \mj{3m} もかなり愚形に刺さりづらい。後でドラ \mj{6s} を引いたら追いかけてトップを大きく引き寄せる。
+
+\begin{rittai}[hbt]
+  \centering
+  \drawrittai{
+    jicha/seat = 西,
+    jicha/hand = 23345m 12399p 357s -4s,
+    jicha/river = 1z 6z 5p 1s 3^z,
+    jicha/point = 32400,
+    %
+    toimen/river = 3z 1z 8p 2^s 8s 9s,
+    toimen/point = 15900,
+    %
+    kami/river = 9m 6p 5m 3s 2's 7^z,
+    kami/point = 25900,
+    %
+    shimo/river = 1z 2m 8p 6p 6'm,
+    shimo/point = 23800,
+    %
+    kyoku = 南2局,
+    kyoutaku = 2,
+    dora = 6s
+  }
+  \caption{}
+  \label{rittai:niken}
+\end{rittai}
+
+立体図~\ref{rittai:ryanmen-push} は両軒立直に近い場況、\mj{4m} を切ったら \mj{69s} 待ちの立直・ドラ1になる。まずは一発の巡目に \mj{0m} 切りを敢行する下家に \mj{78s} を切ることはない。このままで \mj{4m} を切って立直していいが、安全牌の \mj{5m} をツモ切って、ツモ \mj{9m} による一通やツモ \mj{7s} で危険な \mj{4m8s} で勝負することもあり\citep[][pp.~106--109]{doi}。
+
+\begin{rittai}[hbt]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 西,
+    jicha/hand = 11123445678m 78s -5m,
+    jicha/river = 6z 13p 45s 1^p,
+    %
+    toimen/river = 3z 9m 13s 6z 5s,
+    toimen/riverb = 99p 3^z,
+    %
+    kami/river = 3z 9m 6z 97's 4^p,
+    kami/riverb = 3^z 6^z,
+    %
+    shimo/hand = XXXXXXX -4'44z 77'7z,
+    shimo/river = 397p 780^m,
+    shimo/riverb = 1z 5^p,
+    %
+    kyoku = 東1局,
+    kyoutaku = 1,
+    dora = 7s
+  }
+  
+  \caption{上家から立直が来て、下家がソーズの混一色の模様の場面}
+  \label{rittai:ryanmen-push}
+\end{rittai}
+
+
 \subsubsection*{振聴押し}
 
 \citet{doi}によると、表~\ref{tab:doi-furiten-chase} の通り、三面張でも3枚4枚以上切られているなら押せない。
@@ -123,107 +199,35 @@
 \end{table}
 
 
-\onecolumn % For the sections below we will use one column since the table situation figures does not go well with two columns (the text are rather misplaced from the figures they describe)
-\subsubsection*{2軒立直に対する}
-
-% An example of environment for text wrapped around a figure
-% Use minipage to ensure minimum height when text is shorter than figure
-%    \begin{minipage}[t][6cm]{\textwidth}   ... when text is shorter
-%    \begin{minipage}[t]{\textwidth}        ... when text is longer and there is no need to adjust its height
-% Use wrapfigure to wrap text around figure and use "number of tight lines" to reduce the white space beneath it
-% 14 means "14 lines" but I suspect this does not apply to all cases
-% Use \vspace{...} to reduce the space above the figure but this is also not applicable everywhere
-\begin{minipage}[t]{\textwidth}
-  \begin{wrapfigure}[14]{r}{0.5\textwidth}\vspace{-1.5\topskip}
-    \drawrittai{
-      jicha/seat = 西,
-      jicha/hand = 23345m 12399p 357s -4s,
-      jicha/river = 1z 6z 5p 1s 3^z,
-      jicha/point = 32400,
-      %
-      toimen/river = 3z 1z 8p 2^s 8s 9s,
-      toimen/point = 15900,
-      %
-      kami/river = 9m 6p 5m 3s 2's 7^z,
-      kami/point = 25900,
-      %
-      shimo/river = 1z 2m 8p 6p 6'm,
-      shimo/point = 23800,
-      %
-      kyoku = 南2局,
-      kyoutaku = 2,
-      dora = 6s
-    }
-  \end{wrapfigure}
-
-  \textbf{ピンフのみでも追いかける}\citep[][pp.~151--152]{miinin-choice}。子の2人が立直してベタオリの局収支は$-$900、ピンフのみで追いかける局収支は$-700$、いずれにせよ損なので追いかける方がマシ。
-  
-  と言うものの、右図は自分がトップ目で、捨て牌濃厚な上家と下家の一発巡目に対して、ピンフのみでドラマタギの \mj{7s} が押せるかという問題。\citet[pp.~178--181]{doi} によるとこれは流石に押しすぎ。\mj{7s} 以外の打牌候補は、
-  
-  \begin{itemize}
-  \item \mj{2m}：下家の現物、上家の筋、上家の双碰・単騎・嵌張にしか刺さらない
-  \item \mj{3m}：下家と上家の筋、双碰・単騎・辺張・嵌張にしか刺さらない
-  \item \mj{9p}：下家と上家の筋、双碰・単騎にしか刺さらない
-  \end{itemize}
-  
-  安全度から見ると \mj{2m} と \mj{9p} が同じレベルだが、七対子の可能性も考えると \mj{9p} の方が少し危険。それに、\mj{9p} を切った後ヘッドレスになるので復活するとき聴牌の質は保証されない。よって、ここは打 \mj{2m}。上家が \mj{23s}、下家が \mj{68p} の搭子を落としたので、筋の \mj{3m} もかなり愚形に刺さりづらい。後でドラ \mj{6s} を引いたら追いかけてトップを大きく引き寄せる。
-\end{minipage}
-
-\begin{minipage}[t][6cm]{\textwidth}
-  \begin{wrapfigure}[14]{r}{0.5\textwidth}\vspace{-1.5\topskip}
-    \drawrittai{
-      jicha/seat = 西,
-      jicha/hand = 11123445678m 78s -5m,
-      jicha/river = 6z 13p 45s 1^p,
-      %
-      toimen/river = 3z 9m 13s 6z 5s,
-      toimen/riverb = 99p 3^z,
-      %
-      kami/river = 3z 9m 6z 97's 4^p,
-      kami/riverb = 3^z 6^z,
-      %
-      shimo/hand = XXXXXXX -4'44z 77'7z,
-      shimo/river = 397p 780^m,
-      shimo/riverb = 1z 5^p,
-      %
-      kyoku = 東1局,
-      kyoutaku = 1,
-      dora = 7s
-    }
-  \end{wrapfigure}
-
-  右図は両軒立直に近い場況、\mj{4m} を切ったら \mj{69s} 待ちの立直・ドラ1になる。まずは一発の巡目に \mj{0m} 切りを敢行する下家に \mj{78s} を切ることはない。このままで \mj{4m} を切って立直していいが、安全牌の \mj{5m} をツモ切って、ツモ \mj{9m} による一通やツモ \mj{7s} で危険な \mj{4m8s} で勝負することもあり\citep[][pp.~106--109]{doi}。
-\end{minipage}
-
-
 \subsubsection*{場況による基準の振れ}
 
-\begin{minipage}[t][6cm]{\textwidth}
-  \begin{wrapfigure}[14]{r}{0.5\textwidth}\vspace{-1.5\topskip}
-    \drawrittai{
-      jicha/seat = 西,
-      jicha/hand = 34m 12345p 567789s -4m,
-      jicha/river = XXXXX 7z,
-      jicha/riverb = X,
-      %
-      toimen/river = XXXX 7z X,
-      toimen/riverb = XX,
-      %
-      kami/river = XXXXX 8's,
-      kami/riverb = XX,
-      %
-      shimo/river = XXXXX 7z,
-      shimo/riverb = X,
-      %
-      kyoutaku = 1,
-      dora = 7z
-    }
-  \end{wrapfigure}
-  
-  実際、\citet{miinin-stat}のデータも\citet{doi}のデータもドラ見えない状況からドラ全見えの状況まで合計するので、実戦の場にドラがいっぱい切られているなら放銃への平均失点は下回るので、通常なら押せない手牌は押せるようになる。 % \citet cannot be at the beginning of a paragraph or else it messes up the typeset
-  
-  右図のような真ん中の待ちのメンピンは\citet{doi}の基準なら通常押せないが、今回ドラ \mj{7z} がいっぱい切られていて、36待ちでも押せる\footnote{\citet{doi}は冒頭で長い文で放銃失点と押し引きの基準に至った計算と経緯を説明してきたが、どうやってドラ枚数で失点を調整するのには説明がない。}。打 \mj{3m} で立直\citep[][pp.~76--77]{doi}。
-\end{minipage}
+\citet{miinin-stat}のデータも\citet{doi}のデータもドラ見えない状況からドラ全見えの状況まで合計するので、実戦の場にドラがいっぱい切られているなら放銃への平均失点は下回るので、通常なら押せない手牌は押せるようになる。
+
+立体図~\ref{rittai:bakyou-1} のような真ん中の待ちのメンピンは\citet{doi}の基準なら通常押せないが、今回ドラ \mj{7z} がいっぱい切られていて、36待ちでも押せる\footnote{\citet{doi}は冒頭で長い文で放銃失点と押し引きの基準に至った計算と経緯を説明してきたが、どうやってドラ枚数で失点を調整するのには説明がない。}。打 \mj{3m} で立直\citep[][pp.~76--77]{doi}。
+
+\begin{rittai}[hbt]
+  \centering
+  \drawrittai{
+    jicha/seat = 西,
+    jicha/hand = 34m 12345p 567789s -4m,
+    jicha/river = XXXXX 7z,
+    jicha/riverb = X,
+    %
+    toimen/river = XXXX 7z X,
+    toimen/riverb = XX,
+    %
+    kami/river = XXXXX 8's,
+    kami/riverb = XX,
+    %
+    shimo/river = XXXXX 7z,
+    shimo/riverb = X,
+    %
+    kyoutaku = 1,
+    dora = 7z
+  }
+  \caption{}
+  \label{rittai:bakyou-1}
+\end{rittai}
 
 
 \subsubsection*{ダマ・副露}
@@ -235,223 +239,228 @@
 また、\citet{doi}によると、2飜以下は押せない。3飜なら25・58まで押せる。3飜の36・47待ちは押せない。
 
 
-\subsubsection*{待ちがよりいいならリスクを取れ}
-
-\textbf{ピンフドラ三面張ぐらいあるなら10\%の放銃率があってもリスクを背負って追いかける}\citep[][pp.~121--122]{miinin-choice}。手牌~\ref{mj:chase-1} は \mj{5s} 切りと \mj{8s} 切りの二択。\mj{8s} は先行者（子）の現物だが、\mj{5s} 切れば三面張はよりアガリやすい。
-
-\tehai{23m 56788p 455678s -1m}[東1局　西家　12巡目　ドラ \mj{1m}][chase-1]
-
-
 %-----------------------------------------------------
 \subsubsection{序中盤・副露手}
 
-\begin{minipage}[t]{\textwidth}
-  \begin{wrapfigure}[14]{r}{0.5\textwidth}\vspace{-1.5\topskip}
-    \drawrittai{
-      jicha/seat = 北,
-      jicha/hand = 22345m 56p 567s -? -4'35m,
-      jicha/river = 1m 51z 81s 3z,
-      jicha/riverb = 3z 7m 9p 8m 3s,
-      %
-      toimen/river = 2z 1s 4^z 5m 3'8^p,
-      toimen/riverb = 1^m 1^z 6^s 1^z 2^p 2^z,
-      %
-      kami/river = 1z 1p 8m 235z,
-      kami/riverb = 66z 8p 11m,
-      %
-      shimo/river = 3z 9s 12p 6z 8^m,
-      shimo/riverb = 11s 2m 6s 3p 6z,
-      %
-      kyoutaku = 1,
-      dora = 7m
-    }
-  \end{wrapfigure}
+立体図~\ref{rittai:cheap-tenpai} の通り、自分が1000点の聴牌。通ってない筋は \mj{3m}--\mj{6m}--\mj{9m}、\mj{1p}--\mj{4p}--\mj{7p}、\mj{2s}--\mj{5s}--\mj{8s} と \mj{4s}--\mj{7s}。ツモ (1) \mj{3m} (2) \mj{2s} (3) \mj{5s} (4) \mj{9m} ならどうするか、という課題。対面の河による通っていない筋を分析すると\citep[][pp.~128--133]{tetsuoshi}、
+
+\begin{itemize}
+\item \mj{36m}：立直前に切られているので他の筋より少しマシ
+\item \mj{47s}：\mj{6s} が3枚見えるので他の筋より少しマシ\footnote{\citet[p.~132]{tetsuoshi}によると \mjfn{6s} も立直前に切られているが、実際にその \mjfn{6s} は南家の河に写っていない。}
+\item \mj{9m}：\mj{8m} が3枚見えるのでワンチャンス。けれど他の2人がベタオリしているのにラストの \mj{8m} が出てこないので南家の手にある可能性が高い
+\item \mj{147p25s}：特に危険
+\end{itemize}
+
+よって、のみ手なら \mj{3m} まで押す。3900点あるなら \mj{9m} で押すか微妙だが、8000点あるなら全て押す。
+
+\begin{rittai}[hbt]
+  \centering
   
-  右図の通り、自分が1000点の聴牌。通ってない筋は \mj{3m}--\mj{6m}--\mj{9m}、\mj{1p}--\mj{4p}--\mj{7p}、\mj{2s}--\mj{5s}--\mj{8s} と \mj{4s}--\mj{7s}。ツモ (1) \mj{3m} (2) \mj{2s} (3) \mj{5s} (4) \mj{9m} ならどうするか、という課題。対面の河による通っていない筋を分析すると\citep[][pp.~128--133]{tetsuoshi}、
-
-  \begin{itemize}
-  \item \mj{36m}：立直前に切られているので他の筋より少しマシ
-  \item \mj{47s}：\mj{6s} が3枚見えるので他の筋より少しマシ\footnote{\citet[p.~132]{tetsuoshi}によると \mjfn{6s} も立直前に切られているが、実際にその \mjfn{6s} は南家の河に写っていない。}
-  \item \mj{9m}：\mj{8m} が3枚見えるのでワンチャンス。けれど他の2人がベタオリしているのにラストの \mj{8m} が出てこないので南家の手にある可能性が高い
-  \item \mj{147p25s}：特に危険
-  \end{itemize}
-
-  よって、のみ手なら \mj{3m} まで押す。3900点あるなら \mj{9m} で押すか微妙だが、8000点あるなら全て押す。
-\end{minipage}
-
-\begin{minipage}[t][6cm]{\textwidth}
-  \begin{wrapfigure}[14]{r}{0.5\textwidth}\vspace{-1.5\topskip}
-    \drawrittai{
-      jicha/seat = 北,
-      jicha/hand = 457m 222p 789s 1166z,
-      jicha/river = XXXXXX,
-      jicha/riverb = XXX,
-      %
-      toimen/river = 5673z 9p 2z,
-      toimen/riverb = 8m 6p 9'm,
-      %
-      kami/river = XXXXXX,
-      kami/riverb = XXX,
-      %
-      shimo/river = XXXXXX,
-      shimo/riverb = XXX 6z,
-      %
-      kyoutaku = 1,
-      dora = 8s
-    }
-  \end{wrapfigure}
-
-  右図は下家から \mj{6z} が出てポンして一発を消しつつ両面聴牌の2000で \mj{7m} が押せるかという問題。対子、そして残っている筋は14本なので、副露でも両面の2000は中盤で相当押せる。終盤で残っている筋が少なくなって危険牌を掴んでしまったらオリてもいい\citep[][pp.~172--173]{fkt}。
-\end{minipage}
-
-\begin{minipage}[t][6cm]{\textwidth}
-  \begin{wrapfigure}[14]{r}{0.5\textwidth}\vspace{-1.5\topskip}
-    \drawrittai{
-      jicha/seat = 東,
-      jicha/hand = 56m 3366p 1235s -1'11z,
-      jicha/river = XXXXXX,
-      %
-      toimen/river = XXXXX,
-      %
-      kami/river = XXXX,
-      %
-      shimo/river = 5z 99p 7s 43'p,
-      %
-      kyoutaku = 1,
-      dora = 4s
-    }
-  \end{wrapfigure}
-
-  右図は下家の \mj{3p} の立直宣言牌をポンしたら2900の両面聴牌が取れる局面。序盤とはいえ、下家の河に \mj{34p} の搭子があって、\mj{25p} よりいい両面がありそうな良形濃厚なので危険度は中盤並び。だとしても、親としてツモられたら振り込む時の減点とは差が大きくないので、$2/13 \approx 15\%$は押せる。6巡くらいゼンツして他の無筋を掴んでしまったらオリてもいい\citep[][pp.~174--175]{fkt}。
-\end{minipage}
-
-\begin{minipage}[t][6cm]{\textwidth}
-  \begin{wrapfigure}[14]{r}{0.5\textwidth}\vspace{-1.5\topskip}
-    \drawrittai{
-      jicha/seat = 北,
-      jicha/hand = 233m 5078p 123s -1m -1'11z,
-      jicha/river = XXXXXX,
-      %
-      toimen/river = XXXXXX,
-      %
-      kami/river = XXXXXX,
-      %
-      shimo/river = 1m 8p 7m 2p 7m 1s,
-      shimo/riverb = 1's,
-      %
-      kyoutaku = 1,
-      dora = 3s
-    }
-  \end{wrapfigure}
+  \drawrittai{
+    jicha/seat = 北,
+    jicha/hand = 22345m 56p 567s -? -4'35m,
+    jicha/river = 1m 51z 81s 3z,
+    jicha/riverb = 3z 7m 9p 8m 3s,
+    %
+    toimen/river = 2z 1s 4^z 5m 3'8^p,
+    toimen/riverb = 1^m 1^z 6^s 1^z 2^p 2^z,
+    %
+    kami/river = 1z 1p 8m 235z,
+    kami/riverb = 66z 8p 11m,
+    %
+    shimo/river = 3z 9s 12p 6z 8^m,
+    shimo/riverb = 11s 2m 6s 3p 6z,
+    %
+    kyoutaku = 1,
+    dora = 7m
+  }
   
-  右図は親の立直の一発巡で \mj{3m} を切らなければ3900の両面聴牌が取れない局面。親の立直に対して通っていない筋は13本、そして捨て牌のまたぎの筋を除けば9本だけ。つまり \mj{3m} の放銃率は8\%〜10\%くらい。そして親の立直の平均打点は9000で、一発で振り込んだらほぼ親満。だが、待ちの \mj{69p} も相当なアガリ率があるので、表~\ref{tab:ev-ryanmen-furo} によっても3900で \mj{3m} を切るのは見合う。ここは押す\citep[][pp.~176--177]{fkt}。
-\end{minipage}
+  \caption{1000点の聴牌はどこまで押すか}
+  \label{rittai:cheap-tenpai}
+\end{rittai}
 
-\begin{minipage}[t][6cm]{\textwidth}
-  \begin{wrapfigure}[14]{r}{0.5\textwidth}\vspace{-1.5\topskip}
-    \drawrittai{
-      jicha/seat = 西,
-      jicha/point = 16100,
-      jicha/hand = 234678m 4588p 334s,
-      jicha/river = XXXXXX,
-      jicha/riverb = XX,
-      %
-      toimen/point = 25900,
-      toimen/river = XXXXXX,
-      toimen/riverb = XXXX,
-      %
-      kami/point = 20900,
-      kami/river = 8s 7z 6z 11p 1s,
-      kami/riverb = 7z 4m 6'p,
-      %
-      shimo/point = 34100,
-      shimo/river = XXXXXX,
-      shimo/riverb = XXX,
-      %
-      kyoutaku = 3,
-      dora = 3z
-    }
-  \end{wrapfigure}
+立体図~\ref{rittai:ryoukei-nisen} は下家から \mj{6z} が出てポンして一発を消しつつ両面聴牌の2000で \mj{7m} が押せるかという問題。対子、そして残っている筋は14本なので、副露でも両面の2000は中盤で相当押せる。終盤で残っている筋が少なくなって危険牌を掴んでしまったらオリてもいい\citep[][pp.~172--173]{fkt}。
 
-  右図は上家の立直宣言牌の \mj{6p} で1000のチーテンを取るか取らないかという問題。自分が今ラス目で、立直で一気にラスから抜き出す気持ちがわかるが、今回の注目点は供託と本場。自分の手はクイタンだけではなく、1000 + 3300 = 4300です。1000点差のラス目と5000点差のラス目は断然違うレベル。よって、ここは \mj{6p} をチーしてゼンツする\citep[][pp.~200--201]{fkt}。
-\end{minipage}
+\begin{rittai}[hbt]
+  \centering
+  \drawrittai{
+    jicha/seat = 北,
+    jicha/hand = 457m 222p 789s 1166z,
+    jicha/river = XXXXXX,
+    jicha/riverb = XXX,
+    %
+    toimen/river = 5673z 9p 2z,
+    toimen/riverb = 8m 6p 9'm,
+    %
+    kami/river = XXXXXX,
+    kami/riverb = XXX,
+    %
+    shimo/river = XXXXXX,
+    shimo/riverb = XXX 6z,
+    %
+    kyoutaku = 1,
+    dora = 8s
+  }
+  \caption{下家が \mj{6z} を切ってくれる瞬間}
+  \label{rittai:ryoukei-nisen}
+\end{rittai}
 
-\begin{minipage}[t][6cm]{\textwidth}
-  \begin{wrapfigure}[14]{r}{0.5\textwidth}\vspace{-1.5\topskip}
-    \drawrittai{
-      jicha/seat = 西,
-      jicha/point = 16100,
-      jicha/hand = 234678m 88p 34s -8p -6'45p,
-      jicha/river = XXXXXX,
-      jicha/riverb = XX 3s,
-      %
-      toimen/point = 25900,
-      toimen/river = XXXXXX,
-      toimen/riverb = XXXX,
-      %
-      kami/point = 20900,
-      kami/river = 8s 7z 6z 11p 1s,
-      kami/riverb = 7z 4m 5vm,
-      %
-      shimo/point = 34100,
-      shimo/river = XXXXXX,
-      shimo/riverb = XXX,
-      %
-      kyoutaku = 3,
-      dora = 3z
-    }
-  \end{wrapfigure}
+立体図~\ref{rittai:ryoukei-niku} は下家の \mj{3p} の立直宣言牌をポンしたら2900の両面聴牌が取れる局面。序盤とはいえ、下家の河に \mj{34p} の搭子があって、\mj{25p} よりいい両面がありそうな良形濃厚なので危険度は中盤並び。だとしても、親としてツモられたら振り込む時の減点とは差が大きくないので、$2/13 \approx 15\%$は押せる。6巡くらいゼンツして他の無筋を掴んでしまったらオリてもいい\citep[][pp.~174--175]{fkt}。
 
-  そして前項の立体図から1巡進んで \mj{8p} を掴んでしまう瞬間。宣言牌に関連するとはいえ、ここで4300をアガらないとほぼラス確定。ここは逃げる余地がない。目をつぶって \mj{8p} で押す\citep[][pp.~202--203]{fkt}。
-\end{minipage}
+\begin{rittai}[hbt]
+  \centering
+  \drawrittai{
+    jicha/seat = 東,
+    jicha/hand = 56m 3366p 1235s -1'11z,
+    jicha/river = XXXXXX,
+    %
+    toimen/river = XXXXX,
+    %
+    kami/river = XXXX,
+    %
+    shimo/river = 5z 99p 7s 43'p,
+    %
+    kyoutaku = 1,
+    dora = 4s
+  }
+  \caption{下家が \mj{3p} で立直する瞬間}
+  \label{rittai:ryoukei-niku}
+\end{rittai}
 
-\begin{minipage}[t][6cm]{\textwidth}
-  \begin{wrapfigure}[14]{r}{0.5\textwidth}\vspace{-1.5\topskip}
-    \drawrittai{
-      jicha/seat = 西,
-      jicha/hand = 34067m 344p 34077s,
-      jicha/river = 4z 1s 5z 86p 8s,
-      jicha/riverb = 8s,
-      %
-      toimen/river = 7z 2m 3z 5p 78's,
-      toimen/riverb = 7^p 3^m,
-      %
-      kami/river = 1p 516^z 3s 4z,
-      kami/riverb = 4z 2p,
-      %
-      shimo/river = 2z 1p 2s 13m 1z,
-      shimo/riverb = 1z,
-      %
-      kyoutaku = 1,
-      dora = 3z
-    }
-  \end{wrapfigure}
+立体図~\ref{rittai:ryoukei-zanku} は親の立直の一発巡で \mj{3m} を切らなければ3900の両面聴牌が取れない局面。親の立直に対して通っていない筋は13本、そして捨て牌のまたぎの筋を除けば9本だけ。つまり \mj{3m} の放銃率は8\%〜10\%くらい。そして親の立直の平均打点は9000で、一発で振り込んだらほぼ親満。だが、待ちの \mj{69p} も相当なアガリ率があるので、表~\ref{tab:ev-ryanmen-furo} によっても3900で \mj{3m} を切るのは見合う。ここは押す\citep[][pp.~176--177]{fkt}。
 
-  \textbf{跳満などが見えても先制されたら一歩聴牌を取る方がいい}。右図のような平場の東1局で、自分の手牌は超勝負手なので立直したいのはわかるが、先制立直を受けている後手も事実。聴牌を取らないとあと聴牌まで無筋危険牌を何回掴むのがわからないけれど、この3900で \mj{4p} で勝負できるのでチーして聴牌を取る方がいい\citep[][pp.~114--117]{doi}。
-\end{minipage}
+\begin{rittai}[hbt]
+  \centering
+  \drawrittai{
+    jicha/seat = 北,
+    jicha/hand = 233m 5078p 123s -1m -1'11z,
+    jicha/river = XXXXXX,
+    %
+    toimen/river = XXXXXX,
+    %
+    kami/river = XXXXXX,
+    %
+    shimo/river = 1m 8p 7m 2p 7m 1s,
+    shimo/riverb = 1's,
+    %
+    kyoutaku = 1,
+    dora = 3s
+  }
+  \caption{}
+  \label{rittai:ryoukei-zanku}
+\end{rittai}
 
-\begin{minipage}[t][6cm]{\textwidth}
-  \begin{wrapfigure}[14]{r}{0.5\textwidth}\vspace{-1.5\topskip}
-    \drawrittai{
-      jicha/seat = 西,
-      jicha/hand = 88m 134056789p 23s,
-      jicha/river = 4z 7z 5s 7m 6s 5^z,
-      %
-      toimen/river = 3z 5z 2m 5p 7s 6vm,
-      %
-      kami/hand = XXXXXXX -3'33s 222'z,
-      kami/river = 3z 9s 8p 3p 6m 5m,
-      kami/riverb = 2s 2^p,
-      %
-      shimo/river = 1z 2m 1p 3p 9s 7^z,
-      %
-      kyoutaku = 1,
-      dora = 3m
-    }
-  \end{wrapfigure}
+立体図~\ref{rittai:ryoukei-sen} は上家の立直宣言牌の \mj{6p} で1000のチーテンを取るか取らないかという問題。自分が今ラス目で、立直で一気にラスから抜き出す気持ちがわかるが、今回の注目点は供託と本場。自分の手はクイタンだけではなく、1000 + 3300 = 4300です。1000点差のラス目と5000点差のラス目は断然違うレベル。よって、ここは \mj{6p} をチーしてゼンツする\citep[][pp.~200--201]{fkt}。
 
-  \textbf{門前（高め）5200一向聴より副露2000聴牌}。立体図~\ref{rittai:ittsu-chiten} は上家が切ってくれた \mj{2p} をチーして2000の聴牌を取るかどうかという問題。この手には一通が見えていて、どの有効牌を引いても好形聴牌になるので、他家から立直や副露が入らないなら通常は鳴かない。ですが、今回の先制者である親の河に \mj{5p} が早めに切られていて、\mj{14p} の危険度が高まっている。そして自分の一向聴の受け入れを確認すると、\mj{247p14s} の中に \mj{47p} を引いたら \mj{1p} を切らなければ聴牌にならない。\mj{247p14s} 以外の危険牌を掴むとどのくらい勝負するかという難問は聴牌まで続く（その時ほぼオリるが）。そうするとさっさと聴牌を取ってめくり合った方がいい。\mj{2p} チー打 \mj{5p} \citep[][pp.~150--153]{doi}。
-\end{minipage}
+\begin{rittai}[hbt]
+  \centering
+  \drawrittai{
+    jicha/seat = 西,
+    jicha/point = 16100,
+    jicha/hand = 234678m 88p 34s -8p -6'45p,
+    jicha/river = XXXXXX,
+    jicha/riverb = XX,
+    %
+    toimen/point = 25900,
+    toimen/river = XXXXXX,
+    toimen/riverb = XXXX,
+    %
+    kami/point = 20900,
+    kami/river = 8s 7z 6z 11p 1s,
+    kami/riverb = 7z 4m 6'p,
+    %
+    shimo/point = 34100,
+    shimo/river = XXXXXX,
+    shimo/riverb = XXX,
+    %
+    kyoutaku = 3,
+    dora = 3z
+  }
+  \caption{上家が \mj{6p} で立直する瞬間}
+  \label{rittai:ryoukei-sen}
+\end{rittai}
+
+そして立体図~\ref{rittai:ryoukei-sen2} は立体図~\ref{rittai:ryoukei-sen} から1巡進んで \mj{8p} を掴んでしまう瞬間。宣言牌に関連するとはいえ、ここで4300をアガらないとほぼラス確定。ここは逃げる余地がない。目をつぶって \mj{8p} で押す\citep[][pp.~202--203]{fkt}。
+
+\begin{rittai}[hbt]
+  \centering
+  \drawrittai{
+    jicha/seat = 西,
+    jicha/point = 16100,
+    jicha/hand = 234678m 88p 34s -8p -6'45p,
+    jicha/river = XXXXXX,
+    jicha/riverb = XX 3s,
+    %
+    toimen/point = 25900,
+    toimen/river = XXXXXX,
+    toimen/riverb = XXXX,
+    %
+    kami/point = 20900,
+    kami/river = 8s 7z 6z 11p 1s,
+    kami/riverb = 7z 4m 5vm,
+    %
+    shimo/point = 34100,
+    shimo/river = XXXXXX,
+    shimo/riverb = XXX,
+    %
+    kyoutaku = 3,
+    dora = 3z
+  }
+  \caption{}
+  \label{rittai:ryoukei-sen2}
+\end{rittai}
+
+\textbf{跳満などが見えても先制されたら一歩聴牌を取る方がいい}。立体図~\ref{rittai:yasume-chi}のような平場の東1局で、自分の手牌は超勝負手なので立直したいのはわかるが、先制立直を受けている後手も事実。聴牌を取らないとあと聴牌まで無筋危険牌を何回掴むのがわからないけれど、この3900で \mj{4p} で勝負できるのでチーして聴牌を取る方がいい\citep[][pp.~114--117]{doi}。
+
+\begin{rittai}[hbt]
+  \centering
+  
+  \drawrittai{
+    jicha/seat = 西,
+    jicha/hand = 34067m 344p 34077s,
+    jicha/river = 4z 1s 5z 86p 8s,
+    jicha/riverb = 8s,
+    %
+    toimen/river = 7z 2m 3z 5p 78's,
+    toimen/riverb = 7^p 3^m,
+    %
+    kami/river = 1p 516^z 3s 4z,
+    kami/riverb = 4z 2p,
+    %
+    shimo/river = 2z 1p 2s 13m 1z,
+    shimo/riverb = 1z,
+    %
+    kyoutaku = 1,
+    dora = 3z
+  }
+  
+  \caption{上家が \mj{2p} を切ってくれる瞬間}
+  \label{rittai:yasume-chi}
+\end{rittai}
+
+\textbf{門前（高め）5200一向聴より副露2000聴牌}。立体図~\ref{rittai:ittsu-chiten} は上家が切ってくれた \mj{2p} をチーして2000の聴牌を取るかどうかという問題。この手には一通が見えていて、どの有効牌を引いても好形聴牌になるので、他家から立直や副露が入らないなら通常は鳴かない。ですが、今回の先制者である親の河に \mj{5p} が早めに切られていて、\mj{14p} の危険度が高まっている。そして自分の一向聴の受け入れを確認すると、\mj{247p14s} の中に \mj{47p} を引いたら \mj{1p} を切らなければ聴牌にならない。\mj{247p14s} 以外の危険牌を掴むとどのくらい勝負するかという難問は聴牌まで続く（その時ほぼオリるが）。そうするとさっさと聴牌を取ってめくり合った方がいい。\mj{2p} チー打 \mj{5p} \citep[][pp.~150--153]{doi}。
+
+\begin{rittai}[hbt]
+  \centering
+  \drawrittai{
+    jicha/seat = 西,
+    jicha/hand = 88m 134056789p 23s,
+    jicha/river = 4z 7z 5s 7m 6s 5^z,
+    %
+    toimen/river = 3z 5z 2m 5p 7s 6vm,
+    %
+    kami/hand = XXXXXXX -3'33s 222'z,
+    kami/river = 3z 9s 8p 3p 6m 5m,
+    kami/riverb = 2s 2^p,
+    %
+    shimo/river = 1z 2m 1p 3p 9s 7^z,
+    %
+    kyoutaku = 1,
+    dora = 3m
+  }
+  \caption{上家が親の立直宣言牌の \mj{3s} をチーして次巡に \mj{2p} をツモぎった瞬間}
+  \label{rittai:ittsu-chiten}
+\end{rittai}
 
 %-----------------------------------------------------
 \subsubsection{終盤・副露手}
@@ -2120,13 +2129,12 @@
 \end{rittai}
 
 
-\twocolumn
+
 
 \subsubsection*{壁か暗刻落としか}
 
 8巡目で下家が立直してきて、\mj{2p} が4枚見えているので \mj{1p} がかなり安全だが\textbf{Suphxは \mj{4z} の暗刻を落とした}\citep[][pp.~44--45]{suphx}。現物は \mj{4z} のみ。\mj{1p} で押すとしたら無筋 \mj{2468s} が出ていく可能性が高いので、暗刻落としによって \mj{2468s} を浮かせてよりいい聴牌を目指す。暗刻落としのうちに安牌が増えてきて \mj{1p} すら最後まで切らないことも可能。
 
 \tehai{67m 40p 224468s 444z -1p}[東1局　東家　ドラ \mj{6p}　\mj{2p} が4枚見えている]
-
 
 \end{document}
